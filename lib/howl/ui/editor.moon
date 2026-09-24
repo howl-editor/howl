@@ -706,6 +706,8 @@ class Editor extends PropertyObject
 
     if @cursor.pos != old_pos
       @_on_pos_changed!
+    else
+      @_update_position!
 
   refresh_variable: (name) =>
     value = @buffer.config[name]

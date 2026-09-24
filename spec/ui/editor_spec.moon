@@ -919,6 +919,12 @@ describe 'Editor', ->
       howl.mode.unregister 'test_mode1'
       howl.mode.unregister 'test_mode2'
 
+  describe 'the position indicator', ->
+    it 'shows the position for a newly created editor', ->
+      e = Editor Buffer {}
+      assert.equals '1:1', e.indicator.position.label
+      e\release!
+
   describe 'the processes indicator', ->
     it 'is placed left of the position indicator', ->
       assert.equals editor.indicator.processes, editor.indicator.position.prev_sibling
