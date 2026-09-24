@@ -74,7 +74,7 @@ define_class {
       error "GapBuffer#extend_gap_at: Illegal offset #{offset} (size #{@size})", 2
 
     arr_size = @size + gap_size
-    arr = self.new_arr arr_size
+    arr = self.new_arr arr_size + 1 -- + 1 = with one final zero, as for set()
     src_ptr = @array
     dest_ptr = arr
 
