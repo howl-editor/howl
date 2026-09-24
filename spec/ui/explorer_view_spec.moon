@@ -143,6 +143,21 @@ describe 'ExplorerView', ->
         explorer_view\on_text_changed 'two'
         assert.same '<preview-cancelled>', previewed_text
 
+      it 'shows a popup sized for the popup text of a chunk preview', ->
+        local shown
+        app.editor.show_popup = spy.new (e, popup) -> shown = popup
+        b = Buffer!
+        b.text = 'buf-text'
+        items = {
+          {display_row: -> {'one'},
+           preview: -> {chunk: b\chunk(1, 2), popup: 'a somewhat longer popup message'}},
+        }
+        rebuild items
+        app\pump_mainloop!
+        assert.is_not_nil shown
+        assert.same 'a somewhat longer popup message', shown.buffer.text
+        assert.is_true shown.width > shown.view.width_of_space * 20
+
 
   context 'filtering', ->
     before_each ->
