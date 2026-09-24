@@ -20,12 +20,6 @@ class JournalBuffer extends ActionBuffer
     for entry in *log.entries
       @append_entry entry
 
-  modify: (f) =>
-    @read_only = false
-    f!
-    @read_only = true
-    @modified = false
-
   append_entry: (entry) =>
     level = entry.level
     message = entry.message .. '\n'

@@ -152,7 +152,6 @@ command.register
       if event.key_name == 'escape'
         buffer.lines[1] = '(Snooping done, close this buffer at your leisure)'
         buffer\style 1, #buffer, 'comment'
-        buffer.modified = false
       else
         return false
 
@@ -179,7 +178,6 @@ command.register
       }
 
     buffer.read_only = true
-    buffer.modified = false
     howl.app\add_buffer buffer
 
 command.register

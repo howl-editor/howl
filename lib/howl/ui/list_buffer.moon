@@ -53,7 +53,6 @@ class ListBuffer extends ActionBuffer
     @list.max_rows = @opts.max_rows or 1000
     @list\insert @, pos
     @list\draw!
-    @modified = false
     @read_only = true
 
   choose: (editor) =>

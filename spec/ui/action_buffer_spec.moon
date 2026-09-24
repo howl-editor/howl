@@ -14,6 +14,22 @@ describe 'ActionBuffer', ->
   it 'does not collection undo revisions by default', ->
     assert.is_false ActionBuffer().collect_revisions
 
+  it 'is never modified', ->
+    buf\append 'hello'
+    buf\insert 'hi', 1
+    assert.is_false buf.modified
+    buf.modified = true
+    assert.is_false buf.modified
+
+  describe 'modify(f)', ->
+    it 'runs f with the buffer writable, restoring read_only afterwards', ->
+      for read_only in *{true, false}
+        b = ActionBuffer!
+        b.read_only = read_only
+        b\modify -> b\append 'hello'
+        assert.equal 'hello', b.text
+        assert.equal read_only, b.read_only
+
   describe '.insert(object, pos[ , style])', ->
 
     context 'with no specified style', ->

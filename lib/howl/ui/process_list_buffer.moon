@@ -99,12 +99,6 @@ class ProcessListBuffer extends ActionBuffer
     timer.cancel @_tick if @_tick
     @_tick = nil
 
-  modify: (f) =>
-    @read_only = false
-    f!
-    @read_only = true
-    @modified = false
-
 signal.connect 'buffer-closed', (params) ->
   {:buffer} = params
   buffer\stop_updates! if typeof(buffer) == 'ProcessListBuffer'
