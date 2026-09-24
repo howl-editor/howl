@@ -170,9 +170,11 @@ def clean_output(dir)
   end
 end
 
-formatter = Rouge::Formatters::HTML.new(:css_class => 'highlight moonscript')
+formatter = Rouge::Formatters::HTML.new
 lexer = Rouge::Lexers::Moonscript.new
-code_formatter = -> (code) { formatter.format(lexer.lex(code)) }
+code_formatter = -> (code) {
+  %Q|<pre class="highlight moonscript"><code>#{formatter.format(lexer.lex(code))}</code></pre>|
+}
 
 root_dir = Pathname.new(File.dirname File.expand_path(__FILE__)).parent
 input = root_dir.parent.join 'spec'
