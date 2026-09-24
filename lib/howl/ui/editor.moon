@@ -778,6 +778,8 @@ class Editor extends PropertyObject
     @completion_popup\release!
     @view = nil
     @_buf = nil
+    for i, e in pairs _editors
+      _editors[i] = nil if e == self
     signal.emit 'editor-released', editor: self
 
   _on_key_press: (view, event) =>

@@ -920,6 +920,12 @@ describe 'Editor', ->
       howl.mode.unregister 'test_mode2'
 
   context 'resource management', ->
+    it 'released editors are no longer listed, so they get no config updates', ->
+      e = Editor Buffer {}
+      e\release!
+      assert.is_nil ({e2, true for e2 in *Editor.editors!})[e]
+      assert.has_no.errors -> buffer.config.line_numbers = false
+
     it 'editors are collected as they should', ->
       e = Editor Buffer {}
       editors = setmetatable {e}, __mode: 'v'
