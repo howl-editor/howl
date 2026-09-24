@@ -49,6 +49,16 @@ class BufferPopup extends Popup
             view[opt] = opts[opt]
     }
 
+    -- resize as the buffer changes, after the view has seen the change. aullar
+    -- holds buffer listeners weakly, so we keep a reference
+    resize_if_showing = -> @resize! if @showing
+    @_listener = {
+      on_inserted: resize_if_showing
+      on_deleted: resize_if_showing
+      on_changed: resize_if_showing
+    }
+    buffer._buffer\add_listener @_listener
+
     @bin = @view\to_gobject!
     if opts.scrollable
       @keymap = keymap
@@ -58,8 +68,20 @@ class BufferPopup extends Popup
   @property buffer:
     get: => @_buffer
     set: (b) =>
+      @_buffer._buffer\remove_listener @_listener
       @_buffer = b
-      @view.buffer = b
+      @view.buffer = b._buffer
+      b._buffer\add_listener @_listener
+      @resize!
+
+  -- the buffer may have changed since the popup was created or last shown
+  show: (...) =>
+    @resize!
+    super ...
+
+  release: =>
+    @_buffer._buffer\remove_listener @_listener
+    super!
 
   resize: =>
     dimensions = @_get_dimensions!

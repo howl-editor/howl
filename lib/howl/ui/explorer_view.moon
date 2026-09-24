@@ -186,7 +186,6 @@ class ExplorerView
     highlight.apply 'search', buffer, chunk.start_pos, chunk.end_pos - chunk.start_pos + 1
 
   _preview_popup: (editor, pos, popup_text) =>
-    -- the popup is sized from its buffer, so the text goes in first
     buf = ActionBuffer!
     buf\append popup_text
     popup = howl.ui.BufferPopup buf

@@ -76,16 +76,24 @@ class Popup extends PropertyObject
       @_set_size width, height
       return
 
+    -- a centered popup has no position, and center clamps to the widget
+    unless @x
+      @width, @height = floor(width), floor(height)
+      @center!
+      return
+
+    -- keep within the monitor, which is only known once the window is mapped
     native = @widget\get_native!
-    display = @widget\get_display!
-    monitor = display\get_monitor_at_surface native\get_surface!
-    geom = monitor\get_geometry!
+    surface = native and native\get_surface!
+    monitor = surface != nil and @widget\get_display!\get_monitor_at_surface(surface)
+    if monitor and monitor != nil
+      geom = monitor\get_geometry!
 
-    if @x + width > (geom.width - @comfort_zone)
-      width = geom.width - @x - @comfort_zone
+      if @x + width > (geom.width - @comfort_zone)
+        width = geom.width - @x - @comfort_zone
 
-    if @y + height > (geom.height - @comfort_zone)
-      height = geom.height - @y - @comfort_zone
+      if @y + height > (geom.height - @comfort_zone)
+        height = geom.height - @y - @comfort_zone
 
     width, height = floor(width), floor(height)
     @width, @height = width, height
@@ -94,18 +102,19 @@ class Popup extends PropertyObject
 
   center: =>
     error('Attempt to center a closed popup', 2) if not @showing
+    @x, @y = nil, nil
     height = @height
     width = @width
     comfort = @comfort_zone * 2
 
     w_width, w_height = @widget.allocated_width, @widget.allocated_height
 
-    -- are we too wide?
-    if width + comfort > w_width
+    -- are we too wide? (a widget not yet allocated has no size to go by)
+    if w_width > comfort and width + comfort > w_width
       width = w_width - comfort
 
     -- -- are we too tall?
-    if height + comfort > w_height
+    if w_height > comfort and height + comfort > w_height
       height = w_height - comfort
 
     @_set_size width, height
