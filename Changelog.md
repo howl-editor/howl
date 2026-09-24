@@ -19,8 +19,8 @@ grows vertically and wraps text if it is too long.
 
 - Added buffer status indicators in titlebar as a quick indicator of when the buffer is modified. These are only shown if config.buffer_icons is true.
 
-- Initial support for language servers (LSP), providing completions and
-diagnostics. Modes list known servers, and the first installed one is started
+- Initial support for language servers (LSP), providing completions,
+diagnostics and documentation for `show-doc-at-cursor`. Modes list known servers, and the first installed one is started
 for files within a project. The new `lsp_command` variable overrides the choice
 of server, and `lsp_enabled` turns language servers off. Servers unused for
 `lsp_server_idle_stop` minutes are stopped.

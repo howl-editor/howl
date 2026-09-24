@@ -230,8 +230,8 @@ current file.
 
 ## Documentation popup
 
-_Support for this is dependent on the language mode, and is currently only
-available for Lua and Moonscript._
+_Support for this is dependent on the language mode, or a running [language
+server](language_servers.html) for the file._
 
 The `show-doc-at-cursor` command, bound to `ctrl_q` by default, pops up
 documentation for the symbol at the cursor if available:

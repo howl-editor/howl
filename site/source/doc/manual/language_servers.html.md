@@ -8,7 +8,7 @@ title: Language servers
 
 Howl can use language servers, programs implementing the [Language Server
 Protocol](https://microsoft.github.io/language-server-protocol/) (LSP), to
-provide completions and inspections for a language. There's nothing to set up
+provide completions, inspections and documentation for a language. There's nothing to set up
 in Howl itself: if a language server for the language you're editing is
 installed, Howl starts it as needed. The language server itself needs to be
 installed separately, typically via your system's package manager or the
@@ -44,6 +44,11 @@ again the next time you edit a file for it. How long is controlled by the
   inspections as you type, just like those of other inspectors, unless
   `auto_inspect` is set to 'off'. See [Inspections](editing.html#inspections)
   for more on inspections.
+
+- **Documentation**: The `show-doc-at-cursor` command, bound to `ctrl_q` by
+  default, shows the server's documentation for the symbol at the cursor. When
+  the server has none, the mode's own documentation is shown if available. See
+  [Documentation popup](editing.html#documentation-popup).
 
 ## Choosing or disabling servers
 
