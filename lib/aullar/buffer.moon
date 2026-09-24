@@ -2,7 +2,8 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
-C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
+bit = require 'bit'
+ffi_string, ffi_copy = ffi.string, ffi.copy
 {:max, :min, :ceil} = math
 {:define_class} = require 'aullar.util'
 Styling = require 'aullar.styling'
@@ -14,6 +15,18 @@ require 'ljglibs.cdefs.glib'
 
 char_arr = ffi.typeof 'char [?]'
 const_char_p = ffi.typeof 'const char *'
+const_uchar_p = ffi.typeof 'const unsigned char *'
+{:band} = bit
+
+-- Counts characters the same way as Offsets does. Unlike g_utf8_strlen this
+-- does not stop at zero bytes, keeping the length in sync with the offsets.
+char_count = (text, size) ->
+  p = const_uchar_p text
+  count = 0
+  for i = 0, size - 1
+    count += 1 if band(p[i], 0xc0) != 0x80
+
+  count
 
 scan_line = (base, offset, end_offset) ->
   start_offset = offset
@@ -179,7 +192,7 @@ Buffer = {
     if size > @text_buffer.gap_size -- buffer will be re-allocated
       invalidate_offset = 1
 
-    len = C.g_utf8_strlen text, size
+    len = char_count text, size
     @text_buffer\insert offset - 1, text, size
     @_length += len
     @_invalidate_lines_from_offset invalidate_offset
@@ -203,7 +216,7 @@ Buffer = {
     invalidate_offset = min(offset, @text_buffer.gap_start + 1)
 
     text = @sub offset, offset + count - 1
-    len = C.g_utf8_strlen text, count
+    len = char_count text, #text
     @text_buffer\delete offset - 1, count
     @_length -= len
     @_invalidate_lines_from_offset invalidate_offset

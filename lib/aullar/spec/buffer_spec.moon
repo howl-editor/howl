@@ -5,6 +5,7 @@ Buffer = require 'aullar.buffer'
 require 'ljglibs.cdefs.glib'
 
 ffi = require 'ffi'
+bit = require 'bit'
 append = table.insert
 
 describe 'Buffer', ->
@@ -48,6 +49,12 @@ describe 'Buffer', ->
       start_p, end_p = b\byte_offset(3), b\byte_offset(4)
       b\delete start_p, end_p - start_p
       assert.is_false b.multibyte
+
+    it 'stays true when deleting zero bytes from multibyte text', ->
+      b = Buffer 'ä\0x'
+      b\delete 3, 1
+      assert.is_true b.multibyte
+      assert.equal 2, b\char_offset 3
 
   describe 'lines([start_line, end_line])', ->
     all_lines = (b) -> [ffi.string(l.ptr, l.size) for l in b\lines 1]
@@ -480,6 +487,54 @@ describe 'Buffer', ->
       }
         assert.equal p[1], b\byte_offset p[2]
 
+  describe '(offsets and length after random edits)', ->
+    pieces = { 'a', '\n', '\0', 'ä', '€', '𝄞', 'xyz' }
+    rand_text = (n) -> table.concat [pieces[math.random(#pieces)] for _ = 1, n]
+
+    -- reference character offsets, 0-based, for valid UTF-8 with zero bytes
+    char_starts = (s) -> [i - 1 for i = 1, #s when bit.band(s\byte(i), 0xc0) != 0x80]
+
+    for seed = 1, 10
+      it "stay correct as compared to a reference (seed #{seed})", ->
+        math.randomseed seed
+        text = rand_text math.random(0, 2500)
+        b = Buffer text
+
+        for _step = 1, 100
+          starts = char_starts text
+          len = #starts
+          starts[len + 1] = #text
+          op = math.random 5
+
+          if op == 1
+            s = rand_text math.random(1, math.random! < 0.15 and 1500 or 10)
+            pos = starts[math.random(len + 1)]
+            b\insert pos + 1, s
+            text = text\sub(1, pos) .. s .. text\sub(pos + 1)
+          elseif op == 2 and len > 0
+            c = math.random len
+            n = math.random math.min(len - c + 1, math.random! < 0.15 and 2000 or 10)
+            b_start, b_end = starts[c], starts[c + n]
+            b\delete b_start + 1, b_end - b_start
+            text = text\sub(1, b_start) .. text\sub(b_end + 1)
+          elseif op == 3 and b.can_undo
+            b\undo!
+            text = b.text
+          elseif op == 4
+            b\get_ptr 1, b.size if b.size > 0 -- compacts the buffer
+
+          starts = char_starts text
+          len = #starts
+          starts[len + 1] = #text
+          assert.equal text, b.text
+          assert.equal len, b.length
+          assert.equal len != #text, b.multibyte
+
+          for _ = 1, 5
+            c = math.random len + 1
+            assert.equal starts[c] + 1, b\byte_offset(c)
+            assert.equal c, b\char_offset(starts[c] + 1)
+
   describe '.length', ->
     it 'is the number of code points in the buffer', ->
       b = Buffer ''
@@ -503,6 +558,22 @@ describe 'Buffer', ->
         assert.equal cur_length + 3, b.length
         b\delete insert_pos, 2 -- delete 'ä'
         assert.equal cur_length + 2, b.length
+
+    it 'counts zero bytes as characters', ->
+      b = Buffer 'ä'
+      b\insert 3, '\0\0x'
+      assert.equal 4, b.length
+      assert.equal 5, b\byte_offset 4
+
+      b\delete 3, 2
+      assert.equal 2, b.length
+      assert.equal 3, b\byte_offset 2
+
+    it 'counts invalid sequences as the offset conversions do', ->
+      b = Buffer 'ä'
+      b\insert 3, '\xc3a' -- a lead byte without its continuation byte
+      assert.equal 3, b.length
+      assert.equal 5, b\byte_offset 4
 
   describe 'undo', ->
     it 'undoes the last operation', ->
