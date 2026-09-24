@@ -172,6 +172,10 @@ can disable automatic run of inspections completely by setting `auto_inspect` to
 `buffer-inspect` command. Finally, you can set `auto_inspect` to `save_only`,
 which will run all inspectors automatically, but only upon save.
 
+When a [language server](language_servers.html) is running for a file, the
+errors and warnings it reports are shown as inspections as well. These are
+updated by the server as you type, unless `auto_inspect` is 'off'.
+
 When inspections are available you'll see them displayed in the editor view,
 similarily to what is show below:
 

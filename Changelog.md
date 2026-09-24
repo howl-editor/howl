@@ -19,9 +19,18 @@ grows vertically and wraps text if it is too long.
 
 - Added buffer status indicators in titlebar as a quick indicator of when the buffer is modified. These are only shown if config.buffer_icons is true.
 
-- Initial support for language servers (LSP): completions and diagnostics are
-provided by the server configured in the new `lsp_command` variable. Python
-defaults to `zuban server`.
+- Initial support for language servers (LSP), providing completions and
+diagnostics. Modes list known servers, and the first installed one is started
+for files within a project. The new `lsp_command` variable overrides the choice
+of server, and `lsp_enabled` turns language servers off. Servers unused for
+`lsp_server_idle_stop` minutes are stopped.
+
+- The editor footer shows the number of long-lived processes running, such as
+language servers and commands started with `exec`. Clicking it, or running the
+new `process-list` command, lists the processes and allows for stopping them.
+
+- The cursor position is shown in the footer as soon as a buffer is opened,
+instead of after first moving the cursor.
 
 ### API changes
 
@@ -34,6 +43,16 @@ doc/upgrading.md.
 - Completer factories receive an `on_update` function as a third argument,
 which asynchronous completers call when they have new completions. A buffer's
 `completion_triggers` set lists characters that start completion when typed.
+
+- Modes can list language servers in a `lsp_servers` field, in order of
+preference.
+
+- Processes accept `long_lived`, `title` and `stop_handler` options, and have a
+new `stop` method. `Process.long_lived` lists the running long-lived processes,
+and the `process-started` and `process-exited` signals are emitted for them.
+
+- ActionBuffers are never considered modified, and have a `modify` method for
+writing to them while read-only.
 
 ## 0.6 (2019-04-05)
 

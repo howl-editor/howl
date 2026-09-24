@@ -67,6 +67,13 @@ completion, enter `escape` to close the completion list first. If you want to
 keep the current word as is and continue with another one, just press `space`
 as you would normally do.
 
+### Language server completions
+
+When a [language server](language_servers.html) is running for a file, its
+completions are offered together with the completions from the current buffer.
+Language servers can also specify characters, such as `.`, that show the
+completion list directly when typed.
+
 ### Configuring completions
 
 Here are some configuration variables you might want to tweak in order to

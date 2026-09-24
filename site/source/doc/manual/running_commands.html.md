@@ -69,6 +69,17 @@ its way towards a graceful exit (`Ctrl + c` while a selection is active will
 still only copy the selection). For the obstinate cases, `Ctrl + backslash` can
 be used to send the `SIGKILL` signal.
 
+## Listing long-running processes
+
+Processes that keep running in the background, such as commands launched with
+`exec` or [language servers](language_servers.html), are counted in the bottom
+right corner of the editor, left of the cursor position. The count is only
+shown while any such processes are running. Clicking it, or running the
+`process-list` command, opens a buffer listing the processes along with their
+working directories and how long they've been running. In this buffer you can
+press `s` to stop the process on the current line, or `K` to kill it should it
+not respond.
+
 ---
 
-*Next*: [What's next?](next.html)
+*Next*: [Language servers](language_servers.html)
