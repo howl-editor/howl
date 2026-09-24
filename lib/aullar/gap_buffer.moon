@@ -47,7 +47,7 @@ define_class {
         ffi_copy arr, @array + offset, pregap_size * @type_size
         ffi_copy arr + pregap_size, @array + @gap_end, postgap_size * @type_size
         arr[size] = 0
-        arr, false
+        arr, false, true
 
   move_gap_to: (offset) =>
     if offset < 0 or offset > @size

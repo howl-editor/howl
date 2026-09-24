@@ -350,6 +350,22 @@ describe 'Buffer', ->
       ptr = b\get_ptr 1, 1
       assert.raises 'constant', -> ptr[0] = 88
 
+    it 'returns a pointer that survives garbage collection for a span across the gap', ->
+      b = Buffer '0123456789'
+      b\insert 5, 'X' -- the gap is now after X
+      ptr = b\get_ptr 3, 4
+      collectgarbage!
+      collectgarbage!
+
+      -- claim and overwrite any freed memory
+      blocks = for _ = 1, 20
+        block = ffi.C.g_malloc0 5
+        ffi.fill block, 5, 90
+        block
+      ffi.C.g_free block for block in *blocks
+
+      assert.equals '23X4', ffi.string(ptr, 4)
+
     it 'returns a "empty" pointer when size is zero', ->
       b = Buffer ''
       ptr = b\get_ptr 1, 0

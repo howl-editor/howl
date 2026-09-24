@@ -28,6 +28,13 @@ char_count = (text, size) ->
 
   count
 
+-- A cast pointer doesn't keep the cdata it was cast from alive, so pointers
+-- handed out for copies anchor their copy here for as long as they live
+copy_anchors = setmetatable {}, __mode: 'k'
+empty_arr = char_arr 1
+empty_ptr = const_char_p empty_arr
+copy_anchors[empty_ptr] = empty_arr
+
 scan_line = (base, offset, end_offset) ->
   start_offset = offset
   was_eol = false
@@ -318,13 +325,15 @@ Buffer = {
     nil
 
   get_ptr: (offset, size) =>
-    return const_char_p(char_arr(1)) if size == 0
-    ptr, compacted = @text_buffer\get_ptr(offset - 1, size)
+    return empty_ptr if size == 0
+    ptr, compacted, copied = @text_buffer\get_ptr(offset - 1, size)
     if compacted
       @offsets\invalidate_from 0
       @_invalidate_lines_from_offset 0
 
-    const_char_p(ptr)
+    c_ptr = const_char_p(ptr)
+    copy_anchors[c_ptr] = ptr if copied
+    c_ptr
 
   sub: (start_index, end_index) =>
     return '' if start_index > @size
