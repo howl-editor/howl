@@ -133,6 +133,8 @@ define_class {
 
   delete: (offset, count) =>
     return if count == 0 or offset >= @size
+    if offset < 0 or count < 0 or offset + count > @size
+      error "GapBuffer#delete: Illegal range: offset=#{offset}, count=#{count} (size #{@size})", 2
 
     if offset == @gap_end - @gap_size -- adjust gap end forward
       ffi_fill @array + @gap_end, count * @type_size -- zero fill

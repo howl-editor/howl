@@ -326,6 +326,16 @@ describe 'GapBuffer', ->
       b\delete 2, 1
       assert.equals 'x\n', get_text(b)
 
+    it 'raises errors for ranges outside the buffer', ->
+      b = buffer '0123456789'
+      b\move_gap_to 5
+      assert.raises 'Illegal', -> b\delete 5, 6
+      assert.raises 'Illegal', -> b\delete -1, 2
+      assert.raises 'Illegal', -> b\delete 2, -1
+      assert.equals '0123456789', get_text(b)
+      b\delete 5, 5
+      assert.equals '01234', get_text(b)
+
   describe 'replace(offset, count, replacement, replacement_size)', ->
     it 'replaces the specified number of unit with the replacement', ->
       b = buffer '12 456 890'
