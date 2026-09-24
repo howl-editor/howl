@@ -101,6 +101,10 @@ popover contents {
   color: var(--yellow);
 }
 
+.indicator.processes {
+  color: var(--green);
+}
+
 .indicator.title {
   color: var(--yellow);
   font-weight: bold;

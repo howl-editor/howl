@@ -98,6 +98,10 @@ describe 'lsp.Client', ->
       process\emit { jsonrpc: '2.0', id: shutdown.id, result: json_rpc.null }
       assert.equals 'exit', process\last_message!.method
 
+    it 'is invoked when the process is stopped', ->
+      process.stop_handler!
+      assert.equals 'shutdown', process\last_message!.method
+
     it 'does not warn when the server then exits', ->
       warn = spy.on log, 'warn'
       client\stop!

@@ -70,8 +70,12 @@ class Client
       working_directory: @root,
       read_stdout: true,
       read_stderr: true,
-      write_stdin: true
+      write_stdin: true,
+      long_lived: true,
+      title: "LSP: #{@cmd}"
     }
+    -- stopping from the process list shuts the server down cleanly
+    @process.stop_handler = -> @stop!
 
     dispatch.launch -> @_read!
 

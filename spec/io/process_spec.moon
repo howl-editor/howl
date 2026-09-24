@@ -392,6 +392,58 @@ describe 'Process', ->
         assert.same {}, Process.running
         done!
 
+  describe 'long-lived processes', ->
+    it 'Process.long_lived() lists running processes started with long_lived, oldest first', (done) ->
+      howl_async ->
+        short = Process cmd: {'cat'}, write_stdin: true
+        first = Process cmd: {'cat'}, write_stdin: true, long_lived: true
+        second = Process cmd: {'cat'}, write_stdin: true, long_lived: true
+        first.started_at = second.started_at - 1
+        assert.same {first, second}, Process.long_lived!
+        for p in *{short, first, second}
+          p.stdin\close!
+          p\wait!
+        assert.same {}, Process.long_lived!
+        done!
+
+    it '.title defaults to the command line', ->
+      assert.equals 'echo foo', Process(cmd: {'echo', 'foo'}).title
+      assert.equals 'Echo', Process(cmd: {'echo', 'foo'}, title: 'Echo').title
+
+    it 'emits process-started and process-exited for long-lived processes only', (done) ->
+      howl_async ->
+        with_signal_handler 'process-started', nil, (started) ->
+          with_signal_handler 'process-exited', nil, (exited) ->
+            Process(cmd: 'true')\wait!
+            assert.spy(started).was_not_called!
+            assert.spy(exited).was_not_called!
+
+            p = Process cmd: 'true', long_lived: true
+            assert.spy(started).was_called_with process: p
+            p\wait!
+            assert.spy(exited).was_called_with process: p
+        done!
+
+  describe 'stop()', ->
+    it 'sends TERM to the process', (done) ->
+      howl_async ->
+        p = Process cmd: {'cat'}, write_stdin: true
+        p\stop!
+        p\wait!
+        assert.equals 'TERM', p.signal_name
+        done!
+
+    it 'calls .stop_handler instead when set', (done) ->
+      howl_async ->
+        stop_handler = spy.new ->
+        p = Process cmd: {'cat'}, write_stdin: true, :stop_handler
+        p\stop!
+        assert.spy(stop_handler).was_called(1)
+        p.stdin\close!
+        p\wait!
+        assert.is_false p.signalled
+        done!
+
   context 'resource management', ->
 
     it 'processes are collected correctly', (done) ->

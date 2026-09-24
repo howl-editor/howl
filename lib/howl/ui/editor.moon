@@ -4,7 +4,8 @@
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 -- gobject_signal = require 'ljglibs.gobject.signal'
-{:signal, :bindings, :config, :command, :clipboard, :sys} = howl
+{:signal, :bindings, :config, :command, :clipboard, :dispatch, :sys} = howl
+{:Process} = howl.io
 aullar_config = aullar.config
 {:PropertyObject} = howl.util.moon
 {highlight: highlights, :Searcher, :CompletionPopup} = howl.ui
@@ -88,6 +89,17 @@ signal.connect 'buffer-modified', (args) ->
 signal.connect 'buffer-reloaded', (args) ->
   refresh_title args.buffer
 
+update_processes_indicator = (e) ->
+  n = #Process.long_lived!
+  with e.indicator.processes
+    .label = "⚙ #{n}"
+    .tooltip_text = "#{n} long-lived process(es), click to list"
+    .visible = n > 0
+
+for name in *{ 'process-started', 'process-exited' }
+  signal.connect name, ->
+    update_processes_indicator e for e in *editors!
+
 signal.connect 'buffer-mode-set', (args) ->
   buffer = args.buffer
   for e in *editors!
@@ -147,6 +159,15 @@ class Editor extends PropertyObject
     }
     @bin = content_box\to_gobject!
     @bin.can_focus = true
+
+    -- right side indicators are placed in creation order, so create these
+    -- first to have the process count left of the position
+    update_processes_indicator self
+    @indicator.position
+    @_processes_click = Gtk.GestureClick!
+    @indicator.processes\add_controller @_processes_click
+    @_processes_click\connect_for @, 'pressed', ->
+      dispatch.launch -> command.run 'process-list'
 
     @_handlers = {}
     -- XXX append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
@@ -997,6 +1018,7 @@ class Editor extends PropertyObject
 with Editor
   .register_indicator 'title', 'top_left'
   .register_indicator 'position', 'bottom_right'
+  .register_indicator 'processes', 'bottom_right'
   .register_indicator 'activity', 'top_right', -> Gtk.Spinner!
   .register_indicator 'inspections', 'bottom_left'
 

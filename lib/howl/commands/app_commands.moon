@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:app, :activities, :breadcrumbs, :Buffer, :command, :config, :bindings, :bundle, :interact, :signal, :mode, :Project} = howl
-{:ActionBuffer, :JournalBuffer, :ProcessBuffer, :BufferPopup, :StyledText} = howl.ui
+{:ActionBuffer, :JournalBuffer, :ProcessBuffer, :ProcessListBuffer, :BufferPopup, :StyledText} = howl.ui
 {:Process} = howl.io
 
 serpent = require 'serpent'
@@ -427,6 +427,24 @@ command.register
     app\add_buffer JournalBuffer!
     app.editor.cursor\eof!
 
+command.register
+  name: 'process-list'
+  description: 'Shows the running long-lived processes, such as language servers'
+  handler: ->
+    if #Process.long_lived! == 0
+      log.info 'No long-lived processes running'
+      return
+
+    for buffer in *app.buffers
+      if typeof(buffer) == 'ProcessListBuffer'
+        buffer\refresh!
+        app.editor.buffer = buffer
+        return
+
+    buffer = ProcessListBuffer!
+    app\add_buffer buffer
+    app.editor.cursor.line = 2
+
 -----------------------------------------------------------------------
 -- Howl eval commands
 -----------------------------------------------------------------------
@@ -526,6 +544,7 @@ launch_cmd = (working_directory, cmd) ->
     read_stdout: true,
     read_stderr: true,
     working_directory: working_directory,
+    long_lived: true
   }
 
   breadcrumbs.drop!

@@ -919,6 +919,22 @@ describe 'Editor', ->
       howl.mode.unregister 'test_mode1'
       howl.mode.unregister 'test_mode2'
 
+  describe 'the processes indicator', ->
+    it 'is placed left of the position indicator', ->
+      assert.equals editor.indicator.processes, editor.indicator.position.prev_sibling
+
+    it 'shows the number of long-lived processes, and is hidden when there are none', (done) ->
+      howl_async ->
+        indicator = editor.indicator.processes
+        assert.is_false indicator.visible
+        p = howl.io.Process cmd: {'cat'}, write_stdin: true, long_lived: true
+        assert.is_true indicator.visible
+        assert.equals '⚙ 1', indicator.label
+        p.stdin\close!
+        p\wait!
+        assert.is_false indicator.visible
+        done!
+
   context 'resource management', ->
     it 'released editors are no longer listed, so they get no config updates', ->
       e = Editor Buffer {}

@@ -107,6 +107,10 @@ popover contents {
   color: var(--yellow);
 }
 
+.indicator.processes {
+  color: var(--green);
+}
+
 /********************************* Flairs *************************************/
 flair.indentation-guide-1 {
   shape: pipe;
