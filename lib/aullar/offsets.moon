@@ -148,7 +148,7 @@ Offsets = {
           m.c_offset -= characters
         else
           -- otherwise invalidate this and subsequent mappings
-          @invalidate_from m.b_offset
+          @invalidate_from byte_offset
           break
 
   invalidate_from: (byte_offset) =>

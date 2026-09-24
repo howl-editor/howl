@@ -131,6 +131,59 @@ describe 'offsets', ->
 
         glib_gb\compact!
 
+  describe 'adjust_for_delete(byte_offset, bytes, characters)', ->
+    it 'drops a mapping that lies within the deleted range', ->
+      -- 1990 ascii chars, 20 two-byte chars at bytes 1990-2029, then ascii
+      gb = gap_b string.rep('a', 1990) .. string.rep('ä', 20) .. string.rep('a', 3000)
+      assert.equal 2010, offsets\byte_offset gb, 2000 -- maps char 2000 at byte 2010
+
+      gb\delete 1990, 40
+      offsets\adjust_for_delete 1990, 40, 20
+      assert.equal 2000, offsets\byte_offset gb, 2000
+      assert.equal 2000, offsets\char_offset gb, 2000
+
+  describe '(random edits as compared to glib)', ->
+    pieces = { 'a', '\n', 'ä', '€', '𝄞', 'xyz' }
+
+    rand_text = (n) -> table.concat [pieces[math.random(#pieces)] for _ = 1, n]
+    u_len = (s) -> tonumber C.g_utf8_strlen(ffi.cast('const char *', s), #s)
+    ref_byte_offset = (s, c) -> tonumber glib_byte_offset(ffi.cast('const char *', s), c)
+
+    for seed = 1, 10
+      it "keeps offsets and mappings correct (seed #{seed})", ->
+        math.randomseed seed
+        text = rand_text math.random(0, 3000)
+        gb = GapBuffer 'unsigned char', #text, initial: text, gap_size: seed % 2 == 0 and 3 or 100
+
+        for _ = 1, 100
+          len = u_len text
+          if math.random(2) == 1
+            s = rand_text math.random(1, math.random! < 0.2 and 2000 or 20)
+            b = ref_byte_offset text, math.random(0, len)
+            gb\insert b, s
+            offsets\adjust_for_insert b, #s, u_len(s)
+            text = text\sub(1, b) .. s .. text\sub(b + 1)
+          elseif len > 0
+            c = math.random(0, len - 1)
+            n = math.random(1, math.min(len - c, math.random! < 0.2 and 3000 or 30))
+            b_start, b_end = ref_byte_offset(text, c), ref_byte_offset(text, c + n)
+            gb\delete b_start, b_end - b_start
+            offsets\adjust_for_delete b_start, b_end - b_start, n
+            text = text\sub(1, b_start) .. text\sub(b_end + 1)
+
+          len = u_len text
+          for i = 0, 19
+            m = offsets.mappings[i]
+            if m.c_offset != 0
+              assert.is_true m.c_offset <= len
+              assert.equal ref_byte_offset(text, tonumber(m.c_offset)), tonumber(m.b_offset)
+
+          for _ = 1, 5
+            c = math.random(0, len)
+            b = ref_byte_offset text, c
+            assert.equal b, offsets\byte_offset(gb, c)
+            assert.equal c, offsets\char_offset(gb, b)
+
   describe 'boundary conditions', ->
     local gb
 
