@@ -20,9 +20,10 @@ class Popup extends PropertyObject
     props.child = @child
     @width = props.width
     @height = props.height
-    props.width_request = @width
-    props.height_request = @height
+    props.width = nil
+    props.height = nil
     @popover = Popover props
+    @_set_size @width, @height
     @showing = false
     super!
 
@@ -66,14 +67,13 @@ class Popup extends PropertyObject
     @popover.position = Gtk.POS_BOTTOM
     @pointing_to = pointing_to
     @popover.pointing_to = @pointing_to
-    @_set_offset @popover.width_request
+    @_set_offset @width
 
   resize: (width, height) =>
     if not @showing
       @width = width
       @height = height
-      @popover.width_request = width
-      @popover.height_request = height
+      @_set_size width, height
       return
 
     native = @widget\get_native!
@@ -90,7 +90,7 @@ class Popup extends PropertyObject
     width, height = floor(width), floor(height)
     @width, @height = width, height
     @_set_offset width
-    @popover\set_size_request width, height
+    @_set_size width, height
 
   center: =>
     error('Attempt to center a closed popup', 2) if not @showing
@@ -108,7 +108,7 @@ class Popup extends PropertyObject
     if height + comfort > w_height
       height = w_height - comfort
 
-    @popover\set_size_request width, height
+    @_set_size width, height
 
     -- we're small enough size wise, let's place us where we should be
     x = (w_width / 2) - (width / 2)
@@ -118,6 +118,11 @@ class Popup extends PropertyObject
     @pointing_to = {:x, :y, width: 1, height: 1}
     @popover.pointing_to = @pointing_to
     @popover\set_offset(width / 2, 0)
+
+  -- the size is requested for the child, as the popover adds the padding and
+  -- border of the theme's popover contents around it
+  _set_size: (width, height) =>
+    @child\set_size_request width or -1, height or -1
 
   _set_offset: (width) =>
     x_off = floor width / 2
