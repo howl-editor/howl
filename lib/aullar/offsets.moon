@@ -104,10 +104,9 @@ Offsets = {
     m = mapping_for_byte @mappings, byte_offset
 
     -- should we create a new mapping, closer this offset?
-    if (byte_offset - m.b_offset) > MIN_SPAN_BYTES and
-      (gb.size - byte_offset) > MIN_SPAN_BYTES
-
+    if (byte_offset - m.b_offset) > MIN_SPAN_BYTES
       m_b_offset = byte_offset - (byte_offset % MIN_SPAN_BYTES)
+      m_b_offset -= MIN_SPAN_BYTES if m_b_offset == gb.size -- must be within the buffer
 
       -- position may be in the middle of a sequence here, so back up as needed
       while m_b_offset > 0 and band(gb\get_ptr(m_b_offset, 1)[0], 0xc0) == 0x80

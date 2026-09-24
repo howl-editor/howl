@@ -142,6 +142,16 @@ describe 'offsets', ->
       assert.equal 2000, offsets\byte_offset gb, 2000
       assert.equal 2000, offsets\char_offset gb, 2000
 
+  describe 'mappings', ->
+    it 'are created for char offsets close to the end of the buffer', ->
+      gb = gap_b string.rep('äåö', 1000)
+      assert.equal 2995, offsets\char_offset gb, 5990
+      assert.not_equal 0, offsets.mappings[0].c_offset
+
+    it 'are kept within the buffer for an end offset at a mapping boundary', ->
+      gb = gap_b string.rep('ä', 1500)
+      assert.equal 1500, offsets\char_offset gb, 3000
+
   describe '(random edits as compared to glib)', ->
     pieces = { 'a', '\n', 'ä', '€', '𝄞', 'xyz' }
 
@@ -155,7 +165,7 @@ describe 'offsets', ->
         text = rand_text math.random(0, 3000)
         gb = GapBuffer 'unsigned char', #text, initial: text, gap_size: seed % 2 == 0 and 3 or 100
 
-        for _ = 1, 100
+        for _step = 1, 100
           len = u_len text
           if math.random(2) == 1
             s = rand_text math.random(1, math.random! < 0.2 and 2000 or 20)
