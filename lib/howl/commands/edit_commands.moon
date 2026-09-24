@@ -150,12 +150,15 @@ command.register
   description: 'Show documentation for symbol at cursor, if available'
   handler: ->
     ctx = app.editor.current_context
-    m = app.editor.buffer\mode_at ctx.pos
-    local doc_buf
+    buffer = app.editor.buffer
+    m = buffer\mode_at ctx.pos
+    doc_buf = require('howl.lsp.hover').doc_for buffer, ctx.pos
+    -- the server's response might arrive after switching to another buffer
+    return if app.editor.buffer != buffer
 
-    if m.show_doc
+    if not doc_buf and m.show_doc
       doc_buf = m\show_doc app.editor, ctx
-    else if m.api and m.resolve_type
+    else if not doc_buf and m.api and m.resolve_type
       node = m.api
       path, parts = m\resolve_type ctx
 

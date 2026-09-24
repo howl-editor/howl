@@ -28,6 +28,9 @@ client_capabilities = -> {
       }
       contextSupport: true
     }
+    hover: {
+      contentFormat: { 'markdown', 'plaintext' }
+    }
     publishDiagnostics: {
       versionSupport: true
     }
