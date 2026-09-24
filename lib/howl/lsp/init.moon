@@ -28,9 +28,15 @@ failed = {}
 local idle_check
 
 config.define
+  name: 'lsp_enabled'
+  description: 'Whether language servers (LSP) are used'
+  type_of: 'boolean'
+  default: true
+
+config.define
   name: 'lsp_command'
-  description: "The command used to start a language server (LSP) for a buffer,
-overriding the servers known by the mode. A blank value disables LSP."
+  description: 'The command used to start a language server (LSP) for a buffer,
+overriding the servers known by the mode'
   type_of: 'string'
 
 config.define
@@ -51,9 +57,10 @@ executable_for = (cmd) ->
 -- configured `lsp_command` it's the first installed server from the mode's
 -- `lsp_servers`.
 command_for = (buffer) ->
+  return nil unless buffer.config.lsp_enabled
   cmd = buffer.config.lsp_command
-  if cmd != nil
-    return not (cmd.is_blank or failed[cmd]) and cmd or nil
+  unless cmd == nil or cmd.is_blank
+    return not failed[cmd] and cmd or nil
 
   servers = buffer.mode and buffer.mode.lsp_servers
   return nil unless servers
@@ -276,6 +283,22 @@ record_change = (what, args) ->
     text: inserted
   }
 
+-- attaches or detaches the open buffers according to the server they should
+-- now use, if any
+refresh = ->
+  app = rawget howl, 'app'
+  return unless app
+  for buffer in *app.buffers
+    state = buffer.data.lsp
+    cmd = command_for buffer
+    if state and state.client.cmd != cmd
+      detach buffer
+      state = nil
+    attach buffer if cmd and not state
+
+config.watch 'lsp_enabled', refresh
+config.watch 'lsp_command', refresh
+
 signal.connect 'file-opened', (args) -> attach args.buffer
 
 signal.connect 'buffer-mode-set', (args) ->
@@ -315,6 +338,7 @@ signal.connect 'app-ready', ->
   :sync
   :position
   :on_diagnostics
+  :refresh
   clients: -> [c for _, c in pairs clients]
   _clients: clients
 }

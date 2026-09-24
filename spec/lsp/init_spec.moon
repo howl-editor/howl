@@ -39,8 +39,14 @@ describe 'lsp', ->
       buffer.config.lsp_command = 'howl-no-such-server --stdio'
       assert.equals 'howl-no-such-server --stdio', lsp.command_for buffer
 
-    it 'returns nil when lsp_command is blank', ->
+    it "uses the mode's servers when lsp_command is blank", ->
       buffer.config.lsp_command = ''
+      assert.equals 'true', lsp.command_for buffer
+
+    it 'returns nil when lsp_enabled is false, even with a configured lsp_command', ->
+      buffer.config.lsp_enabled = false
+      assert.is_nil lsp.command_for buffer
+      buffer.config.lsp_command = 'true'
       assert.is_nil lsp.command_for buffer
 
     it 'skips servers that failed to initialize', ->
@@ -80,6 +86,31 @@ describe 'lsp', ->
       -- the buffer has no file, so attaching again gives no state
       assert.is_nil app_buffer.data.lsp_reattach
       howl.app\close_buffer app_buffer, true
+
+  describe 'configuration changes', ->
+    local app_buffer
+
+    before_each ->
+      app_buffer = howl.app\new_buffer!
+      client.cmd = 'howl-lsp-test'
+      app_buffer.config.lsp_command = 'howl-lsp-test'
+      app_buffer.data.lsp = state
+
+    after_each ->
+      app_buffer.data.lsp = nil
+      howl.app\close_buffer app_buffer, true
+
+    it 'keeps buffers attached to a server they should still use', ->
+      lsp.refresh!
+      assert.equals state, app_buffer.data.lsp
+
+    it 'detaches buffers when lsp_enabled is set to false', ->
+      app_buffer.config.lsp_enabled = false
+      assert.is_nil app_buffer.data.lsp
+
+    it 'detaches buffers when lsp_command changes to another server', ->
+      app_buffer.config.lsp_command = 'howl-lsp-other'
+      assert.is_nil app_buffer.data.lsp
 
   describe 'stop_idle(now)', ->
     local idle, busy
