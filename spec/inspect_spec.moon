@@ -436,3 +436,25 @@ describe 'inspect', ->
       buffer.config.auto_inspect = 'off'
       inspect.publish buffer, 'lsp', { {line: 1, message: 'old'} }
       assert.same {}, buffer.markers.all
+
+  describe 'the cursor-goto-inspection command', ->
+    local editor, select_opts
+
+    before_each ->
+      editor = howl.app.editor
+      howl.app.editor = :buffer
+      howl.interact.select_location = (opts) -> select_opts = opts
+
+    after_each ->
+      howl.app.editor = editor
+      howl.interact.select_location = nil
+
+    it 'lists the first line of the message for each inspection', ->
+      buffer.text = 'line 1\nline 2'
+      inspect.publish buffer, 'lsp', {
+        { line: 2, byte_start_col: 1, byte_end_col: 3, message: 'first\nmore' }
+        { line: 2, byte_start_col: 4, byte_end_col: 5, message: 'second' }
+      }
+      howl.command.get('cursor-goto-inspection').input {}
+      rows = [{item[1], tostring(item[2]), item[3]} for item in *select_opts.items]
+      assert.same { {'2', 'line 2', 'first'}, {'·', 'line 2', 'second'} }, rows

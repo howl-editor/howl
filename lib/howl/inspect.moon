@@ -419,9 +419,11 @@ command.register
     for i in *inspections
       chunk = buffer\chunk i.start_offset, i.end_offset
       l = buffer.lines\at_pos i.start_offset
+      message = (i.message or '')\match('^[^\n]*')
       append items, {
         if l.nr == last_lnr then '·' else tostring(l.nr),
         l.chunk,
+        message,
         :chunk,
         popup: popup_text {{message: i.message, type: i.flair}}
       }
@@ -433,7 +435,7 @@ command.register
       editor: editor
       items: items
       selection: items[1]
-      columns: {{style: 'comment'}, {}}
+      columns: {{style: 'comment'}, {}, {}}
 
   handler: (res) ->
     if res
