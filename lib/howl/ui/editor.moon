@@ -163,7 +163,10 @@ class Editor extends PropertyObject
     -- right side indicators are placed in creation order, so create these
     -- first to have the process count left of the position
     update_processes_indicator self
-    @indicator.position
+    with @indicator.position
+      -- a minimum width, so the indicators left of it don't move as the position changes
+      .width_chars = 6
+      .xalign = 1
     @_processes_click = Gtk.GestureClick!
     @indicator.processes\add_controller @_processes_click
     @_processes_click\connect_for @, 'pressed', ->

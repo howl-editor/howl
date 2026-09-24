@@ -925,6 +925,9 @@ describe 'Editor', ->
       assert.equals '1:1', e.indicator.position.label
       e\release!
 
+    it 'has a minimum width, so the indicators left of it do not move with the position', ->
+      assert.equals 6, editor.indicator.position.width_chars
+
   describe 'the processes indicator', ->
     it 'is placed left of the position indicator', ->
       assert.equals editor.indicator.processes, editor.indicator.position.prev_sibling
