@@ -28,7 +28,7 @@ describe 'lsp.hover', ->
     local buffer, client, response
 
     before_each ->
-      response = contents: { kind: 'markdown', value: 'The doc' }
+      response = contents: { kind: 'markdown', value: 'The **doc**' }
       client = {
         initialized: true,
         capabilities: { hoverProvider: true },
@@ -45,9 +45,10 @@ describe 'lsp.hover', ->
         position: { line: 1, character: 1 }
       }
 
-    it 'returns a buffer with the documentation', ->
+    it 'returns a buffer with the rendered documentation', ->
       doc = hover.doc_for buffer, 6
       assert.equals 'The doc', doc.text
+      assert.equals 'emphasis', howl.ui.style.at_pos(doc, 5)
 
     it 'returns nil when there is no documentation', ->
       response = nil

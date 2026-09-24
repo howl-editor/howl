@@ -1,8 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:activities, :app, :Buffer, :command, :interact, :mode} = howl
-{:BufferPopup} = howl.ui
+{:activities, :app, :command, :interact} = howl
+{:ActionBuffer, :BufferPopup, :markup} = howl.ui
 {:Process} = howl.io
 
 command.register
@@ -168,8 +168,8 @@ command.register
       node = node[ctx.word.text] if node
 
       if node and node.description
-        doc_buf = Buffer mode.by_name('markdown')
-        doc_buf.text = node.description
+        doc_buf = ActionBuffer!
+        doc_buf\append markup.markdown(node.description)
 
     if doc_buf
       app.editor\show_popup BufferPopup doc_buf, scrollable: true

@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 lsp = require 'howl.lsp'
-{:Buffer, :mode} = howl
+{:ActionBuffer, :markup} = howl.ui
 
 fenced = (text, language = '') -> "```#{language}\n#{text}\n```"
 
@@ -45,8 +45,7 @@ doc_for = (buffer, pos) ->
 
   text = to_markdown result.contents
   return nil unless text
-  doc = Buffer mode.by_name('markdown')
-  doc.text = text
-  doc
+  with ActionBuffer!
+    \append markup.markdown(text)
 
 :to_markdown, :doc_for
