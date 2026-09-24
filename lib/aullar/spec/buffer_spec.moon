@@ -3,6 +3,7 @@
 
 Buffer = require 'aullar.buffer'
 require 'ljglibs.cdefs.glib'
+match = require 'luassert.match'
 
 ffi = require 'ffi'
 bit = require 'bit'
@@ -1045,7 +1046,7 @@ describe 'Buffer', ->
         b.lexer = -> { 1, 'operator', 2 }
         b\refresh_styling_at 1, 3, force_full: true
         assert.spy(listener.on_styled).was_called 1
-        assert.spy(listener.on_styled).was_called_with listener, b, {
+        assert.spy(listener.on_styled).was_called_with listener, match.is_ref(b), {
           start_line: 1, end_line: 3, invalidated: true
         }
 
@@ -1107,8 +1108,8 @@ describe 'Buffer', ->
           part_of_revision: false,
           lines_changed: false
         }
-        assert.spy(l1.on_inserted).was_called_with l1, b, args
-        assert.spy(l2.on_inserted).was_called_with l2, b, args
+        assert.spy(l1.on_inserted).was_called_with l1, match.is_ref(b), args
+        assert.spy(l2.on_inserted).was_called_with l2, match.is_ref(b), args
 
     describe 'on_deleted', ->
       it 'is fired upon deletions to listeners', ->
@@ -1116,7 +1117,7 @@ describe 'Buffer', ->
         b = Buffer 'hello'
         b\add_listener l1
         b\delete 3, 2
-        assert.spy(l1.on_deleted).was_called_with l1, b, {
+        assert.spy(l1.on_deleted).was_called_with l1, match.is_ref(b), {
           offset: 3,
           text: 'll',
           size: 2,
@@ -1135,7 +1136,7 @@ describe 'Buffer', ->
           b\delete 2, 1
           b\insert 2, 'X'
 
-        assert.spy(l1.on_changed).was_called_with l1, b, {
+        assert.spy(l1.on_changed).was_called_with l1, match.is_ref(b), {
           offset: 2,
           text: 'Xl',
           prev_text: 'el',
@@ -1155,7 +1156,7 @@ describe 'Buffer', ->
       l = on_styled: spy.new -> nil
       b\add_listener l
       b.styling\set 1, 5, 'string'
-      assert.spy(l.on_styled).was_called_with l, b, {
+      assert.spy(l.on_styled).was_called_with l, match.is_ref(b), {
         start_line: 1,
         end_line: 2,
         invalidated: false
