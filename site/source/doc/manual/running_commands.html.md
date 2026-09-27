@@ -69,6 +69,12 @@ its way towards a graceful exit (`Ctrl + c` while a selection is active will
 still only copy the selection). For the obstinate cases, `Ctrl + backslash` can
 be used to send the `SIGKILL` signal.
 
+The signal is sent not only to the command itself but also to any processes it
+started, such as the other commands of a pipeline or the compilers run by a
+build tool, so that these are not left running once the command is gone. The
+same goes for stopping or killing processes from the [process
+list](#listing-long-running-processes).
+
 ## Listing long-running processes
 
 Processes that keep running in the background, such as commands launched with
