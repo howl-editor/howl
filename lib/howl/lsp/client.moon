@@ -31,6 +31,9 @@ client_capabilities = -> {
     hover: {
       contentFormat: { 'markdown', 'plaintext' }
     }
+    definition: {
+      linkSupport: true
+    }
     publishDiagnostics: {
       versionSupport: true
     }

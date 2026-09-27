@@ -177,6 +177,30 @@ command.register
      log.info "No documentation found for '#{ctx.word}'"
 
 command.register
+  name: 'goto-definition',
+  description: 'Go to the definition of the symbol at cursor'
+  handler: ->
+    editor = app.editor
+    buffer = editor.buffer
+    locations = require('howl.lsp.definition').locations_for buffer, editor.cursor.pos
+    -- the server's response might arrive after switching to another buffer
+    return if app.editor.buffer != buffer
+
+    -- without a language server's answer, search the project for the word
+    unless locations
+      command.run 'project-file-search'
+      return
+
+    loc = if #locations == 1
+      locations[1]
+    else
+      interact.select_location
+        title: "Definitions of '#{editor.current_context.word}'"
+        items: locations
+
+    app\open loc if loc
+
+command.register
   name: 'buffer-mode',
   description: 'Set a specified mode for the current buffer'
   input: (opts) -> interact.select_mode

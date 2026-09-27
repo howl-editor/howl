@@ -80,6 +80,7 @@
 
     alt_s:             'buffer-structure'
     alt_q:             'editor-reflow-paragraph'
+    alt_period:        'goto-definition'
 
     ctrl_left:         'cursor-word-left'
     ctrl_right:        'cursor-word-right-end'
