@@ -288,6 +288,7 @@ class CommandLine extends PropertyObject
     if @def.on_close
       @def\on_close!
 
+    @close_help!
     @clear_widgets!
 
     if @command_widget

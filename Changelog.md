@@ -17,6 +17,9 @@ directory list.
 - A bug with the command line text overflow has been fixed. The command line now
 grows vertically and wraps text if it is too long.
 
+- The command line help popup (`f1`) now closes with its command line, instead
+of staying open when the command line was closed without a key press.
+
 - Added buffer status indicators in titlebar as a quick indicator of when the buffer is modified. These are only shown if config.buffer_icons is true.
 
 - Initial support for language servers (LSP), providing completions,
