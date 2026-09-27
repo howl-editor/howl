@@ -20,9 +20,10 @@ class Popup extends PropertyObject
     props.child = @child
     @width = props.width
     @height = props.height
-    props.width_request = @width
-    props.height_request = @height
+    props.width = nil
+    props.height = nil
     @popover = Popover props
+    @_set_size @width, @height
     @showing = false
     super!
 
@@ -66,49 +67,57 @@ class Popup extends PropertyObject
     @popover.position = Gtk.POS_BOTTOM
     @pointing_to = pointing_to
     @popover.pointing_to = @pointing_to
-    @_set_offset @popover.width_request
+    @_set_offset @width
 
   resize: (width, height) =>
     if not @showing
       @width = width
       @height = height
-      @popover.width_request = width
-      @popover.height_request = height
+      @_set_size width, height
       return
 
+    -- a centered popup has no position, and center clamps to the widget
+    unless @x
+      @width, @height = floor(width), floor(height)
+      @center!
+      return
+
+    -- keep within the monitor, which is only known once the window is mapped
     native = @widget\get_native!
-    display = @widget\get_display!
-    monitor = display\get_monitor_at_surface native\get_surface!
-    geom = monitor\get_geometry!
+    surface = native and native\get_surface!
+    monitor = surface != nil and @widget\get_display!\get_monitor_at_surface(surface)
+    if monitor and monitor != nil
+      geom = monitor\get_geometry!
 
-    if @x + width > (geom.width - @comfort_zone)
-      width = geom.width - @x - @comfort_zone
+      if @x + width > (geom.width - @comfort_zone)
+        width = geom.width - @x - @comfort_zone
 
-    if @y + height > (geom.height - @comfort_zone)
-      height = geom.height - @y - @comfort_zone
+      if @y + height > (geom.height - @comfort_zone)
+        height = geom.height - @y - @comfort_zone
 
     width, height = floor(width), floor(height)
     @width, @height = width, height
     @_set_offset width
-    @popover\set_size_request width, height
+    @_set_size width, height
 
   center: =>
     error('Attempt to center a closed popup', 2) if not @showing
+    @x, @y = nil, nil
     height = @height
     width = @width
     comfort = @comfort_zone * 2
 
     w_width, w_height = @widget.allocated_width, @widget.allocated_height
 
-    -- are we too wide?
-    if width + comfort > w_width
+    -- are we too wide? (a widget not yet allocated has no size to go by)
+    if w_width > comfort and width + comfort > w_width
       width = w_width - comfort
 
     -- -- are we too tall?
-    if height + comfort > w_height
+    if w_height > comfort and height + comfort > w_height
       height = w_height - comfort
 
-    @popover\set_size_request width, height
+    @_set_size width, height
 
     -- we're small enough size wise, let's place us where we should be
     x = (w_width / 2) - (width / 2)
@@ -118,6 +127,11 @@ class Popup extends PropertyObject
     @pointing_to = {:x, :y, width: 1, height: 1}
     @popover.pointing_to = @pointing_to
     @popover\set_offset(width / 2, 0)
+
+  -- the size is requested for the child, as the popover adds the padding and
+  -- border of the theme's popover contents around it
+  _set_size: (width, height) =>
+    @child\set_size_request width or -1, height or -1
 
   _set_offset: (width) =>
     x_off = floor width / 2

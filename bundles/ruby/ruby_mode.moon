@@ -36,6 +36,7 @@ continuation_indent = (line, indent_level) ->
   lexer: bundle_load('ruby_lexer')
 
   comment_syntax: '#'
+  lsp_servers: { 'ruby-lsp', 'solargraph stdio' }
   word_pattern: r'\\b\\w[\\w\\d_]+[?!=]?\\b'
 
   default_config:

@@ -292,6 +292,11 @@ describe 'Buffer', ->
       b\replace '[lo]', ''
       assert.equal 'he\nuñi©de\nwrd\n', b.text
 
+    it 'replaces matches ending with a multibyte character', ->
+      b = buffer 'åäö xäö'
+      b\replace 'äö', 'bc'
+      assert.equal 'åbc xbc', b.text
+
     it 'transforms incorrect replacements', ->
       b = buffer 'XX'
       b\replace 'X', '\x80'
@@ -302,6 +307,11 @@ describe 'Buffer', ->
         b = buffer 'hello\nworld\n'
         b\replace '(hel)lo', ''
         assert.equal 'lo\nworld\n', b.text
+
+      it 'handles multibyte characters within the grouping', ->
+        b = buffer 'åäö xåäö'
+        b\replace '(åä)ö', 'Z'
+        assert.equal 'Zö xZö', b.text
 
     it 'returns the number of occurences replaced', ->
       b = buffer 'hello\nworld\n'

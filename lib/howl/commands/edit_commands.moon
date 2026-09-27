@@ -1,8 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:activities, :app, :Buffer, :command, :interact, :mode} = howl
-{:BufferPopup} = howl.ui
+{:activities, :app, :command, :interact} = howl
+{:ActionBuffer, :BufferPopup, :markup} = howl.ui
 {:Process} = howl.io
 
 command.register
@@ -150,12 +150,15 @@ command.register
   description: 'Show documentation for symbol at cursor, if available'
   handler: ->
     ctx = app.editor.current_context
-    m = app.editor.buffer\mode_at ctx.pos
-    local doc_buf
+    buffer = app.editor.buffer
+    m = buffer\mode_at ctx.pos
+    doc_buf = require('howl.lsp.hover').doc_for buffer, ctx.pos
+    -- the server's response might arrive after switching to another buffer
+    return if app.editor.buffer != buffer
 
-    if m.show_doc
+    if not doc_buf and m.show_doc
       doc_buf = m\show_doc app.editor, ctx
-    else if m.api and m.resolve_type
+    else if not doc_buf and m.api and m.resolve_type
       node = m.api
       path, parts = m\resolve_type ctx
 
@@ -165,13 +168,37 @@ command.register
       node = node[ctx.word.text] if node
 
       if node and node.description
-        doc_buf = Buffer mode.by_name('markdown')
-        doc_buf.text = node.description
+        doc_buf = ActionBuffer!
+        doc_buf\append markup.markdown(node.description)
 
     if doc_buf
       app.editor\show_popup BufferPopup doc_buf, scrollable: true
     else
      log.info "No documentation found for '#{ctx.word}'"
+
+command.register
+  name: 'goto-definition',
+  description: 'Go to the definition of the symbol at cursor'
+  handler: ->
+    editor = app.editor
+    buffer = editor.buffer
+    locations = require('howl.lsp.definition').locations_for buffer, editor.cursor.pos
+    -- the server's response might arrive after switching to another buffer
+    return if app.editor.buffer != buffer
+
+    -- without a language server's answer, search the project for the word
+    unless locations
+      command.run 'project-file-search'
+      return
+
+    loc = if #locations == 1
+      locations[1]
+    else
+      interact.select_location
+        title: "Definitions of '#{editor.current_context.word}'"
+        items: locations
+
+    app\open loc if loc
 
 command.register
   name: 'buffer-mode',

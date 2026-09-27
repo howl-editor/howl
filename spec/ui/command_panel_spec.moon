@@ -89,6 +89,13 @@ describe 'CommandPanel', ->
       command_line\finish 'result'
       assert.spy(def.on_close).was_called 1
 
+    it 'finishing closes the help popup', ->
+      popup = release: spy.new ->
+      command_line.help_popup = popup
+      command_line\finish 'result'
+      assert.spy(popup.release).was_called 1
+      assert.is_nil command_line.help_popup
+
     it '.prompt and .text set the text in the text widget', ->
       command_line.prompt = 'prompt>'
       assert.same 'prompt>', text_widget.text

@@ -5,10 +5,16 @@
   lexer: bundle_load('python_lexer')
 
   default_config:
-    inspectors_on_idle: { 'python-ruff' }
     edge_column: 88
-
   comment_syntax: '#'
+  lsp_servers: {
+    'zuban server',
+    'ty server',
+    'basedpyright-langserver --stdio',
+    'pyright-langserver --stdio',
+    'pylsp',
+    'jedi-language-server'
+  }
   word_pattern: r'\\b[\\pL_][\\pL\\pN_]+\\b'
 
   indentation: {

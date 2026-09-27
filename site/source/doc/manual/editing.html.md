@@ -172,6 +172,10 @@ can disable automatic run of inspections completely by setting `auto_inspect` to
 `buffer-inspect` command. Finally, you can set `auto_inspect` to `save_only`,
 which will run all inspectors automatically, but only upon save.
 
+When a [language server](language_servers.html) is running for a file, the
+errors and warnings it reports are shown as inspections as well. These are
+updated by the server as you type, unless `auto_inspect` is 'off'.
+
 When inspections are available you'll see them displayed in the editor view,
 similarily to what is show below:
 
@@ -226,13 +230,25 @@ current file.
 
 ## Documentation popup
 
-_Support for this is dependent on the language mode, and is currently only
-available for Lua and Moonscript._
+_Support for this is dependent on the language mode, or a running [language
+server](language_servers.html) for the file._
 
 The `show-doc-at-cursor` command, bound to `ctrl_q` by default, pops up
 documentation for the symbol at the cursor if available:
 
 ![Show doc](/images/screenshots/monokai/show-doc.png)
+
+## Going to definitions
+
+The `goto-definition` command, bound to `alt_period` by default, goes to the
+definition of the symbol at the cursor. It asks the file's [language
+server](language_servers.html) for the definition. If there are several
+definitions, you choose one from a list. The `navigate-back` command (`ctrl_<`)
+takes you back again.
+
+Without a language server, or when the server finds no definition, the command
+searches the project for the word at the cursor using `project-file-search`
+instead. See [Searching files](files.html#searching-files).
 
 ---
 

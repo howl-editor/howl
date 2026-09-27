@@ -58,6 +58,12 @@ exited ([exited](#exited) is true).
 The exit status of the process. Only available if the process has exited
 normally ([exited_normally](#exited_normally) is true).
 
+### long_lived
+
+True if the process was created with the `long_lived` option, and false
+otherwise. Long-lived processes are shown in the editor's process count and in
+the `process-list` buffer.
+
 ### pid
 
 The process id of the process.
@@ -83,6 +89,10 @@ available if the process was indeed terminated due to a signal
 A string containing a human readable representation of the process exit status.
 Only available once the process has exited ([exited](#exited) is true).
 
+### started_at
+
+The time the process was started at, in seconds since the epoch.
+
 ### stderr
 
 An [InputStream] instance that can be used for reading the process' error
@@ -101,10 +111,20 @@ An [InputStream] instance that can be used for reading the process' standard
 out. The process must have been created with the `read_stdout` option for this
 field to be available.
 
+### stop_handler
+
+The function called by [stop](#stop) to stop the process, if any. Can also be
+assigned after the process has been created.
+
 ### successful
 
 True if the process exited normally, with an exit code of zero. Only available
 once the process has exited ([exited](#exited) is true).
+
+### title
+
+A title for the process, as shown in the `process-list` buffer. Defaults to
+[command_line](#command_line) unless given as an option.
 
 ### working_directory
 
@@ -144,8 +164,26 @@ command. The specified shell will be invoked with the `-c` parameter, with the
 command parameters directly following. This parameter is only respected if `cmd`
 is a string.
 
+- `long_lived`: _[optional]_ When specified, the process is considered a
+long-lived one, such as a server or a command run by the user, and is shown in
+the editor's process count and in the `process-list` buffer. The
+`process-started` and `process-exited` signals are emitted for long-lived
+processes.
+
+- `title`: _[optional]_ A title for the process, shown in the `process-list`
+buffer. Defaults to [command_line](#command_line).
+
+- `stop_handler`: _[optional]_ A function called by [stop](#stop) instead of
+sending the `TERM` signal, for processes that need to be shut down in a
+particular way.
+
 An error will be raised if the specified command could not be started. Otherwise
 a process object is returned for the started command.
+
+### long_lived ()
+
+Returns a list of the running processes that were created with the `long_lived`
+option, ordered by the time they were started.
 
 ### open_pipe(cmd, options = {})
 
@@ -169,7 +207,7 @@ is a string.
 
 An error will be raised if the specified command could not be started, or if an
 IO error occurs. Otherwise the function returns the created process object,
-which can for instance be used together with [pump](#pump).
+which can for instance be used together with [pump](#pump-on_stdout-on_stderr).
 
 Examples of valid invocations:
 
@@ -189,8 +227,8 @@ howl.io.Process.open_pipe 'cat', stdin: 'give it back!'
 
 Executes a process for `cmd` and returns the results in one go. This is
 basically a convenience wrapper that internally creates a new process using
-[open_pipe](#open_pipe) and reads its output using [pump](#pump). Both `cmd` and
-`options` are the same as for [pump](#pump) so consult that documentation for
+[open_pipe](#open_pipe-cmd-options) and reads its output using [pump](#pump-on_stdout-on_stderr). Both `cmd` and
+`options` are the same as for [pump](#pump-on_stdout-on_stderr) so consult that documentation for
 the available options.
 
 An error will be raised if the specified command could not be started, or if an
@@ -255,7 +293,7 @@ p\pump!
 ### pump_lines ([on_stdout, on_stderr])
 
 "Pumps" the process for any output, returning any output as individual lines.
-Similarly to [pump](#pump) the method reads any output from the process and
+Similarly to [pump](#pump-on_stdout-on_stderr) the method reads any output from the process and
 returns once the process has exited. Also similarly you need to create the
 process with the corresponding `read_*` flags in order to read any output -
 `read_stdout` to capture stdout, and `read_stderr` to capture stderr.
@@ -288,6 +326,12 @@ p\pump!
 
 Sends `signal` to the process. `signal` can be either a number or a string
 representation of the signal, such as `HUP`, `KILL`, etc.
+
+### stop ()
+
+Stops the process, by calling its [stop_handler](#stop_handler) if it has one
+and by sending the `TERM` signal otherwise. Does nothing if the process has
+already exited.
 
 ### wait ()
 

@@ -11,7 +11,7 @@ is_comment = (line, comment_prefix) ->
   line\umatch r"^\\s*#{r.escape comment_prefix}"
 
 class DefaultMode
-  completers: { 'in_buffer' }
+  completers: { 'lsp', 'in_buffer' }
   word_pattern: r'\\b[\\pL_][\\pL\\d_]*\\b'
 
   code_blocks: {}

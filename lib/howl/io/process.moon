@@ -87,6 +87,12 @@ pump_stream = (stream, handler, parking) ->
 
   stream\read_async nil, read_handler
 
+for name, description in pairs {
+  'process-started': 'Signaled right after a long-lived process is started'
+  'process-exited': 'Signaled right after a long-lived process has exited'
+}
+  howl.signal.register name, :description, parameters: process: 'The Process'
+
 parse_lines = (text, include_partial = false) ->
   lines = {}
   start = 1
@@ -127,6 +133,14 @@ class Process
     stdout, stderr = p\pump!
     stdout, stderr, p
 
+  -- the running processes started with `long_lived`, oldest first
+  long_lived: ->
+    procs = [p for _, p in pairs Process.running when p.long_lived]
+    table.sort procs, (a, b) -> a.started_at < b.started_at
+    procs
+
+  -- opts, besides the launch options: `long_lived` (shown in the process list),
+  -- `title` and `stop_handler` (called by `stop` instead of sending TERM)
   new: (opts) =>
     @argv, @command_line = get_command opts.cmd, opts.shell
     error 'opts.cmd missing or invalid', 2 unless @argv
@@ -137,11 +151,23 @@ class Process
     @stdout = InputStream(@_process.stdout_pipe) if @_process.stdout_pipe
     @stderr = InputStream(@_process.stderr_pipe, PRIORITY_LOW - 10) if @_process.stderr_pipe
     @exited = false
+    @long_lived = opts.long_lived or false
+    @title = opts.title or @command_line
+    @stop_handler = opts.stop_handler
+    @started_at = howl.sys.time!
 
     @@running[@pid] = @
 
     @_exit_handle = callbacks.register child_exited, "process-watch-#{@pid}", @
     C.g_child_watch_add ffi_cast('GPid', @pid), child_watch_callback, callbacks.cast_arg(@_exit_handle.id)
+    howl.signal.emit 'process-started', process: @ if @long_lived
+
+  stop: =>
+    return if @exited
+    if @stop_handler
+      @stop_handler!
+    else
+      @send_signal 'TERM'
 
   wait: =>
     return if @exited
@@ -232,6 +258,8 @@ class Process
         @exit_status_string = "killed by signal #{@signal} (#{@signal_name})"
       else
         @exit_status_string = "exited abnormally for unknown reasons"
+
+    howl.signal.emit 'process-exited', process: @ if @long_lived
 
     if @_exit
       dispatch.resume(@_exit)

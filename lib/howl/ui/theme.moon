@@ -67,6 +67,15 @@ scrollbar {
   padding: 5px;
 }
 
+.indicator.processes {
+  font-weight: bold;
+  padding: 0 0.6em;
+  margin-right: 1em;
+  border-radius: 1em;
+  border: 1px solid alpha(currentColor, 0.5);
+  background-color: alpha(currentColor, 0.15);
+}
+
 window.test-window {
   background: transparent;
 }

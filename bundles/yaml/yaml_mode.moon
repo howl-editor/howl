@@ -9,6 +9,7 @@ class YAMLMode
     use_tabs: false
 
   comment_syntax: '#'
+  lsp_servers: { 'yaml-language-server --stdio' }
 
   indentation: {
     more_after: {

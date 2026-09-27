@@ -857,6 +857,32 @@ describe 'Editor', ->
       editor.buffer.text = '([]]'
       assert.same nil, editor\get_matching_brace 4
 
+  context 'automatic completion', ->
+    before_each ->
+      editor.complete = spy.new ->
+
+    after_each ->
+      editor.complete = nil
+
+    insert = (text) ->
+      buffer.text = text
+      cursor.pos = text.ulen + 1
+      editor\_on_insert_at_cursor nil, text: text\usub(-1)
+
+    it 'completes once the word prefix is long enough', ->
+      buffer.config.completion_popup_after = 2
+      insert 'a'
+      assert.spy(editor.complete).was_not_called!
+      insert 'ab'
+      assert.spy(editor.complete).was_called(1)
+
+    it 'completes after a character in buffer.completion_triggers, regardless of prefix', ->
+      insert 'foo.'
+      assert.spy(editor.complete).was_not_called!
+      buffer.completion_triggers = { ['.']: true }
+      insert 'foo.'
+      assert.spy(editor.complete).was_called(1)
+
   context 'config updates', ->
     local editor2
     before_each ->
@@ -893,7 +919,38 @@ describe 'Editor', ->
       howl.mode.unregister 'test_mode1'
       howl.mode.unregister 'test_mode2'
 
+  describe 'the position indicator', ->
+    it 'shows the position for a newly created editor', ->
+      e = Editor Buffer {}
+      assert.equals '1:1', e.indicator.position.label
+      e\release!
+
+    it 'has a minimum width, so the indicators left of it do not move with the position', ->
+      assert.equals 6, editor.indicator.position.width_chars
+
+  describe 'the processes indicator', ->
+    it 'is placed left of the position indicator', ->
+      assert.equals editor.indicator.processes, editor.indicator.position.prev_sibling
+
+    it 'shows the number of long-lived processes, and is hidden when there are none', (done) ->
+      howl_async ->
+        indicator = editor.indicator.processes
+        assert.is_false indicator.visible
+        p = howl.io.Process cmd: {'cat'}, write_stdin: true, long_lived: true
+        assert.is_true indicator.visible
+        assert.equals '⚙ 1', indicator.label
+        p.stdin\close!
+        p\wait!
+        assert.is_false indicator.visible
+        done!
+
   context 'resource management', ->
+    it 'released editors are no longer listed, so they get no config updates', ->
+      e = Editor Buffer {}
+      e\release!
+      assert.is_nil ({e2, true for e2 in *Editor.editors!})[e]
+      assert.has_no.errors -> buffer.config.line_numbers = false
+
     it 'editors are collected as they should', ->
       e = Editor Buffer {}
       editors = setmetatable {e}, __mode: 'v'

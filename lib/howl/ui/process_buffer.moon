@@ -85,12 +85,6 @@ class ProcessBuffer extends ActionBuffer
       @append ']$', 'operator'
       @append " #{@process.command_line}\n"
 
-  modify: (f) =>
-    @read_only = false
-    f!
-    @read_only = true
-    @modified = false
-
   pump: =>
     on_stdout = (read) -> @_append read
     on_stderr = (read) -> @_append read, 'stderr'

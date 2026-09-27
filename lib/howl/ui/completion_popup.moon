@@ -54,9 +54,30 @@ class CompletionPopup extends MenuPopup
 
   _init_completer: =>
     @_insert_pos = @editor.cursor.pos
-    @completer = Completer @editor.buffer, @_insert_pos
+    completer = Completer @editor.buffer, @_insert_pos
+    completer.on_update = -> @_on_completer_update completer
+    @completer = completer
     comp_style = style.at_pos(@editor.buffer, @completer.start_pos) or 'default'
     @list.columns = { { style: comp_style } }
+
+  -- invoked when an asynchronous completer has new completions
+  _on_completer_update: (completer) =>
+    return unless @completer == completer
+    editor = @editor
+    -- ignore the update if the cursor has since left the word being completed
+    if completer.buffer != editor.buffer or
+        editor.buffer\context_at(editor.cursor.pos).word.start_pos != completer.start_pos
+      @close!
+      return
+
+    @_get_completions!
+    if @showing
+      if #@items > 0
+        @resize!
+      else
+        @close!
+    elseif #@items > 0
+      editor\show_completion_popup!
 
   _get_completions: =>
     @items, @highlight_matches_for = @completer\complete @editor.cursor.pos

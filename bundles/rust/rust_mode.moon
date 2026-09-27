@@ -4,6 +4,7 @@
 {
   lexer: bundle_load('rust_lexer')
   comment_syntax: '//'
+  lsp_servers: { 'rust-analyzer' }
   auto_pairs: {
     '(': ')'
     '[': ']'

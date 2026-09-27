@@ -8,6 +8,19 @@ class ActionBuffer extends Buffer
     super {}
     @collect_revisions = false
 
+  -- action buffers are written by code, not edited documents, so they
+  -- never have unsaved changes
+  @property modified:
+    get: -> false
+    set: ->
+
+  -- runs f with the buffer writable, for buffers that are read-only to the user
+  modify: (f) =>
+    read_only = @read_only
+    @read_only = false
+    f!
+    @read_only = read_only
+
   insert: (object, pos, style_name) =>
     local pos_after
     if object.styles

@@ -8,6 +8,7 @@ class NimMode
     @lexer = bundle_load('nim_lexer')
 
   comment_syntax: '#'
+  lsp_servers: { 'nimlangserver' }
 
   indentation: {
     more_after: {

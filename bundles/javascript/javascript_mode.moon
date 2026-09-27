@@ -5,6 +5,7 @@
   lexer: bundle_load('javascript_lexer')
 
   comment_syntax: '//'
+  lsp_servers: { 'typescript-language-server --stdio' }
 
   auto_pairs: {
     '(': ')'

@@ -17,7 +17,27 @@ directory list.
 - A bug with the command line text overflow has been fixed. The command line now
 grows vertically and wraps text if it is too long.
 
+- The command line help popup (`f1`) now closes with its command line, instead
+of staying open when the command line was closed without a key press.
+
 - Added buffer status indicators in titlebar as a quick indicator of when the buffer is modified. These are only shown if config.buffer_icons is true.
+
+- Initial support for language servers (LSP), providing completions,
+diagnostics and documentation for `show-doc-at-cursor`. Modes list known servers, and the first installed one is started
+for files within a project. The new `lsp_command` variable overrides the choice
+of server, and `lsp_enabled` turns language servers off. Servers unused for
+`lsp_server_idle_stop` minutes are stopped.
+
+- Added the `goto-definition` command, bound to `alt_period`, which goes to the
+definition of the symbol at the cursor using the language server. Without one,
+or when the server finds none, it runs `project-file-search` for the word.
+
+- The editor footer shows the number of long-lived processes running, such as
+language servers and commands started with `exec`. Clicking it, or running the
+new `process-list` command, lists the processes and allows for stopping them.
+
+- The cursor position is shown in the footer as soon as a buffer is opened,
+instead of after first moving the cursor.
 
 ### API changes
 
@@ -26,6 +46,27 @@ implemented. The new system internals are describe here:
 https://github.com/howl-editor/howl/wiki/The-Command-Interaction-Refactor. The
 changes are backwards incompatible. An upgrade guide is available at
 doc/upgrading.md.
+
+- Completer factories receive an `on_update` function as a third argument,
+which asynchronous completers call when they have new completions. A buffer's
+`completion_triggers` set lists characters that start completion when typed.
+
+- Modes can list language servers in a `lsp_servers` field, in order of
+preference.
+
+- Processes accept `long_lived`, `title` and `stop_handler` options, and have a
+new `stop` method. `Process.long_lived` lists the running long-lived processes,
+and the `process-started` and `process-exited` signals are emitted for them.
+
+- ActionBuffers are never considered modified, and have a `modify` method for
+writing to them while read-only.
+
+- `Application.open` accepts a `byte_column` location key, for positioning the
+cursor at a byte offset within the line.
+
+- `Window.get_screenshot` returns a Gdk texture instead of a pixbuf, renders at
+the display's scale unless a `scale` option is given, and includes popups with
+`with_overlays` regardless of the window system.
 
 ## 0.6 (2019-04-05)
 

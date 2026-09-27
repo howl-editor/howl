@@ -4,7 +4,8 @@
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 -- gobject_signal = require 'ljglibs.gobject.signal'
-{:signal, :bindings, :config, :command, :clipboard, :sys} = howl
+{:signal, :bindings, :config, :command, :clipboard, :dispatch, :sys} = howl
+{:Process} = howl.io
 aullar_config = aullar.config
 {:PropertyObject} = howl.util.moon
 {highlight: highlights, :Searcher, :CompletionPopup} = howl.ui
@@ -88,6 +89,17 @@ signal.connect 'buffer-modified', (args) ->
 signal.connect 'buffer-reloaded', (args) ->
   refresh_title args.buffer
 
+update_processes_indicator = (e) ->
+  n = #Process.long_lived!
+  with e.indicator.processes
+    .label = "⚙ #{n}"
+    .tooltip_text = "#{n} long-lived process(es), click to list"
+    .visible = n > 0
+
+for name in *{ 'process-started', 'process-exited' }
+  signal.connect name, ->
+    update_processes_indicator e for e in *editors!
+
 signal.connect 'buffer-mode-set', (args) ->
   buffer = args.buffer
   for e in *editors!
@@ -147,6 +159,18 @@ class Editor extends PropertyObject
     }
     @bin = content_box\to_gobject!
     @bin.can_focus = true
+
+    -- right side indicators are placed in creation order, so create these
+    -- first to have the process count left of the position
+    update_processes_indicator self
+    with @indicator.position
+      -- a minimum width, so the indicators left of it don't move as the position changes
+      .width_chars = 6
+      .xalign = 1
+    @_processes_click = Gtk.GestureClick!
+    @indicator.processes\add_controller @_processes_click
+    @_processes_click\connect_for @, 'pressed', ->
+      dispatch.launch -> command.run 'process-list'
 
     @_handlers = {}
     -- XXX append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
@@ -583,6 +607,9 @@ class Editor extends PropertyObject
   complete: =>
     return if @completion_popup.showing -- will handle the update itself
     @completion_popup\complete!
+    @show_completion_popup!
+
+  show_completion_popup: =>
     if not @completion_popup.empty
       @show_popup @completion_popup, {
         position: @completion_popup.position,
@@ -682,6 +709,8 @@ class Editor extends PropertyObject
 
     if @cursor.pos != old_pos
       @_on_pos_changed!
+    else
+      @_update_position!
 
   refresh_variable: (name) =>
     value = @buffer.config[name]
@@ -775,6 +804,8 @@ class Editor extends PropertyObject
     @completion_popup\release!
     @view = nil
     @_buf = nil
+    for i, e in pairs _editors
+      _editors[i] = nil if e == self
     signal.emit 'editor-released', editor: self
 
   _on_key_press: (view, event) =>
@@ -951,12 +982,22 @@ class Editor extends PropertyObject
     return if signal.emit('insert-at-cursor', params) == signal.abort
     return if @mode_at_cursor.on_insert_at_cursor and @mode_at_cursor\on_insert_at_cursor(params, self)
 
+    triggers = @buffer.completion_triggers
+    is_trigger = triggers and triggers[args.text]
+
     if @pop
-      @pop.popup\on_insert_at_cursor(self, params) if @pop.popup.on_insert_at_cursor
-    elseif args.text.ulen == 1
+      popup = @pop.popup
+      popup\on_insert_at_cursor(self, params) if popup.on_insert_at_cursor
+      -- a trigger character closes an open completion popup, but should
+      -- also start a new completion
+      return unless is_trigger and popup == @completion_popup and not popup.showing
+      @remove_popup!
+
+    if args.text.ulen == 1
       config = @config_at_cursor
       return unless config.complete != 'manual'
-      return unless #@current_context.word_prefix >= config.completion_popup_after
+      unless is_trigger
+        return unless #@current_context.word_prefix >= config.completion_popup_after
       skip_styles = config.completion_skip_auto_within
       if skip_styles
         cur_style = @current_context.style
@@ -982,6 +1023,7 @@ class Editor extends PropertyObject
 with Editor
   .register_indicator 'title', 'top_left'
   .register_indicator 'position', 'bottom_right'
+  .register_indicator 'processes', 'bottom_right'
   .register_indicator 'activity', 'top_right', -> Gtk.Spinner!
   .register_indicator 'inspections', 'bottom_left'
 

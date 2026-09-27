@@ -101,6 +101,17 @@ view in the grid. Valid values for `placement` are:
 Adds the specified widget `widget` to the window's widget area (lower part).
 Call [remove_widget] to remove the widget later.
 
+### get_screenshot (opts = {})
+
+Renders the window's current contents and returns it as a Gdk texture. The
+texture has a `width` and a `height`, and can be saved using
+`save_to_png(filename)`. `opts` can contain:
+
+- `scale`: The scale to render at, where 2 renders every window pixel as two
+image pixels in each direction. Defaults to the scale of the window's display.
+- `with_overlays`: When `true`, the popups showing in the window, such as a
+completion popup, are included.
+
 ### get_view (o)
 
 Gets the view information for the object `o`. The return value is a table with

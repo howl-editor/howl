@@ -35,6 +35,7 @@ core.define 'GtkLabel < GtkWidget', {
     use_underline: 'gboolean'
     width_chars: 'gint'
     wrap: 'gboolean'
+    xalign: 'gfloat'
 
     text:
       get: => ffi_string C.gtk_label_get_text @

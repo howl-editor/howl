@@ -252,6 +252,9 @@ class Application extends PropertyObject
         opts.column = loc.column
       elseif loc.column_index
         opts.column_index = loc.column_index
+      elseif loc.byte_column
+        line = buffer.lines[loc.line_nr]
+        opts.column_index = line\char_offset(math.min(loc.byte_column, line.size + 1)) if line
 
       editor.cursor\move_to opts
 
@@ -614,6 +617,7 @@ class Application extends PropertyObject
     require 'howl.ui.icons.font_awesome'
     require 'howl.completion.in_buffer_completer'
     require 'howl.completion.api_completer'
+    require 'howl.lsp.completer'
     require 'howl.interactions.basic'
     require 'howl.interactions.buffer_selection'
     require 'howl.interactions.buffer_search'

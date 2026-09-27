@@ -5,6 +5,7 @@
   lexer: bundle_load('html_lexer')
 
   comment_syntax: { '<!--', '-->' }
+  lsp_servers: { 'vscode-html-language-server --stdio' }
 
   auto_pairs: {
     '(': ')'
