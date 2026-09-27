@@ -238,6 +238,18 @@ documentation for the symbol at the cursor if available:
 
 ![Show doc](/images/screenshots/monokai/show-doc.png)
 
+## Going to definitions
+
+The `goto-definition` command, bound to `alt_period` by default, goes to the
+definition of the symbol at the cursor. It asks the file's [language
+server](language_servers.html) for the definition. If there are several
+definitions, you choose one from a list. The `navigate-back` command (`ctrl_<`)
+takes you back again.
+
+Without a language server, or when the server finds no definition, the command
+searches the project for the word at the cursor using `project-file-search`
+instead. See [Searching files](files.html#searching-files).
+
 ---
 
 *Next*: [Using multiple views](views.html)

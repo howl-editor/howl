@@ -8,7 +8,7 @@ title: Language servers
 
 Howl can use language servers, programs implementing the [Language Server
 Protocol](https://microsoft.github.io/language-server-protocol/) (LSP), to
-provide completions, inspections and documentation for a language. There's nothing to set up
+provide completions, inspections, documentation and definitions for a language. There's nothing to set up
 in Howl itself: if a language server for the language you're editing is
 installed, Howl starts it as needed. The language server itself needs to be
 installed separately, typically via your system's package manager or the
@@ -49,6 +49,11 @@ again the next time you edit a file for it. How long is controlled by the
   default, shows the server's documentation for the symbol at the cursor. When
   the server has none, the mode's own documentation is shown if available. See
   [Documentation popup](editing.html#documentation-popup).
+
+- **Definitions**: The `goto-definition` command, bound to `alt_period` by
+  default, goes to the definition of the symbol at the cursor. When the server
+  finds none, the project is searched for the word instead. See [Going to
+  definitions](editing.html#going-to-definitions).
 
 ## Choosing or disabling servers
 
