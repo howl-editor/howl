@@ -54,6 +54,9 @@ and the `process-started` and `process-exited` signals are emitted for them.
 - ActionBuffers are never considered modified, and have a `modify` method for
 writing to them while read-only.
 
+- `Application.open` accepts a `byte_column` location key, for positioning the
+cursor at a byte offset within the line.
+
 ## 0.6 (2019-04-05)
 
 - Added `navigate-go-to` command, for going back to a specific previous location.

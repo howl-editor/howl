@@ -133,6 +133,18 @@ describe 'Application', ->
       assert.equal 3, editor.cursor.column_index
       assert.not_equal 3, editor.cursor.column
 
+    it '.byte_column specifies a byte offset within the line to go to', ->
+      buffer = Buffer {}
+      buffer.text = 'x\nåäö y'
+      application\open {:buffer, line_nr: 2, byte_column: 8}, editor
+      assert.equal 5, editor.cursor.column_index
+
+    it '.byte_column beyond the end of the line goes to the end of the line', ->
+      buffer = Buffer {}
+      buffer.text = 'åäö\nx'
+      application\open {:buffer, line_nr: 1, byte_column: 20}, editor
+      assert.equal 4, editor.cursor.column_index
+
     it 'highlight any highlights', ->
       buffer = Buffer {}
       buffer.text = '123456789'

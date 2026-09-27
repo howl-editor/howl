@@ -122,6 +122,10 @@ used in conjunction with `line_nr`.
 - *column_index*: A specific column index where the cursor should be positioned.
 Can only be used in conjunction with `line_nr`.
 
+- *byte_column*: A specific byte offset within the line where the cursor should
+be positioned, starting at 1. An offset past the end of the line positions the
+cursor at the end of the line. Can only be used in conjunction with `line_nr`.
+
 - *highlights*: A list of highlights to apply after opening the location. This
 would typically be used to highlight a particular segment of the line, though it
 can be used to highlight arbitrary sections of the buffer. Can only be used in
