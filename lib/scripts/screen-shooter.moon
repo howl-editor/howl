@@ -3,9 +3,13 @@
 
 import app, bindings, command, dispatch from howl
 import theme from howl.ui
-import File from howl.io
+import File, Process from howl.io
 import get_cwd from howl.util.paths
-Gdk = require 'ljglibs.gdk'
+
+-- the window size, rendered at the display's scale (2x under bin/screen-shooter)
+WIDTH, HEIGHT = 1280, 720
+-- thumbnails are rendered at this scale of the window size
+THUMBNAIL_SCALE = 0.5
 
 args = {...}
 
@@ -49,10 +53,11 @@ snapshot = (name, dir, opts) ->
   parking = dispatch.park 'shot'
 
   howl.timer.after (opts.wait_before or 0.5), ->
-    pb = app.window\get_screenshot with_overlays: opts.with_overlays
-    pb\save dir\join("#{name}.png").path, 'png', {}
-    thumbnail = pb\scale_simple 314, 144, Gdk.INTERP_HYPER
-    thumbnail\save dir\join("#{name}_tn.png").path, 'png', {}
+    window = app.window
+    shot = window\get_screenshot with_overlays: true
+    shot\save_to_png dir\join("#{name}.png").path
+    thumbnail = window\get_screenshot with_overlays: true, scale: THUMBNAIL_SCALE
+    thumbnail\save_to_png dir\join("#{name}_tn.png").path
 
     wait_for (opts.wait_after) or 0.5
     app.window.command_panel\cancel!
@@ -64,8 +69,19 @@ snapshot = (name, dir, opts) ->
   for buffer in *app.buffers
     app\close_buffer buffer, true
 
+  -- closing a process buffer leaves its process running, which would show in
+  -- the footer of later shots. Their exit is logged, so wait for it before
+  -- the log is cleared below.
+  for process in *Process.long_lived!
+    process\stop!
+  for _ = 1, 25
+    break if #Process.long_lived! == 0
+    wait_a_bit!
+
+  -- the next view's editor becomes app.editor once its focus event arrives
   for _ = 1, #app.window.views - 1
     command.view_close!
+    wait_a_bit!
 
   log.info ''
 
@@ -84,7 +100,6 @@ screenshots = {
 
   {
     name: 'completion-types'
-    with_overlays: true
     ->
       app\open_file examples_dir / 'test.rb'
       app.editor.cursor\move_to line: 4, column: 7
@@ -157,7 +172,6 @@ screenshots = {
 
   {
     name: 'buffer-inspect'
-    with_overlays: true
     ->
       app\open_file examples_dir / 'faulty.moon'
       app.editor.cursor\move_to line: 12
@@ -178,7 +192,6 @@ screenshots = {
 
   {
     name: 'show-doc'
-    with_overlays: true
     ->
       open_files { 'lib/howl/application.moon' }
       app.editor.cursor.pos = app.editor.buffer\find('table.sort') + 6
@@ -256,7 +269,8 @@ screenshots = {
     ->
       open_files { 'lib/howl/application.moon' }
       command.exec working_directory: project_dir, cmd: 'while true; do echo "foo"; sleep 1; done'
-      command.exec working_directory: source_project, cmd: './bin/howl-spec'
+      -- specs that open no windows, which would share the screen with Howl's
+      command.exec working_directory: source_project, cmd: './bin/howl-spec --interactive spec/buffer_spec.moon spec/config_spec.moon spec/lsp'
       command.run 'switch-buffer'
   }
 
@@ -281,7 +295,6 @@ screenshots = {
 
   {
     name: 'command-line-help'
-    with_overlays: true
     ->
       open_files {
         'lib/howl/application.moon'
@@ -309,7 +322,6 @@ screenshots = {
     name: 'project-file-search-list'
     wait_before: 3
     wait_after: 1
-    with_overlays: true
     ->
       open_files { 'lib/howl/ustring.moon' }
       editor = app.editor
@@ -333,22 +345,12 @@ take_snapshots = (theme_name, to_dir, only) ->
     if only and only != def.name
       continue
 
-    if def.with_overlays and not only
-      print "    = #{def.name} (external).."
-      out, err, p = howl.io.Process.execute "#{howl.sys.env.SNAPSHOT_CMD} '#{image_dir}' '#{theme_name}' '#{def.name}'"
-      if not p.successful
-        print ">> External snapshot failed!"
-        print out if #out > 0
-        print err
-        os.exit(p.exit_status)
-    else
-      print "    = #{def.name}.."
-      snapshot "#{def.name}", to_dir, {
-        wait_before: def.wait_before,
-        wait_after: def.wait_after,
-        with_overlays: def.with_overlays,
-        run: def[1]
-      }
+    print "    = #{def.name}.."
+    snapshot "#{def.name}", to_dir, {
+      wait_before: def.wait_before,
+      wait_after: def.wait_after,
+      run: def[1]
+    }
 
 get_theme = (name) ->
   for t_name in pairs theme.all
@@ -409,7 +411,7 @@ run = (theme_name, only) ->
     for_themes = [n for n in pairs theme.all]
 
   print "- Taking screenshots.."
-  app.window\set_default_size 1048, 480
+  app.window\set_default_size WIDTH, HEIGHT
   for cur_theme in *for_themes
     howl.config.theme = cur_theme
     wait_a_bit!
