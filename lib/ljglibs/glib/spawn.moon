@@ -43,7 +43,7 @@ spawn = {
     catch_error C.g_spawn_async_with_pipes,
       opts.working_directory,
       argv, envp, spawn_flags,
-      nil, nil,
+      opts.child_setup, nil,
       pid,
       stdin, stdout, stderr
 

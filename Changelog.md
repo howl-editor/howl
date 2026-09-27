@@ -36,6 +36,10 @@ or when the server finds none, it runs `project-file-search` for the word.
 language servers and commands started with `exec`. Clicking it, or running the
 new `process-list` command, lists the processes and allows for stopping them.
 
+- Stopping, interrupting or killing a process now also stops the processes it
+started, such as the commands of a shell pipeline, as processes are run in their
+own process group.
+
 - The cursor position is shown in the footer as soon as a buffer is opened,
 instead of after first moving the cursor.
 

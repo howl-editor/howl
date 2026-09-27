@@ -325,7 +325,9 @@ p\pump!
 ### send_signal (signal)
 
 Sends `signal` to the process. `signal` can be either a number or a string
-representation of the signal, such as `HUP`, `KILL`, etc.
+representation of the signal, such as `HUP`, `KILL`, etc. The process is started
+in its own process group, and the signal is sent to the whole group, so it also
+reaches any processes started by the process.
 
 ### stop ()
 

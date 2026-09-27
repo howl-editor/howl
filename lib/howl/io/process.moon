@@ -62,6 +62,7 @@ launch = (argv, p_opts) ->
     read_stderr: p_opts.read_stderr
     working_directory: working_directory
     env: p_opts.env
+    child_setup: C.process_child_setup
 
     :flags
     :argv
@@ -176,7 +177,9 @@ class Process
 
   send_signal: (signal) =>
     signal = signals[signal] if type(signal) == 'string'
-    C.kill(@pid, signal)
+    -- the process leads its own process group, so this reaches anything it
+    -- started as well
+    C.kill(-@pid, signal)
 
   pump: (on_stdout, on_stderr) =>
     if on_stdout and not @stdout

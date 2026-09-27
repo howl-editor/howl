@@ -4,11 +4,18 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <unistd.h>
 
 int process_exited_normally(int status) { return WIFEXITED(status);  }
 int process_exit_status(int status) { return WEXITSTATUS(status);  }
 int process_was_signalled(int status) { return WIFSIGNALED(status);  }
 int process_get_term_sig(int status) { return WTERMSIG(status);  }
+
+/* Run in the child between fork and exec. A new session makes the child the
+ * leader of its own process group, so that it can be signalled along with
+ * anything it starts. A session rather than just a group since a background
+ * group on Howl's terminal would be stopped when reading from /dev/tty. */
+void process_child_setup(void *data) { setsid(); }
 
 int sig_HUP = SIGHUP;
 int sig_INT = SIGINT;

@@ -18,6 +18,7 @@ int process_exited_normally(int status);
 int process_exit_status(int status);
 int process_was_signalled(int status);
 int process_get_term_sig(int status);
+void process_child_setup(void *data);
 
 int sig_HUP;
 int sig_INT;

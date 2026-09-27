@@ -433,6 +433,15 @@ describe 'Process', ->
         assert.equals 'TERM', p.signal_name
         done!
 
+    it 'stops processes started by the process as well', (done) ->
+      howl_async ->
+        p = Process cmd: '(sleep 1; echo late) & echo started; wait', read_stdout: true
+        assert.equals 'started\n', p.stdout\read!
+        p\stop!
+        assert.is_nil p.stdout\read!
+        p\wait!
+        done!
+
     it 'calls .stop_handler instead when set', (done) ->
       howl_async ->
         stop_handler = spy.new ->
