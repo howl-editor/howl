@@ -1,11 +1,10 @@
 -- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-Gdk = require 'ljglibs.gdk'
+ffi = require 'ffi'
 Gtk = require 'ljglibs.gtk'
 {:PropertyObject} = howl.util.moon
 {:Activity, :CommandPanel, :Status, :theme} = howl.ui
-{:signal} = howl
 {:signal} = howl
 
 append = table.insert
@@ -13,6 +12,29 @@ append = table.insert
 to_gobject = (o) ->
   status, gobject = pcall -> o\to_gobject!
   return status and gobject or o
+
+-- popovers are surfaces of their own, which a widget's rendering doesn't
+-- include. Returns the showing ones below widget, with their positions
+-- relative to the window: the popup's position within its parent's surface,
+-- adjusted for where each native's widget sits within its surface.
+showing_popovers = (widget, native, x = 0, y = 0, popovers = {}) ->
+  for child in *widget.children
+    continue unless child.visible
+    child_native = child\get_native!
+    child_x, child_y = x, y
+
+    if ffi.cast('void *', child_native) == ffi.cast('void *', child)
+      popup_x, popup_y = child_native\get_popup_position!
+      child_tx, child_ty = child_native\get_surface_transform!
+      tx, ty = native\get_surface_transform!
+      child_x += popup_x + child_tx - tx
+      child_y += popup_y + child_ty - ty
+      append popovers, popover: child, x: child_x, y: child_y
+      showing_popovers child, child_native, child_x, child_y, popovers
+    else
+      showing_popovers child, native, x, y, popovers
+
+  popovers
 
 placements = {
   left_of: 'POS_LEFT'
@@ -203,15 +225,25 @@ class Window extends PropertyObject
   show_popup: (popup, opts) =>
     popup\show @win, opts
 
-  get_screenshot: (opts={}) =>
-    x, y, w, h = 0, 0, @allocated_width, @allocated_height
-    window = @window
+  -- returns a texture with the window's current rendering, at the surface's
+  -- scale unless `opts.scale` is given. `opts.with_overlays` includes the
+  -- showing popups.
+  get_screenshot: (opts = {}) =>
+    native = @win\get_native!
+    width, height = @win.allocated_width, @win.allocated_height
+    scale = opts.scale or native\get_surface_scale!
 
+    snapshot = Gtk.Snapshot!
+    snapshot\scale scale, scale
+    snapshot\append_widget @win, width, height
     if opts.with_overlays
-      x, y = window\get_position!
-      window = @screen.root_window
+      for p in *showing_popovers @win, native
+        snapshot\save!
+        snapshot\translate p.x, p.y
+        snapshot\append_widget p.popover, p.popover.allocated_width, p.popover.allocated_height
+        snapshot\restore!
 
-    Gdk.Pixbuf.get_from_window window, x, y, w, h
+    native\get_renderer!\render_texture snapshot\to_node!, 0, 0, width * scale, height * scale
 
   _view_from_gobject: (gobject) =>
     for v in *@_views

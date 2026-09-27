@@ -412,4 +412,20 @@ ffi.cdef [[
                                     gdouble pixbuf_y);
 
   typedef struct {} GdkEventSequence;
+
+  /* graphene types used by the Gdk, Gsk and Gtk APIs */
+  typedef struct { float x; float y; } graphene_point_t;
+  typedef struct { float width; float height; } graphene_size_t;
+  typedef struct { graphene_point_t origin; graphene_size_t size; } graphene_rect_t;
+
+  /* GdkSurface and GdkPopup */
+  double gdk_surface_get_scale (GdkSurface* surface);
+
+  typedef struct {} GdkPopup;
+  int gdk_popup_get_position_x (GdkPopup* popup);
+  int gdk_popup_get_position_y (GdkPopup* popup);
+
+  /* GdkTexture */
+  typedef struct {} GdkTexture;
+  gboolean gdk_texture_save_to_png (GdkTexture* texture, const char* filename);
 ]]

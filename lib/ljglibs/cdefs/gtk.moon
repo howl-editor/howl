@@ -165,9 +165,29 @@ ffi.cdef [[
 
   GtkEventControllerScroll *gtk_event_controller_scroll_new (GtkEventControllerScrollFlags flags);
 
+  /* Gsk */
+  typedef struct {} GskRenderNode;
+  typedef struct {} GskRenderer;
+
+  void gsk_render_node_unref (GskRenderNode* node);
+  GdkTexture* gsk_renderer_render_texture (
+    GskRenderer* renderer,
+    GskRenderNode* root,
+    const graphene_rect_t* viewport
+  );
+  GskRenderer* gsk_cairo_renderer_new (void);
+  gboolean gsk_renderer_realize_for_display (
+    GskRenderer* renderer,
+    GdkDisplay* display,
+    GError** error
+  );
+  void gsk_renderer_unrealize (GskRenderer* renderer);
+
   /* GtkNative */
   typedef struct {} GtkNative;
   GdkSurface* gtk_native_get_surface (GtkNative* self);
+  GskRenderer* gtk_native_get_renderer (GtkNative* self);
+  void gtk_native_get_surface_transform (GtkNative* self, double* x, double* y);
 
   /* GtkWidget */
   typedef struct {} GtkWidget;
@@ -552,6 +572,30 @@ ffi.cdef [[
   void gtk_popover_set_pointing_to (GtkPopover* popover, const GdkRectangle* rect);
   void gtk_popover_set_offset (GtkPopover* popover, int x_offset, int y_offset);
   void gtk_popover_present (GtkPopover* popover);
+
+  /* GtkSnapshot */
+  typedef struct {} GtkSnapshot;
+  typedef struct {} GdkPaintable;
+
+  GtkSnapshot* gtk_snapshot_new (void);
+  GskRenderNode* gtk_snapshot_to_node (GtkSnapshot* snapshot);
+  void gtk_snapshot_save (GtkSnapshot* snapshot);
+  void gtk_snapshot_restore (GtkSnapshot* snapshot);
+  void gtk_snapshot_translate (GtkSnapshot* snapshot, const graphene_point_t* point);
+  void gtk_snapshot_scale (GtkSnapshot* snapshot, float factor_x, float factor_y);
+  void gtk_snapshot_append_color (
+    GtkSnapshot* snapshot,
+    const GdkRGBA* color,
+    const graphene_rect_t* bounds
+  );
+
+  GdkPaintable* gtk_widget_paintable_new (GtkWidget* widget);
+  void gdk_paintable_snapshot (
+    GdkPaintable* paintable,
+    GtkSnapshot* snapshot,
+    double width,
+    double height
+  );
 
   /* GtkListBox */
   typedef struct {} GtkListBox;

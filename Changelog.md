@@ -61,6 +61,10 @@ writing to them while read-only.
 - `Application.open` accepts a `byte_column` location key, for positioning the
 cursor at a byte offset within the line.
 
+- `Window.get_screenshot` returns a Gdk texture instead of a pixbuf, renders at
+the display's scale unless a `scale` option is given, and includes popups with
+`with_overlays` regardless of the window system.
+
 ## 0.6 (2019-04-05)
 
 - Added `navigate-go-to` command, for going back to a specific previous location.
