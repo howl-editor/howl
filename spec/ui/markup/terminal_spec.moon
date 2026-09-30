@@ -1,5 +1,7 @@
 m = howl.ui.markup.terminal
-StyledText = howl.ui.StyledText
+{:config} = howl
+{:StyledText, :style, :theme} = howl.ui
+{:File} = howl.io
 
 describe 'terminal', ->
 
@@ -62,6 +64,21 @@ describe 'terminal', ->
     it 'ignores unhandled graphic parameters', ->
       expected = StyledText 'foo', { 1, 'ansi_red', 4 }
       assert.same expected, m '\027[31;5;6mfoo\027[m'
+
+    it 'takes the colors of the current theme, also after switching themes', ->
+      File.with_tmpfile (first) ->
+        File.with_tmpfile (second) ->
+          first.contents = 'style.magenta { color: #110000; } style.cyan { color: #001100; }'
+          second.contents = 'style.magenta { color: #220000; } style.cyan { color: #002200; }'
+          theme.register 'ansi-first', first
+          theme.register 'ansi-second', second
+          config.theme = 'ansi-first'
+          m '\027[35;46mfoo'
+          assert.equals '#110000', style.ansi_magenta_on_cyan.color
+
+          config.theme = 'ansi-second'
+          assert.equals '#220000', style.ansi_magenta_on_cyan.color
+          assert.equals '#002200', style.ansi_magenta_on_cyan.background
 
   context 'backspace characters (BS)', ->
     it 'deletes back properly', ->

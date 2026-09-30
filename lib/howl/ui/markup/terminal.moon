@@ -4,6 +4,7 @@
 ffi = require 'ffi'
 bit = require 'bit'
 {:const_char_p, :char_arr} = howl.cdefs
+{:signal} = howl
 {:StyledText, :style} = howl.ui
 
 band = bit.band
@@ -41,6 +42,13 @@ define_style = (name, state) ->
 
   style.define name, def
 
+-- the states of the styles defined so far, by style name
+defined = {}
+
+-- the styles copy their colors from the theme's, so they're redefined for a new theme
+signal.connect 'theme-changed', ->
+  define_style name, state for name, state in pairs defined
+
 style_from_state = (state) ->
   name = { 'ansi' }
   append name, 'bold' if state.bold
@@ -53,7 +61,10 @@ style_from_state = (state) ->
     append name, state.bg
 
   name = table.concat name, '_'
-  define_style name, state unless style[name]
+  unless defined[name]
+    defined[name] = {k, v for k, v in pairs state}
+    define_style name, defined[name]
+
   name
 
 reset_style_state = (state) ->
