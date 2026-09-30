@@ -45,6 +45,9 @@ get_font_size = (v) ->
   error "Invalid font size specification '#{v}'", 2 unless delta
   config.view_font_size + delta
 
+is_font_size = (v) ->
+  type(v) == 'number' or font_size_deltas[v] != nil
+
 create_attributes = (def) ->
   attrs = {}
 
@@ -213,6 +216,7 @@ get_attributes = (styling, end_offset, opts = {}) ->
   :is_defined,
   :define_default,
   :set_theme,
+  :is_font_size,
   :apply,
   :create_attributes,
   :get_attributes,

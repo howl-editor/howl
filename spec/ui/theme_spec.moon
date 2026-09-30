@@ -114,6 +114,12 @@ describe 'theme', ->
     it 'underscores the style names', ->
       assert.equal 'red', load_css('style.foo-bar { color: red; }').foo_bar.color
 
+    it 'accepts style names given with underscores', ->
+      assert.equal 'red', load_css('style.foo_bar { color: red; }').foo_bar.color
+
+    it 'accepts a last declaration without a semicolon', ->
+      assert.equal 'red', load_css('style.foo { color: red }').foo.color
+
     it 'disregards comments from the declarations', ->
       assert.equal 'red', load_css([[
         style.foo {
@@ -139,9 +145,13 @@ describe 'theme', ->
     it 'translates font-size font.size', ->
       assert.same {
         foo: {
-          font: size: 'urk'
+          font: size: 'large'
         }
-      }, load_css 'style.foo { font-size: urk; }'
+      }, load_css 'style.foo { font-size: large; }'
+
+    it 'translates numeric font sizes, in points, as numbers', ->
+      assert.equal 14, load_css('style.foo { font-size: 14; }').foo.font.size
+      assert.equal 14, load_css('style.foo { font-size: 14pt; }').foo.font.size
 
     it 'translates font-family as font.family', ->
       assert.same {
@@ -150,8 +160,16 @@ describe 'theme', ->
         }
       }, load_css 'style.foo { font-family: monospace; }'
 
+    it 'strips quotes and spaces from a list of font families', ->
+      assert.equal 'Latin Modern,Purisa', load_css(
+        [[style.foo { font-family: "Latin Modern", 'Purisa'; }]]
+      ).foo.font.family
+
     it 'translates color as color', ->
       assert.equals 'green', load_css('style.foo { color: green; }').foo.color
+
+    it 'converts colors that Pango does not understand to hex', ->
+      assert.equals '#ff0000', load_css('style.foo { color: rgb(255, 0, 0); }').foo.color
 
     it 'translates background-color as background', ->
       assert.equals 'green', load_css(
@@ -164,14 +182,14 @@ describe 'theme', ->
       ).foo.background
 
     it 'implements the Gtk alpha function', ->
-      assert.equals '#00ff007f', load_css(
-        'style.foo { color: alpha(#00ff00, 0.5); }'
-      ).foo.color
+      assert.equals '#00ff0080', load_css(
+        'style.foo { background-color: alpha(#00ff00, 0.5); }'
+      ).foo.background
 
     it 'handles color names for the Gtk alpha function', ->
-      assert.equals '#0000007f', load_css(
-        'style.foo { color: alpha(black, 0.5); }'
-      ).foo.color
+      assert.equals '#00000080', load_css(
+        'style.foo { background-color: alpha(black, 0.5); }'
+      ).foo.background
 
     it 'translates text-decoration underline as underline', ->
       assert.is_true load_css(
@@ -231,6 +249,51 @@ describe 'theme', ->
       assert.equal 2, load_css(
         'flair.foo { shape: rounded-rectangle; border-radius: 2; }'
       ).foo.corner_radius
+
+    it 'translates height as a number, or "text"', ->
+      assert.equal 10, load_css('flair.foo { shape: pipe; height: 10px; }').foo.height
+      assert.equal 'text', load_css('flair.foo { shape: pipe; height: text; }').foo.height
+
+  context 'mistakes', ->
+    load_css = (css) ->
+      File.with_tmpfile (file) ->
+        file.contents = css
+        theme.register 'mistakes', file
+        config.theme = 'mistakes'
+        theme.current
+
+    assert_logged = (pattern) ->
+      assert.includes log.last_error.message, pattern
+
+    it 'logs unknown properties and applies the rest of the rule', ->
+      t = load_css 'style.foo { colour: red; color: blue; }'
+      assert_logged "Theme error: style.foo: unknown property 'colour'"
+      assert.equal 'blue', t.styles.foo.color
+
+    it 'logs declarations that are not "property: value"', ->
+      load_css 'style.foo { font: bold: true }'
+      assert_logged "style.foo: invalid declaration 'font: bold: true'"
+
+    it 'logs invalid values', ->
+      load_css 'style.foo { font-weight: 700; }'
+      assert_logged "style.foo: invalid font-weight '700'"
+
+      load_css 'flair.foo { shape: pipe; border-color: nocolor; }'
+      assert_logged "flair.foo: invalid color 'nocolor'"
+
+    it 'logs transparent text colors, which Pango can not draw', ->
+      load_css 'style.foo { color: alpha(red, 0.5); }'
+      assert_logged "style.foo: text colors can't be transparent"
+
+    it 'logs and drops flairs without a valid shape', ->
+      t = load_css 'flair.foo { border-color: red; } flair.bar { shape: blob; }'
+      assert.is_nil t.flairs.foo
+      assert.is_nil t.flairs.bar
+      assert_logged 'no valid shape, ignoring it'
+
+    it 'logs style and flair selectors with more than a single name', ->
+      load_css 'window { color: red; } style.foo, style.bar { color: red; }'
+      assert_logged "unsupported selector 'style.foo, style.bar'"
 
   context 'custom value extractions', ->
     load_css = (css) ->

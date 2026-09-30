@@ -3,16 +3,18 @@
 
 Gtk = require 'ljglibs.gtk'
 Gdk = require 'ljglibs.gdk'
+Pango = require 'ljglibs.pango'
 require 'ljglibs.gtk.widget'
 flair = require 'aullar.flair'
 RGBA = Gdk.RGBA
 {string: ffi_string, :cast} = require('ffi')
 
 {:config, :signal} = howl
-{:style, :colors} = howl.ui
+{:style} = howl.ui
 {:File} = howl.io
 {:PropertyTable} = howl.util
 aullar_config = require 'aullar.config'
+aullar_styles = require 'aullar.styles'
 
 local loading_css
 
@@ -124,90 +126,164 @@ expand_css_variables = (css) ->
 
   css
 
-css_color = (decl) ->
-  return nil unless decl and #decl > 0
-  col, alpha = decl\match('%s*alpha%s*%(([^,%s]+)%s*,%s*([%d.]+)%)')
-  if col
-    rgba = RGBA(colors[col] or col)
-    '#%02x%02x%02x%02x'\format(
-      (rgba.red * 255),
-      (rgba.green * 255),
-      (rgba.blue * 255),
-      (tonumber(alpha) * 255)
-    )
-  else
-    decl
+-- Theme mistakes are logged rather than raised, so the rest of the theme still applies
+theme_error = (msg) -> log.error "Theme error: #{msg}"
+
+trim = (s) -> s\match '^%s*(.-)%s*$'
+
+to_hex = (rgba, alpha) ->
+  channels = { rgba.red, rgba.green, rgba.blue, alpha }
+  '#' .. table.concat ['%02x'\format(math.floor(c * 255 + 0.5)) for c in *channels]
+
+-- a color for flairs and backgrounds (which Gdk parses), or nil if <value> isn't one
+css_color = (value) ->
+  col, alpha = value\match '^alpha%s*%((.+),%s*([%d.]+)%s*%)$'
+  rgba = RGBA!
+  return nil unless rgba\parse(col and trim(col) or value)
+  alpha and to_hex(rgba, tonumber alpha) or value
+
+-- text is drawn by Pango, which takes neither transparency nor every CSS color syntax
+text_color = (value) ->
+  color = css_color value
+  return nil, "invalid color '#{value}'" unless color
+  rgba = RGBA color
+  return nil, "text colors can't be transparent ('#{value}')" unless rgba\is_opaque!
+  pcall(Pango.Color, color) and color or to_hex(rgba)
+
+-- a number, optionally given in px
+pixels = (value) -> tonumber(value\match('^(.-)px$') or value)
+
+color_property = (field) -> (def, value) ->
+  def[field] = css_color value
+  "invalid color '#{value}'" unless def[field]
+
+text_color_property = (field) -> (def, value) ->
+  color, err = text_color value
+  def[field] = color
+  err
+
+-- each sets the property on the definition, and returns an error message if invalid
+style_properties = {
+  color: text_color_property 'color'
+  'background-color': color_property 'background'
+
+  'font-style': (def, value) ->
+    return "invalid font-style '#{value}'" unless value == 'italic' or value == 'normal'
+    def.font.italic = value == 'italic' or nil
+
+  'font-weight': (def, value) ->
+    return "invalid font-weight '#{value}'" unless value == 'bold' or value == 'normal'
+    def.font.bold = value == 'bold' or nil
+
+  'font-size': (def, value) ->
+    size = tonumber(value\match('^(.-)pt$') or value) or value
+    return "invalid font-size '#{value}'" unless aullar_styles.is_font_size size
+    def.font.size = size
+
+  'font-family': (def, value) ->
+    families = [f\match("^%s*['\"]?(.-)['\"]?%s*$") for f in value\gmatch '[^,]+']
+    def.font.family = table.concat families, ','
+
+  'text-decoration': (def, value) ->
+    for token in value\gmatch '%S+'
+      unless token == 'underline' or token == 'line-through' or token == 'none'
+        return "invalid text-decoration '#{value}'"
+
+    def.underline = value\find('underline', 1, true) != nil
+    def.strike_through = value\find('line-through', 1, true) != nil
+}
+
+flair_shapes = {
+  rectangle: flair.RECTANGLE,
+  rounded_rectangle: flair.ROUNDED_RECTANGLE,
+  sandwich: flair.SANDWICH,
+  underline: flair.UNDERLINE,
+  wavy_underline: flair.WAVY_UNDERLINE,
+  pipe: flair.PIPE,
+  strike_through: flair.STRIKE_TROUGH,
+}
+
+flair_properties = {
+  shape: (def, value) ->
+    def.type = flair_shapes[value\gsub('-', '_')]
+    "invalid shape '#{value}'" unless def.type
+
+  'border-color': color_property 'foreground'
+  'background-color': color_property 'background'
+  color: text_color_property 'text_color'
+
+  'border-style': (def, value) ->
+    return "invalid border-style '#{value}'" unless value == 'solid' or value == 'dotted' or value == 'dashed'
+    def.line_type = value
+
+  'border-radius': (def, value) ->
+    def.corner_radius = pixels value
+    "invalid border-radius '#{value}'" unless def.corner_radius
+
+  width: (def, value) ->
+    def.line_width = pixels value
+    "invalid width '#{value}'" unless def.line_width
+
+  height: (def, value) ->
+    def.height = value == 'text' and value or pixels value
+    "invalid height '#{value}'" unless def.height
+
+  'minimum-width': (def, value) ->
+    def.min_width = value == 'letter' and value or pixels value
+    "invalid minimum-width '#{value}'" unless def.min_width
+}
+
+-- Extracts the "<kind>.<name> { .. }" rules from <css>, returning the definitions by
+-- name (with any dashes in it as underscores), along with <css> minus the rules
+extract_rules = (css, kind, properties, new_def) ->
+  defs, rules = {}, {}
+  css = css\gsub "%f[%w_%-%.]#{kind}%.([%w_-]+)%s*(%b{})", (name, body) ->
+    rule = "#{kind}.#{name}"
+    name = name\gsub '-', '_'
+    def = defs[name] or new_def!
+
+    for decl in body\sub(2, -2)\gmatch '[^;]+'
+      continue unless decl\find '%S'
+      prop, value = decl\match '^%s*([%w-]+)%s*:%s*(.-)%s*$'
+      if prop and #value > 0 and not value\find ':'
+        handler = properties[prop]
+        err = if handler then handler(def, value) else "unknown property '#{prop}'"
+        theme_error "#{rule}: #{err}" if err
+      else
+        theme_error "#{rule}: invalid declaration '#{trim(decl)\gsub('%s+', ' ')}'"
+
+    defs[name] = def
+    rules[name] = rule
+    ''
+
+  defs, css, rules
 
 extract_css_styles = (css) ->
-  styles = {}
-  css = css\gsub 'style%.([%w-]+)%s*%{([^}]+)}', (name, decls) ->
-    name = name\gsub '-', '_'
-    font = {}
-    style_def = styles[name] or { :font }
-
-    -- get individual declarations
-    vars = {var\gsub('-', '_'), val for var, val in decls\gmatch '(%S+)%s*:%s*([^;]+);'}
-    font.italic = true if vars.font_style == 'italic'
-    font.bold = true if vars.font_weight == 'bold'
-    font.size = vars.font_size
-    font.family = vars.font_family
-    style_def.color = css_color vars.color
-    style_def.background = css_color vars.background_color
-    if vars.text_decoration
-      style_def.underline = vars.text_decoration\find('underline') != nil
-      style_def.strike_through = vars.text_decoration\find('line%-through') != nil
-
-    styles[name] = style_def
-    ''
-
-  styles, css
+  extract_rules css, 'style', style_properties, -> font: {}
 
 extract_css_flairs = (css) ->
-  TYPES = {
-    rectangle: flair.RECTANGLE,
-    rounded_rectangle: flair.ROUNDED_RECTANGLE,
-    sandwich: flair.SANDWICH,
-    underline: flair.UNDERLINE,
-    wavy_underline: flair.WAVY_UNDERLINE,
-    pipe: flair.PIPE,
-    strike_through: flair.STRIKE_TROUGH,
-  }
-  flairs = {}
-  css = css\gsub 'flair%.([%w-]+)%s*%{([^}]+)}', (name, decls) ->
-    name = name\gsub '-', '_'
-    flair_def = flairs[name] or {}
-
-    -- get individual declarations
-    vars = {var\gsub('-', '_'), val for var, val in decls\gmatch '(%S+)%s*:%s*([^;]+);'}
-    flair_def.foreground = css_color vars.border_color
-    type = vars.shape and vars.shape\gsub('-', '_')
-    unless type
-      error "No shape specified for flar '#{name}': #{decls}"
-    flair_def.type = TYPES[type]
-
-    if vars.width
-      flair_def.line_width = tonumber((vars.width\gsub('px', '')))
-
-    flair_def.line_type = vars.border_style or flair_def.line_type
-
-    flair_def.text_color = css_color(vars.color) or flair_def.text_color
-    flair_def.background = css_color(vars.background_color) or flair_def.background
-    flair_def.height = vars.height or flair_def.height
-    if vars.minimum_width
-      flair_def.min_width = tonumber(vars.minimum_width) or vars.minimum_width or flair_def.min_width
-
-    if vars.border_radius
-      flair_def.corner_radius = tonumber(vars.border_radius)
-
-    flairs[name] = flair_def
-    ''
+  flairs, css, rules = extract_rules css, 'flair', flair_properties, -> {}
+  for name, def in pairs flairs
+    unless def.type
+      theme_error "#{rules[name]}: no valid shape, ignoring it"
+      flairs[name] = nil
 
   flairs, css
+
+-- Drops style and flair rules with selectors that extract_rules doesn't take. Gtk would
+-- read them as element selectors that silently match nothing.
+drop_unsupported_selectors = (css) ->
+  css\gsub '([^{}]*)(%b{})', (selector) ->
+    selector = trim(selector)\gsub '%s+', ' '
+    return if selector\match('^style%.[%w_-]+$') or selector\match('^flair%.[%w_-]+$')
+    if selector\find('%f[%w_%-%.]style%.') or selector\find('%f[%w_%-%.]flair%.')
+      theme_error "unsupported selector '#{selector}', ignoring the rule: style and flair rules take a single name"
+      ''
 
 extract_css_custom = (css) ->
   values = {}
   for decls in css\gmatch '%.gutter%s*{([^}]+)}'
-    color = decls\match('%s+color%s*:%s*([^;]+);')
+    color = decls\match('%s+color%s*:%s*([^;]-)%s*;')
     values.gutter_color = css_color(color) if color
 
   values, css
@@ -224,6 +300,7 @@ apply_theme = ->
   content = content\gsub('/%*.-%*/', '')
 
   content = expand_css_variables content
+  content = drop_unsupported_selectors content
   theme.styles, content = extract_css_styles content
   theme.flairs, content = extract_css_flairs content
   theme.custom, content = extract_css_custom content
