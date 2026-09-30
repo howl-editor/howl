@@ -88,3 +88,5 @@ right specs as files are changed. Howl ships with a ready-made Spookfile that
 can be used with the [spook](https://github.com/johnae/spook) utility (a Lua
 based file watcher). If you install spook, then simply run it in the project
 root in order to run specs as files are changed.
+
+*Next*: [Writing themes](writing-themes.html)
