@@ -1,5 +1,7 @@
 lsp = require 'howl.lsp'
-{:Buffer, :mode} = howl
+{:Buffer, :mode, :signal, :Project} = howl
+{:File} = howl.io
+{:Editor} = howl.ui
 
 describe 'lsp', ->
   local buffer, client, state
@@ -110,6 +112,61 @@ describe 'lsp', ->
 
     it 'detaches buffers when lsp_command changes to another server', ->
       app_buffer.config.lsp_command = 'howl-lsp-other'
+      assert.is_nil app_buffer.data.lsp
+
+  describe 'attaching', ->
+    local dir, app_buffer, running
+
+    before_each ->
+      dir = File.tmpdir!
+      Project.add_root dir
+      file = dir / 'x.py'
+      file.contents = 'x = 1\n'
+      app_buffer = howl.app\new_buffer!
+      app_buffer.file = file
+      app_buffer.config.lsp_command = 'howl-lsp-test'
+      -- a running client for the buffer, so that attaching starts no process
+      running = cmd: 'howl-lsp-test', notify: spy.new(->), completion_triggers: {}
+      lsp._clients["howl-lsp-test@#{dir.path}"] = running
+
+    after_each ->
+      lsp.detach app_buffer
+      howl.app\close_buffer app_buffer, true
+      lsp._clients["howl-lsp-test@#{dir.path}"] = nil
+      Project.remove_root dir
+      Project.open[dir] = nil
+      dir\delete_all!
+
+    it 'does not attach a buffer when its file is opened', ->
+      signal.emit 'file-opened', file: app_buffer.file, buffer: app_buffer
+      assert.is_nil app_buffer.data.lsp
+
+    it 'attaches a buffer when an editor shows it', ->
+      editor = Editor Buffer {}
+      editor.buffer = app_buffer
+      editor\release!
+      attached = app_buffer.data.lsp
+      assert.equals running, attached.client
+      assert.spy(running.notify).was_called_with running, 'textDocument/didOpen', {
+        textDocument: { uri: attached.uri, languageId: 'default', version: 1, text: 'x = 1\n' }
+      }
+
+    it 'does not attach a buffer previewed in an editor', ->
+      editor = Editor Buffer {}
+      editor\preview app_buffer
+      editor\release!
+      assert.is_nil app_buffer.data.lsp
+
+    it 'does not attach a hidden buffer on configuration or mode changes, or saves', ->
+      lsp.refresh!
+      assert.is_nil app_buffer.data.lsp
+
+      mode.register name: 'lsp-test', create: -> {}
+      app_buffer.mode = mode.by_name 'lsp-test'
+      mode.unregister 'lsp-test'
+      assert.is_nil app_buffer.data.lsp
+
+      app_buffer\save!
       assert.is_nil app_buffer.data.lsp
 
   describe 'stop_idle(now)', ->

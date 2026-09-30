@@ -284,7 +284,7 @@ record_change = (what, args) ->
   }
 
 -- attaches or detaches the open buffers according to the server they should
--- now use, if any
+-- now use, if any. Hidden buffers attach once they're shown.
 refresh = ->
   app = rawget howl, 'app'
   return unless app
@@ -294,18 +294,20 @@ refresh = ->
     if state and state.client.cmd != cmd
       detach buffer
       state = nil
-    attach buffer if cmd and not state
+    attach buffer if cmd and not state and buffer.showing
 
 config.watch 'lsp_enabled', refresh
 config.watch 'lsp_command', refresh
 
-signal.connect 'file-opened', (args) -> attach args.buffer
+-- buffers attach when shown rather than when opened, since the restored session
+-- opens buffers that may never be visited. Previews don't signal this.
+signal.connect 'after-buffer-switch', (args) -> attach args.current_buffer
 
 signal.connect 'buffer-mode-set', (args) ->
   -- this is also signaled during buffer construction
   return unless args.buffer.data
   detach args.buffer
-  attach args.buffer
+  attach args.buffer if args.buffer.showing
 
 signal.connect 'buffer-closed', (args) -> detach args.buffer
 
@@ -320,13 +322,10 @@ signal.connect 'buffer-saved', (args) ->
     detach buffer
     state = nil
 
-  state or= attach buffer
+  state or= attach buffer if buffer.showing
   return unless state
   sync buffer
   state.client\notify 'textDocument/didSave', textDocument: { uri: state.uri }
-
-signal.connect 'app-ready', ->
-  attach b for b in *howl.app.buffers
 
 {
   :attach

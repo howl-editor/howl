@@ -16,8 +16,10 @@ language's own tooling.
 
 ## When servers are started
 
-A language server is started when you open a file for which a server is known,
-but only if the file is part of a project. A project is a directory added as a
+A language server is started when a file for which a server is known is shown
+in an editor, but only if the file is part of a project. Files that are only
+opened, such as those restored from the previous session, don't start a server
+until you visit them. A project is a directory added as a
 project root (as done when using `project-open`), or the root of a version
 control repository containing the file. A single server is run for each
 project, and is shared by all files of that project.
@@ -29,7 +31,7 @@ Some other examples are `clangd` for C and C++, `gopls` for Go,
 `rust-analyzer` for Rust and `lua-language-server` for Lua.
 
 A server that isn't used for a while is stopped automatically, and is started
-again the next time you edit a file for it. How long is controlled by the
+again the next time you show or edit a file for it. How long is controlled by the
 `lsp_server_idle_stop` configuration variable (in minutes, 30 by default), with
 `0` meaning that servers are never stopped.
 
@@ -89,8 +91,8 @@ Language servers are shown in the process count in the bottom right corner of
 the editor, left of the cursor position. Clicking the count, or running the
 `process-list` command, opens a list of the running processes. From there you
 can stop a server by pressing `s` on its line, which shuts it down cleanly. The
-server is started again the next time you edit a file for it, which makes this
-a way of restarting a misbehaving server. See [Running external
+server is started again the next time you show or edit a file for it, which
+makes this a way of restarting a misbehaving server. See [Running external
 commands](running_commands.html#listing-long-running-processes) for more on the
 process list.
 
