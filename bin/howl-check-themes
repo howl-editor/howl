@@ -1,0 +1,50 @@
+#! /bin/sh
+#
+# Copyright 2026 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
+#
+# Applies themes and reports the errors in them.
+
+. "$(dirname "$0")/_howl_env.sh"
+
+usage() {
+  cat <<'EOF'
+Usage: howl-check-themes [--profile] [<theme name or file>...]
+
+Applies each theme, with no window, and lists the errors logged while doing so: mistakes
+in style and flair rules as well as Gtk's CSS errors. Exits non-zero if any theme had
+errors, or if an argument names no theme or file.
+
+With no arguments, checks all bundled themes, plus those of user bundles with --profile.
+
+  --profile   load the user profile, so that themes from user bundles are included
+  -h, --help  this help
+
+A clean theme can still look wrong. To see it, take a screenshot:
+  bin/screen-shooter /tmp/shots '<Theme Name>' multi-views
+
+Examples:
+  howl-check-themes
+  howl-check-themes Monokai
+  howl-check-themes ~/themes/my-theme/my-theme.css
+EOF
+}
+
+PROFILE=--no-profile
+
+# Consume our own flags, rotating everything else back onto "$@" so that paths keep
+# their quoting.
+argc=$#
+i=0
+while [ $i -lt $argc ]; do
+  arg=$1
+  shift
+  i=$((i + 1))
+  case "$arg" in
+    -h|--help) usage; exit 0 ;;
+    --profile) PROFILE= ;;
+    *) set -- "$@" "$arg" ;;
+  esac
+done
+
+exec "$HOWL" --run "$ROOT/lib/scripts/check_themes.moon" $PROFILE --bundles "$@"

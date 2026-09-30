@@ -27,7 +27,8 @@ css_provider\connect 'parsing_error', (provider, section, err)->
   leading = loading_css\sub math.max(at - 50, 0), at
   trailing = loading_css\sub at + 1, at + 50
   context = leading .. '<ERROR>' .. trailing
-  error "Theme error: #{err_s} at\n\"#{context}\""
+  -- logged rather than raised, which would wrap it in the callback's own error message
+  log.error "Theme error: #{err_s} at\n\"#{context}\""
 
 display = Gdk.Display\get_default!
 Gtk.StyleContext.add_provider_for_display display, css_provider, 7000
