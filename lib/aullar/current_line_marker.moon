@@ -4,14 +4,13 @@
 flair = require 'aullar.flair'
 {:define_class} = require 'aullar.util'
 
-flair.define 'current-line', {
+flair.define 'current_line', {
   type: flair.RECTANGLE,
   background: '#8294ab',
   background_alpha: 0.2,
-  width: 'full',
 }
 
-flair.define 'current-line-overlay', {
+flair.define 'current_line_overlay', {
   type: flair.SANDWICH,
   foreground: '#a3a3a3'
 }
@@ -22,19 +21,21 @@ CurrentLineMarker = {
   draw_before: (x, y, display_line, cr, col) =>
     @_offset = 1
     @_height = display_line.height
-    current_flair = flair.get 'current-line'
+    current_flair = flair.get 'current_line'
 
     if display_line.is_wrapped
       if @view.config.view_line_wrap_navigation == 'visual'
         @_offset = display_line.lines\at(col).line_start
         @_height = nil -- defaults to visual line
 
+    -- spans the view whatever the definition says, so themes needn't set a width
+    current_flair.width = 'full'
     current_flair.height = @_height
     flair.draw current_flair, display_line, @_offset, @_offset, x, y, cr
 
   draw_after: (x, y, display_line, cr, col) =>
     block = display_line.block
-    overlay_flair = flair.get 'current-line-overlay'
+    overlay_flair = flair.get 'current_line_overlay'
 
     if block
       overlay_flair.width = block.width

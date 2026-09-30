@@ -12,7 +12,7 @@ flair.define 'selection', {
   min_width: 'letter'
 }
 
-flair.define 'selection-overlay', {
+flair.define 'selection_overlay', {
   type: flair.RECTANGLE,
   background: '#c3e5ea',
   background_alpha: 0.4,
@@ -124,7 +124,7 @@ Selection = {
         start_o = max start_col, range.start_offset
         end_o = min end_col, range.end_offset
         continue if start_o == end_o and (sel_start or sel_end)
-        flair.draw 'selection-overlay', display_line, start_o, end_o, x, y, cr
+        flair.draw 'selection_overlay', display_line, start_o, end_o, x, y, cr
 
   _notify_change: =>
     if @listener and @listener.on_selection_changed
