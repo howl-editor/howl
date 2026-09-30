@@ -146,8 +146,8 @@ flair.search-secondary {
 
 flair.replace-strikeout {
   shape: rounded-rectangle;
-  border-color: : black;
-  background-color: : var(--red);
+  border-color: black;
+  background-color: var(--red);
   color: black;
   height: text;
 }
@@ -253,7 +253,7 @@ style.class {
   font-weight: bold;
 }
 
-style.type_def {
+style.type-def {
   color: var(--green);
   font-weight: bold;
 }
@@ -326,19 +326,18 @@ style.h3 {
 }
 
 style.emphasis {
-  font:
-    bold: true
-    italic: true
+  font-weight: bold;
+  font-style: italic;
 }
 
 style.strong { font-style: italic; }
-style.link_label { color: var(--aqua); }
-style.link_url { color: var(--comment); }
+style.link-label { color: var(--aqua); }
+style.link-url { color: var(--comment); }
 
 style.table {
   color: var(--blue);
   background-color: var(--embedded-bg);
-  underline: true
+  text-decoration: underline;
 }
 
 style.addition { color: var(--green); }

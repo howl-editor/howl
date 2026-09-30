@@ -94,10 +94,6 @@ popover contents {
   padding-top: 10px;
 }
 
-.content-box-editor .current-line {
-  background-color: var(--current);
-}
-
 .gutter {
   color: var(--dark-blue-off);
   background-color: var(--dark-blue);

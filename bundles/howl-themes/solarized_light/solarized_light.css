@@ -25,7 +25,7 @@
   --black: #000000;
   --white: #ffffff;
   --brown: #a52a2a;
-  
+
   /* Theme variables */
   --background: var(--base3);
   --current: var(--base2);
@@ -243,11 +243,6 @@ style.label {
   font-style: italic;
 }
 
-style.line-number {
-  color: var(--base1);
-  background-color: var(--base2);
-}
-
 style.key {
   color: var(--key);
   font-weight: bold;
@@ -404,4 +399,4 @@ style.deletion {
 
 style.change {
   color: var(--yellow);
-} 
+}

@@ -106,22 +106,19 @@ flair.indentation-guide {
 
 flair.indentation-guide-1 {
   shape: pipe;
-  border-color: var(--blue);
-  border-color-alpha: 0.5;
+  border-color: alpha(var(--blue), 0.5);
   width: 1;
 }
 
 flair.indentation-guide-2 {
   shape: pipe;
-  border-color: var(--green);
-  border-color-alpha: 0.5;
+  border-color: alpha(var(--green), 0.5);
   width: 1;
 }
 
 flair.indentation-guide-3 {
   shape: pipe;
-  border-color: var(--green);
-  border-color-alpha: 0.3;
+  border-color: alpha(var(--green), 0.3);
   width: 1;
 }
 

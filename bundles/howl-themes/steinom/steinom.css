@@ -219,7 +219,7 @@ flair.block-cursor {
 }
 
 flair.selection {
-  shape: rounded_rectangle;
+  shape: rounded-rectangle;
   background-color: alpha(var(--darkblue), 0.3);
   height: text;
 }
@@ -280,7 +280,7 @@ style.class {
 style.type-def {
   font-weight: bold;
   font-size: x-large;
-  font-family: 'Purisa';
+  font-family: Purisa;
   color: var(--yellow);
 }
 
@@ -319,7 +319,7 @@ style.h1 {
   color: white;
   font-size: large;
   font-weight: bold;
-  font-family: 'Purisa,Latin Modern Sans';
+  font-family: Purisa,Latin Modern Sans;
   background-color: alpha(var(--lightblue), 0.4);
 }
 
@@ -345,7 +345,7 @@ style.strong {
 style.table {
   color: var(--lightblue);
   background-color: alpha(var(--embedded-bg), 0.2);
-  font-decoration: underline;
+  text-decoration: underline;
 }
 
 style.link-label { color: var(--aqua); }

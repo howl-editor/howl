@@ -81,10 +81,6 @@ popover contents {
   background-color: var(--background);
 }
 
-.content-box-editor .current-line {
-  background-color: var(--current);
-}
-
 .gutter {
   color: var(--comment);
   background-color: alpha(var(--grey-darkest), 0.6);
