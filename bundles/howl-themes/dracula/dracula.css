@@ -205,6 +205,11 @@ flair.selection {
   minimum-width: letter;
 }
 
+flair.current-line {
+  shape: rectangle;
+  background-color: var(--current);
+}
+
 /********************************* Styles *************************************/
 style.default {
   color: var(--foreground);
