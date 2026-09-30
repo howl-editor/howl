@@ -25,7 +25,7 @@ class Status
   clear: =>
     if @text
       if @level
-        @label\remove_css_class 'status_' .. @level
+        @label\remove_css_class @level
 
       @label.label = ''
       @level = nil
@@ -39,9 +39,9 @@ class Status
 
   _set: (level, text) =>
     if @level and level != @level
-      @label\remove_css_class 'status_' .. @level
+      @label\remove_css_class @level
 
-    @label\add_css_class 'status_' .. level
+    @label\add_css_class level
     @label.label = text
     @text = text
     @level = level
