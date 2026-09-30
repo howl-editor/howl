@@ -3,9 +3,17 @@
 {:Editor} = howl.ui
 
 describe 'mode', ->
+  local preexisting
+
+  before_each ->
+    preexisting = {}
+    preexisting[name] = true for name in *mode.names
+
+  -- Only unregister the modes registered by the example itself, leaving any modes
+  -- registered elsewhere (core, bundles) intact for other specs in the same process.
   after_each ->
-    for name in *[name for name in *mode.names when name != 'default' ]
-      mode.unregister name
+    for name in *mode.names
+      mode.unregister name unless preexisting[name]
 
   describe '.register(spec)', ->
     it 'raises an error if any of the mandatory inputs are missing', ->
