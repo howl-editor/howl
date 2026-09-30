@@ -6,7 +6,7 @@ howl.util.lpeg_lexer ->
   ident = (alpha + '_')^1 * (alpha + digit + '_')^0
   ws = c 'whitespace', blank
 
-  identifer = c 'identifer', ident
+  identifier = c 'identifier', ident
 
   keyword = c 'keyword', -B'.' * word {
     'async', 'await', 'break', 'case', 'catch', 'class', 'const', 'continue',
@@ -93,7 +93,7 @@ howl.util.lpeg_lexer ->
       operator,
       number,
       type,
-      identifer,
+      identifier,
     }
 
     template: sequence {

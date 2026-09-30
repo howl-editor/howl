@@ -8,7 +8,7 @@ howl.util.lpeg_lexer ->
   continuation_ws = c 'continue', S(' \t\r\n')
   combining_ws = c 'combiner', S(' \t\r\n')^1
 
-  identifer = c 'identifer', ident
+  identifier = c 'identifier', ident
 
   keyword = c 'keyword', word {
     -- C++ keywords: todo, break out into separate mode later
@@ -131,6 +131,6 @@ howl.util.lpeg_lexer ->
       operator,
       number,
       constant,
-      identifer,
+      identifier,
     }
   }
