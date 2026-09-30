@@ -28,7 +28,7 @@
     }
 
     keyword_operators = c('operator', word { 'and', 'or', 'not', 'in', 'is' })
-    keyword_literals = c('literal', word { 'True', 'False', 'None' })
+    keyword_literals = c('constant', word { 'True', 'False', 'None' })
     keyword_keywords = c('keyword', word { 'if', 'else', 'elif', 'endif', 'for', 'endfor' })
 
     variable_capture = c('variable', ident_p)
