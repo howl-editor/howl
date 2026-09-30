@@ -11,7 +11,7 @@ howl.util.lpeg_lexer ->
     (capture('whitespace', blank)^0 * token)^-1,
     ':',
     capture('whitespace', blank)^0,
-    capture('emphasis', scan_until eol)
+    capture('strong', scan_until eol)
   }
 
   description = sequence {

@@ -335,11 +335,11 @@ style.h3 {
 
 style.emphasis {
   font-style: italic;
-  font-weight: bold;
 }
 
 style.strong {
   font-style: italic;
+  font-weight: bold;
 }
 
 style.table {

@@ -14,7 +14,7 @@ describe 'markdown', ->
   it 'removes heading markers and styles headings', ->
     text, styles = render '# Title *x*\n#### Deep'
     assert.equals 'Title x\nDeep', text
-    assert.same { 1, 'h1', 8, 7, 'strong', 8, 9, 'h3', 13 }, styles
+    assert.same { 1, 'h1', 8, 7, 'emphasis', 8, 9, 'h3', 13 }, styles
 
   it 'styles inline code', ->
     text, styles = render 'a `b` c ``d`e``'
@@ -24,17 +24,17 @@ describe 'markdown', ->
   it 'styles emphasis like the markdown mode does', ->
     text, styles = render '**b** and *i* and __u__'
     assert.equals 'b and i and u', text
-    assert.same { 1, 'emphasis', 2, 7, 'strong', 8, 13, 'emphasis', 14 }, styles
+    assert.same { 1, 'strong', 2, 7, 'emphasis', 8, 13, 'strong', 14 }, styles
 
   it 'styles nested spans with the enclosing span first', ->
     text, styles = render '**"`x`":** y'
     assert.equals '"x": y', text
-    assert.same { 1, 'emphasis', 5, 2, 'embedded', 3 }, styles
+    assert.same { 1, 'strong', 5, 2, 'embedded', 3 }, styles
 
   it 'leaves underscores within words and unpaired markers alone', ->
     text, styles = render 'a_b_c is _x_, 2 * 3'
     assert.equals 'a_b_c is x, 2 * 3', text
-    assert.same { 10, 'strong', 11 }, styles
+    assert.same { 10, 'emphasis', 11 }, styles
 
   it 'handles escapes and entities', ->
     text = render 'a\\_b\\* &lt;x&gt; &amp;&nbsp;y'
@@ -48,7 +48,7 @@ describe 'markdown', ->
   it 'shows bullets for list items', ->
     text, styles = render '- a *b*\n  * c'
     assert.equals '• a b\n  • c', text
-    assert.same { 1, 'operator', 4, 7, 'strong', 8, 11, 'operator', 14 }, styles
+    assert.same { 1, 'operator', 4, 7, 'emphasis', 8, 11, 'operator', 14 }, styles
 
   it 'styles the numbers of ordered list items', ->
     text, styles = render '1. x'

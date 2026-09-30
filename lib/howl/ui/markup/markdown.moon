@@ -22,8 +22,8 @@ entities = {
   ['&#39;']: "'",
 }
 
--- the styles are named as by the markdown lexer, which themes are made for
-emphasis_styles = { 'strong', 'emphasis' }
+-- by the number of delimiters, as the markdown lexer styles them
+emphasis_styles = { 'emphasis', 'strong' }
 
 local inline
 

@@ -48,7 +48,7 @@ describe 'lsp.hover', ->
     it 'returns a buffer with the rendered documentation', ->
       doc = hover.doc_for buffer, 6
       assert.equals 'The doc', doc.text
-      assert.equals 'emphasis', howl.ui.style.at_pos(doc, 5)
+      assert.equals 'strong', howl.ui.style.at_pos(doc, 5)
 
     it 'returns nil when there is no documentation', ->
       response = nil

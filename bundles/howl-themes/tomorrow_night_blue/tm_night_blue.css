@@ -324,11 +324,11 @@ style.h3 {
 }
 
 style.emphasis {
-  font-weight: bold;
   font-style: italic;
 }
 
 style.strong {
+  font-weight: bold;
   font-style: italic;
 }
 

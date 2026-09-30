@@ -32,8 +32,8 @@ howl.util.lpeg_lexer ->
   not_escaped = -B'\\'
 
   emp_start = -B(1) + B(space)
-  strong = emp_start * capture 'strong', any { para_pair('*'), para_pair('_') }
-  emphasis = emp_start * capture 'emphasis', any { para_pair('**'), para_pair('__') }
+  emphasis = emp_start * capture 'emphasis', any { para_pair('*'), para_pair('_') }
+  strong = emp_start * capture 'strong', any { para_pair('**'), para_pair('__') }
 
   link = not_escaped * sequence {
     capture('operator', '!')^-1,
@@ -104,8 +104,8 @@ howl.util.lpeg_lexer ->
     h3,
     h2,
     h1,
-    emphasis,
     strong,
+    emphasis,
     ref_def,
     link,
     fenced_code_block,

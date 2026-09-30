@@ -325,12 +325,12 @@ style.h3 {
   color: var(--purple);
 }
 
-style.emphasis {
+style.emphasis { font-style: italic; }
+
+style.strong {
   font-weight: bold;
   font-style: italic;
 }
-
-style.strong { font-style: italic; }
 style.link-label { color: var(--aqua); }
 style.link-url { color: var(--comment); }
 

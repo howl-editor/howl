@@ -25,6 +25,7 @@ define 'white', color: colors.white
 -- define some default formatting styles
 define 'bold', font: bold: true
 define 'emphasis', font: italic: true
+define 'strong', 'bold'
 
 -- alias some default styles
 define 'symbol', 'key'
