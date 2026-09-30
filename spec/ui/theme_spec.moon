@@ -184,6 +184,11 @@ describe 'theme', ->
         'flair.foo { shape: pipe; border-color: red; width: 2; }'
       ).foo.line_width
 
+    it 'translates border-style as line_type', ->
+      assert.equal 'dotted', load_css(
+        'flair.foo { shape: pipe; border-color: red; border-style: dotted; }'
+      ).foo.line_type
+
     it 'translates minimum-width as min_width ', ->
       assert.equal 2, load_css(
         'flair.foo { shape: pipe; minimum-width: 2; }'

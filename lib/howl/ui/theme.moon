@@ -188,6 +188,8 @@ extract_css_flairs = (css) ->
     if vars.width
       flair_def.line_width = tonumber((vars.width\gsub('px', '')))
 
+    flair_def.line_type = vars.border_style or flair_def.line_type
+
     flair_def.text_color = css_color(vars.color) or flair_def.text_color
     flair_def.background = css_color(vars.background_color) or flair_def.background
     flair_def.height = vars.height or flair_def.height
