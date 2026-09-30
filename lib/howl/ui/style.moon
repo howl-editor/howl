@@ -6,8 +6,7 @@ aullar_styles = require 'aullar.styles'
 {:define, :define_default} = aullar_styles
 
 set_for_theme = (theme) ->
-  for name, definition in pairs theme.styles
-    define name, definition
+  aullar_styles.set_theme theme.styles
 
 at_pos = (buffer, pos) ->
   b_pos = buffer\byte_offset pos

@@ -213,10 +213,8 @@ extract_css_custom = (css) ->
   values, css
 
 apply_aullar_options = (theme) ->
-  custom = theme.custom
-  return unless custom
-  if custom.gutter_color
-    aullar_config.gutter_color = custom.gutter_color
+  -- nil resets it to the default
+  aullar_config.gutter_color = theme.custom.gutter_color
 
 apply_theme = ->
   theme = current_theme
@@ -239,7 +237,7 @@ apply_theme = ->
   css_provider\load_from_data css
   loading_css = nil
   style.set_for_theme theme
-  flair.define name, def for name, def in pairs(current_theme.flairs or {})
+  flair.set_theme current_theme.flairs
   apply_aullar_options current_theme
 
   signal.emit 'theme-changed', theme: current_theme

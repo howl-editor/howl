@@ -8,6 +8,7 @@ config = require 'aullar.config'
 
 describe 'styles', ->
   before_each ->
+    styles.set_theme {}
     styles.define 'default', {}
 
   describe 'define(name, def)', ->
@@ -29,6 +30,21 @@ describe 'styles', ->
 
       styles.define_default 'preset', color: '#667788'
       assert.equal '#334455', styles.def_for('preset').color
+
+  describe 'set_theme(definitions)', ->
+    it 'overrides defined styles, even ones defined later', ->
+      styles.define 'early', color: '#112233'
+      styles.set_theme early: { color: '#445566' }, late: { color: '#778899' }
+      styles.define 'late', color: '#aabbcc'
+      assert.equal '#445566', styles.def_for('early').color
+      assert.equal '#778899', styles.def_for('late').color
+
+    it 'drops the definitions of the previous theme', ->
+      styles.define 'foo', color: '#112233'
+      styles.set_theme foo: { color: '#445566' }, theme_only: { color: '#778899' }
+      styles.set_theme {}
+      assert.equal '#112233', styles.def_for('foo').color
+      assert.is_false styles.is_defined 'theme_only'
 
   describe 'font handling', ->
     it 'allows for proportional font size specifications', ->

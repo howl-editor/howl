@@ -1,6 +1,8 @@
 import config from howl
-import theme from howl.ui
+import theme, style from howl.ui
 import File from howl.io
+flair = require 'aullar.flair'
+aullar_config = require 'aullar.config'
 
 describe 'theme', ->
   describe 'register(name, file)', ->
@@ -71,6 +73,27 @@ describe 'theme', ->
     --     theme.register 'colors', file
     --     config.theme = 'colors'
     --     assert.equal theme.current.editor.footer.color, '#ee82ee'
+
+  context 'switching themes', ->
+    it 'drops the styles, flairs and gutter color set only by the previous theme', ->
+      File.with_tmpfile (first) ->
+        File.with_tmpfile (second) ->
+          first.contents = '
+            style.first-only { color: red; }
+            flair.first-only { shape: pipe; border-color: red; }
+            .gutter { color: red; }
+          '
+          theme.register 'first', first
+          theme.register 'second', second
+          config.theme = 'first'
+          assert.is_not_nil style.first_only
+          assert.is_not_nil flair.get 'first_only'
+          assert.equal 'red', aullar_config.gutter_color
+
+          config.theme = 'second'
+          assert.is_nil style.first_only
+          assert.is_nil flair.get 'first_only'
+          assert.equal aullar_config.definition_for('gutter_color').default, aullar_config.gutter_color
 
   it 'assigning directly to .current raises an error', ->
     File.with_tmpfile (file) ->

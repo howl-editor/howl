@@ -11,6 +11,10 @@ Styling = require 'aullar.styling'
 copy = moon.copy
 
 flairs = {}
+-- set as a whole by set_theme, and looked up before the flairs above
+theme_flairs = {}
+
+lookup = (name) -> theme_flairs[name] or flairs[name]
 
 parse_color = (color) ->
   return color and RGBA(color)
@@ -173,10 +177,13 @@ build = (params) ->
   flair._line_width = params.line_width or 0.5
   flair
 
-define = (name, opts) ->
+build_named = (name, opts) ->
   flair = build opts
   flair.name = name
-  flairs[name] = flair
+  flair
+
+define = (name, opts) ->
+  flairs[name] = build_named name, opts
 
 get_text_object = (display_line, start_offset, end_offset, flair) ->
   layout = Layout display_line.pango_context
@@ -222,16 +229,21 @@ need_text_object = (flair) ->
     unless flairs[name]
       define name, flair_type, opts
 
-  get: (name) -> flairs[name]
+  set_theme: (definitions = {}) ->
+    theme_flairs = {name, build_named(name, opts) for name, opts in pairs definitions}
+
+  get: lookup
 
   clear: (name) ->
     if name
       flairs[name] = nil
+      theme_flairs[name] = nil
     else
       flairs = {}
+      theme_flairs = {}
 
   compile: (flair, start_offset, end_offset, display_line) ->
-    flair = flairs[flair] if type(flair) == 'string'
+    flair = lookup(flair) if type(flair) == 'string'
     return nil unless flair
     if need_text_object(flair) and not display_line.is_wrapped
       flair = moon.copy flair
@@ -245,7 +257,7 @@ need_text_object = (flair) ->
       if f.width == 'full'
         clip.x2 - at_x
 
-    flair = flairs[flair] if type(flair) == 'string'
+    flair = lookup(flair) if type(flair) == 'string'
     return unless flair
 
     {:layout, :view, :lines} = display_line

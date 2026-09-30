@@ -12,6 +12,8 @@ ffi = require 'ffi'
 styles = {
   default: {}
 }
+-- set as a whole by set_theme, and looked up before the styles above
+theme_styles = {}
 attributes = {}
 
 underline_options = {
@@ -83,15 +85,21 @@ create_attributes = (def) ->
 
   attrs
 
-define = (name, definition) ->
-  error "Missing argument #1 (name)", 2 unless name
-  error "Missing argument #2 (definition)", 2 unless definition
-
+named = (name, definition) ->
   if type(definition) != 'string'
     definition = copy definition
     definition.name = name
 
-  styles[name] = definition
+  definition
+
+lookup = (name) ->
+  theme_styles[name] or styles[name]
+
+define = (name, definition) ->
+  error "Missing argument #1 (name)", 2 unless name
+  error "Missing argument #2 (definition)", 2 unless definition
+
+  styles[name] = named name, definition
 
   if name == 'default'
     attributes = {}
@@ -101,22 +109,26 @@ define = (name, definition) ->
       attributes[k] = nil if k\match "^#{name}:"
 
 is_defined = (name) ->
-  styles[name] != nil
+  lookup(name) != nil
 
 define_default = (name, def) ->
   define name, def unless styles[name]
 
+set_theme = (definitions = {}) ->
+  theme_styles = {name, named(name, def) for name, def in pairs definitions}
+  attributes = {}
+
 resolve_def = (name) ->
-  def = styles[name]
+  def = lookup name
 
   while type(def) == 'string'
     name = def
-    def = styles[def]
+    def = lookup def
 
   def, name
 
 def_for = (name) ->
-  base = styles.default
+  base = lookup 'default'
   def, name = resolve_def name
 
   if not def
@@ -200,6 +212,7 @@ get_attributes = (styling, end_offset, opts = {}) ->
   :define,
   :is_defined,
   :define_default,
+  :set_theme,
   :apply,
   :create_attributes,
   :get_attributes,
