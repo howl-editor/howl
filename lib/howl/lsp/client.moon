@@ -44,10 +44,11 @@ client_capabilities = -> {
 }
 
 class Client
-  -- opts: `cmd`, `root` (a File), and optionally `process` (used instead of
-  -- spawning `cmd`), `on_initialized` and `on_exit` (called with the client
-  -- once the server is initialized, and when it exits) and
-  -- `notification_handlers` (a table of method -> handler(params))
+  -- opts: `cmd`, `root` (a File), and optionally `env` (the server's whole
+  -- environment, as for `Process`), `process` (used instead of spawning `cmd`),
+  -- `on_initialized` and `on_exit` (called with the client once the server is
+  -- initialized, and when it exits) and `notification_handlers` (a table of
+  -- method -> handler(params))
   new: (opts) =>
     @cmd = opts.cmd
     @root = opts.root
@@ -73,6 +74,7 @@ class Client
 
     @process = opts.process or Process {
       cmd: @cmd,
+      env: opts.env,
       working_directory: @root,
       read_stdout: true,
       read_stderr: true,

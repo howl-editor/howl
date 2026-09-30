@@ -534,11 +534,12 @@ command.register
 -- Launch commands
 -----------------------------------------------------------------------
 
-launch_cmd = (working_directory, cmd) ->
+launch_cmd = (working_directory, cmd, env) ->
   shell = howl.sys.env.SHELL or '/bin/sh'
   p = Process {
     :cmd,
     :shell,
+    :env,
     read_stdout: true,
     read_stderr: true,
     working_directory: working_directory,
@@ -563,13 +564,16 @@ command.register
   name: 'project-exec',
   description: 'Run an external command from within the project directory'
   input: (opts) -> interact.get_external_command path: get_project_root!, prompt: opts.prompt
-  handler: (args) -> launch_cmd args.working_directory, args.cmd
+  handler: (args) -> launch_cmd args.working_directory, args.cmd, get_project!\process_env!
   get_input_text: (args) -> args.cmd
 
 command.register
   name: 'project-build'
   description: 'Run the command in config.project_build_command from within the project directory'
-  handler: -> launch_cmd get_project!.root, (app.editor and app.editor.buffer.config or config).project_build_command
+  handler: ->
+    project = get_project!
+    cmd = (app.editor and app.editor.buffer.config or config).project_build_command
+    launch_cmd project.root, cmd, project\process_env!
 
 command.register
   name: 'exec',

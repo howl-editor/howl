@@ -1,5 +1,5 @@
 lsp = require 'howl.lsp'
-{:Buffer, :mode, :signal, :Project} = howl
+{:Buffer, :dispatch, :mode, :signal, :Project} = howl
 {:File} = howl.io
 {:Editor} = howl.ui
 
@@ -76,6 +76,30 @@ describe 'lsp', ->
       buffer.data.lsp = state
       assert.equals client, lsp.client_for buffer
 
+    it "starts no server while the project's environment is being found", ->
+      with_tmpdir (dir) ->
+        Project.add_root dir
+        file = dir / 'x.py'
+        file.contents = ''
+        buffer.file = file
+        buffer.config.lsp_command = 'true --lsp-env-test'
+        handle = dispatch.park 'lsp-env-test'
+        Project.register_environment_provider name: 'lsp-test', handler: ->
+          dispatch.wait handle
+          { A: '1' }
+
+        status, err = pcall ->
+          assert.is_nil lsp.client_for buffer
+          assert.is_nil lsp._clients["true --lsp-env-test@#{dir.path}"]
+          -- the buffer isn't showing, so it isn't attached once it's found
+          dispatch.resume handle
+          assert.same { A: '1' }, Project.for_file(file).environment
+
+        Project.unregister_environment_provider 'lsp-test'
+        Project.remove_root dir
+        Project.open[dir] = nil
+        error err unless status
+
   describe 'on_exit(client)', ->
     it 'detaches the buffers of client, and attaches them again on their next edit', ->
       app_buffer = howl.app\new_buffer!
@@ -88,6 +112,21 @@ describe 'lsp', ->
       -- the buffer has no file, so attaching again gives no state
       assert.is_nil app_buffer.data.lsp_reattach
       howl.app\close_buffer app_buffer, true
+
+  describe 'project environment changes', ->
+    it 'stops the clients of the project, to be restarted', ->
+      root = File '/tmp/proj'
+      restarted = root: root, stop: spy.new ->
+      other = root: File('/tmp/other'), stop: spy.new ->
+      lsp._clients['env-test@/tmp/proj'] = restarted
+      lsp._clients['env-test@/tmp/other'] = other
+      signal.emit 'project-environment-changed', project: { :root }
+      lsp._clients['env-test@/tmp/proj'] = nil
+      lsp._clients['env-test@/tmp/other'] = nil
+      assert.spy(restarted.stop).was_called!
+      assert.is_true restarted.restarting
+      assert.spy(other.stop).was_not_called!
+      assert.is_nil other.restarting
 
   describe 'configuration changes', ->
     local app_buffer
@@ -150,6 +189,23 @@ describe 'lsp', ->
       assert.spy(running.notify).was_called_with running, 'textDocument/didOpen', {
         textDocument: { uri: attached.uri, languageId: 'default', version: 1, text: 'x = 1\n' }
       }
+
+    it 'attaches the showing buffers again when a restarting client exits, but not otherwise', ->
+      editor = Editor Buffer {}
+      editor.buffer = app_buffer
+      status, err = pcall ->
+        for restarting in *{ false, true }
+          exiting = key: 'exiting', stopping: true, :restarting, notify: spy.new ->
+          app_buffer.data.lsp.client = exiting
+          lsp.on_exit exiting
+          if restarting
+            assert.equals running, app_buffer.data.lsp.client
+          else
+            assert.is_nil app_buffer.data.lsp
+            lsp.attach app_buffer
+
+      editor\release!
+      error err unless status
 
     it 'does not attach a buffer previewed in an editor', ->
       editor = Editor Buffer {}

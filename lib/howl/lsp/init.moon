@@ -5,7 +5,7 @@ Client = require 'howl.lsp.client'
 uri = require 'howl.lsp.uri'
 diagnostics = require 'howl.lsp.diagnostics'
 inspect = require 'howl.inspect'
-{:config, :signal, :sys, :timer, :Project} = howl
+{:config, :dispatch, :signal, :sys, :timer, :Project} = howl
 
 -- don't restart a server that exited less than this many seconds ago
 RESTART_THROTTLE = 30
@@ -25,7 +25,7 @@ executables = {}
 warned = {}
 -- commands that failed to initialize, which aren't started again
 failed = {}
-local idle_check
+local idle_check, refresh
 
 config.define
   name: 'lsp_enabled'
@@ -68,10 +68,18 @@ command_for = (buffer) ->
     return server if not failed[server] and executable_for server
   nil
 
--- servers are only started for files within a project
-root_for = (file) ->
-  project = Project.for_file file
-  project and project.root
+-- returns the variables of project's environment if they're known. Otherwise
+-- they're found in the background, and the showing buffers are attached once
+-- they are.
+environment_of = (project) ->
+  unless project.environment
+    waiting = false
+    dispatch.launch ->
+      project\find_environment!
+      refresh! if waiting
+    waiting = true
+
+  project.environment
 
 -- a buffer's `completion_triggers` is shared with its client, and filled in
 -- once the server has told us its trigger characters
@@ -114,6 +122,8 @@ on_exit = (client) ->
       detach buffer
       buffer.data.lsp_reattach = true
 
+  refresh! if client.restarting
+
 -- stops the servers that haven't been used for `lsp_server_idle_stop` minutes
 stop_idle = (now = sys.time!) ->
   limit = config.lsp_server_idle_stop * 60
@@ -137,8 +147,10 @@ client_for = (buffer) ->
   cmd = command_for buffer
   return nil unless cmd
 
-  root = root_for file
-  return nil unless root
+  -- servers are only started for files within a project
+  project = Project.for_file file
+  return nil unless project
+  root = project.root
   key = "#{cmd}@#{root.path}"
   client = clients[key]
   return client if client
@@ -154,9 +166,12 @@ client_for = (buffer) ->
       warned[executable] = true
     return nil
 
+  return nil unless environment_of project
+
   client = Client {
     :cmd,
     :root,
+    env: project\process_env!,
     :on_exit,
     on_initialized: on_initialized
   }
@@ -310,6 +325,13 @@ signal.connect 'buffer-mode-set', (args) ->
   attach args.buffer if args.buffer.showing
 
 signal.connect 'buffer-closed', (args) -> detach args.buffer
+
+-- the project's servers are restarted with the new environment once they exit
+signal.connect 'project-environment-changed', (args) ->
+  root = args.project.root
+  for client in *[c for _, c in pairs clients when c.root == root]
+    client.restarting = true
+    client\stop!
 
 signal.connect 'text-inserted', (args) -> record_change 'inserted', args
 signal.connect 'text-deleted', (args) -> record_change 'deleted', args

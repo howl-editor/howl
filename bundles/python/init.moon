@@ -10,7 +10,15 @@ mode_reg =
 
 howl.mode.register mode_reg
 
-unload = -> howl.mode.unregister 'python'
+howl.Project.register_environment_provider {
+  name: 'python-virtualenv'
+  files: { 'pyproject.toml', 'poetry.lock' }
+  handler: bundle_load('virtualenv')
+}
+
+unload = ->
+  howl.mode.unregister 'python'
+  howl.Project.unregister_environment_provider 'python-virtualenv'
 
 return {
   info:

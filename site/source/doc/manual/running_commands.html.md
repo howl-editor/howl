@@ -60,6 +60,27 @@ different style to allow you to quickly differentiate between the two.
 Howl features another execution command, `project-build`, bound to `ctrl_shift_b`. This is the same as
 `project-exec`, but it executes the command defined in `config.project_build_command`.
 
+## The project environment
+
+Commands run with `project-exec` and `project-build`, as well as [language
+servers](language_servers.html), get the project's environment: the environment
+variables Howl was started with, plus any that apply to the project.
+
+- **Python virtualenvs**: The project's virtualenv is activated, as its
+  `activate` script would do. That is a `.venv` or `venv` directory in the
+  project root, or else, for a Poetry project, the virtualenv Poetry uses for
+  it.
+
+- **`.env` files**: The variables in a `.env` file in the project root are added
+  last, overriding any others. Values may be quoted, and `${NAME}` is replaced
+  with the value of `NAME`. To use another file, or none, set the
+  `project_env_file` configuration variable, for example for the project
+  directory only.
+
+The environment is worked out the first time it's needed, and again whenever a
+file it depends on, such as `.env` or `pyproject.toml`, is saved. If that changes
+the environment, the project's language servers are restarted.
+
 ## Dealing with rogue commands
 
 While a well behaved command will exit on its own, occasionally there are those

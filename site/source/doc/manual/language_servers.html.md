@@ -22,7 +22,9 @@ opened, such as those restored from the previous session, don't start a server
 until you visit them. A project is a directory added as a
 project root (as done when using `project-open`), or the root of a version
 control repository containing the file. A single server is run for each
-project, and is shared by all files of that project.
+project, and is shared by all files of that project. Servers run with the
+[project environment](running_commands.html#the-project-environment), so that a
+Python server finds the packages of the project's virtualenv, for instance.
 
 Each mode lists the servers it knows about in order of preference, and the
 first one that is installed is used. For example, the Python mode knows about
@@ -122,6 +124,22 @@ by the `lsp` completer, which is part of the default mode's `completers`. A
 mode that specifies its own `completers` needs to include `lsp` there to get
 them. Modes should not set `lsp_command` in their default configuration, as
 that would take precedence over a user's own setting.
+
+A bundle can add to the project environment by registering a provider, whose
+handler returns the variables to set for a project, or nil. It can run
+processes, and servers wait for it before they're started. Saving one of the
+listed files in the project root finds the variables again:
+
+```moonscript
+howl.Project.register_environment_provider {
+  name: 'my-env'
+  files: { 'my-tool.toml' }
+  handler: (project, vars) -> { MY_TOOL_HOME: project.root\join('.my-tool').path }
+}
+```
+
+`vars` holds the variables from the providers before it, for building on a
+value such as `PATH`.
 
 ---
 
