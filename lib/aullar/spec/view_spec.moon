@@ -43,6 +43,16 @@ describe 'View', ->
       it 'is the last visible line', ->
         assert.equals nr_lines_in_screen, view.last_visible_line
 
+  describe '.gutter_width', ->
+    it 'is 0 when line numbers are not shown', ->
+      view.config.view_show_line_numbers = false
+      assert.equals 0, view.gutter_width
+
+    it 'is the width of the line numbers when they are shown', ->
+      buffer.text = string.rep 'x\n', 120
+      view.config.view_show_line_numbers = true
+      assert.is_true view.gutter_width >= view\text_dimensions('121').width
+
   context '(coordinate translation)', ->
     local dim
 

@@ -4,7 +4,7 @@
 aullar = require 'aullar'
 {:View} = aullar
 {:Popup, :style} = howl.ui
-{:ceil} = math
+{:ceil, :floor, :max, :min} = math
 
 keymap = {
   down: =>
@@ -42,13 +42,6 @@ class BufferPopup extends Popup
       .view_show_h_scrollbar = false
       .view_show_v_scrollbar = false
 
-    @view.listener = {
-      on_resized: (view) ->
-        for opt in *{'first_visible_line', 'middle_visible_line', 'last_visible_line'}
-          if opts[opt]
-            view[opt] = opts[opt]
-    }
-
     -- resize as the buffer changes, after the view has seen the change. aullar
     -- holds buffer listeners weakly, so we keep a reference
     resize_if_showing = -> @resize! if @showing
@@ -63,6 +56,7 @@ class BufferPopup extends Popup
     if opts.scrollable
       @keymap = keymap
 
+    @_place_view!
     super @bin, @_get_dimensions!
 
   @property buffer:
@@ -72,6 +66,7 @@ class BufferPopup extends Popup
       @_buffer = b
       @view.buffer = b._buffer
       b._buffer\add_listener @_listener
+      @_place_view!
       @resize!
 
   -- the buffer may have changed since the popup was created or last shown
@@ -87,20 +82,38 @@ class BufferPopup extends Popup
     dimensions = @_get_dimensions!
     super dimensions.width, dimensions.height
 
+  -- the view can only place a line once it has a size, but the popup is sized
+  -- from the lines it shows, so they are settled up front
+  _place_view: =>
+    nr_lines = @_nr_lines!
+    {:first_visible_line, :middle_visible_line, :last_visible_line} = @opts
+    first = if first_visible_line
+      first_visible_line
+    elseif middle_visible_line
+      middle_visible_line - floor(nr_lines / 2)
+    elseif last_visible_line
+      last_visible_line - nr_lines + 1
+
+    if first
+      @view.first_visible_line = max 1, min(first, #@_buffer.lines - nr_lines + 1)
+
+  _nr_lines: =>
+    return min(@opts.show_lines, #@_buffer.lines) if @opts.show_lines
+    nr_lines = #@_buffer.lines
+    -- don't show the last line if empty
+    if nr_lines > 1 and @_buffer.lines[nr_lines].is_blank
+      nr_lines -= 1
+
+    nr_lines
+
   _get_dimensions: =>
     first_line = @view.first_visible_line
-    local nr_lines
-    if @opts.show_lines
-      nr_lines = math.min @opts.show_lines, #@_buffer.lines
-    else
-      nr_lines = #@_buffer.lines
-      -- don't show the last line if empty
-      if nr_lines > 1 and @_buffer.lines[nr_lines].is_blank
-        nr_lines -= 1
-
-    width, height = @view\block_dimensions first_line, first_line + nr_lines - 1
+    last_line = first_line + @_nr_lines! - 1
+    -- styles can change the font, so measure the lines as they will be shown
+    @view.buffer\ensure_styled_to line: last_line
+    width, height = @view\block_dimensions first_line, last_line
     margin = 3
-    width += margin * 2
+    width += @view.gutter_width + margin * 2
     height += margin * 2
 
     return width: ceil(width), height: ceil(height)

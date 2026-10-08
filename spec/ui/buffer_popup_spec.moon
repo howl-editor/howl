@@ -55,6 +55,38 @@ describe 'BufferPopup', ->
       assert.is_true popup.width >= width_of(popup, 'a somewhat longer popup message')
       popup\release!
 
+    it 'makes room for the line numbers', ->
+      buf = ActionBuffer!
+      buf.text = 'a somewhat longer popup message'
+      popup = BufferPopup buf, show_line_numbers: true
+      gutter_width = popup.view.gutter_width
+      assert.is_true gutter_width > 0
+      assert.is_true popup.width >= width_of(popup, buf.text) + gutter_width
+      popup\release!
+
+    context 'when showing some lines around a middle line', ->
+      local lines
+
+      before_each ->
+        lines = ['short' for _ = 1, 30]
+
+      popup_for = (text_lines) ->
+        buf = ActionBuffer!
+        buf.text = table.concat text_lines, '\n'
+        BufferPopup buf, show_lines: 10, middle_visible_line: 20
+
+      it 'fits the lines it shows', ->
+        lines[20] = 'a much longer line than the others'
+        popup = popup_for lines
+        assert.is_true popup.width >= width_of(popup, lines[20])
+        popup\release!
+
+      it 'ignores the lines it does not show', ->
+        lines[1] = 'a much longer line than the others'
+        popup = popup_for lines
+        assert.is_true popup.width < width_of(popup, lines[1])
+        popup\release!
+
   context 'resource management', ->
     it 'popups are collected as they should', ->
       buf = ActionBuffer!

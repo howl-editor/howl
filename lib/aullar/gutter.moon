@@ -29,6 +29,9 @@ define_class {
       get: => @area.visible
       set: (visible) => @area.visible = visible
     }
+
+    -- includes the theme's padding around the numbers
+    width: => @area\measure(Gtk.ORIENTATION_HORIZONTAL, -1).natural
   }
 
   sync: =>

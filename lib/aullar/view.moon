@@ -969,6 +969,7 @@ View = {
 
     elseif option == 'view_show_line_numbers'
       @gutter.visible = val
+      @gutter\sync_dimensions @buffer, force: true
 
     elseif option\match('^view_')
       @_reset_display!
