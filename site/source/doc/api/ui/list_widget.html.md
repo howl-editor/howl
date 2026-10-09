@@ -79,5 +79,5 @@ Hides the widget.
 Shows the widget.
 
 [List]: list.html
-[CommandLine]: command_line.html
-[command line]: command_line.html
+[CommandLine]: command_panel.html#commandline
+[command line]: command_panel.html

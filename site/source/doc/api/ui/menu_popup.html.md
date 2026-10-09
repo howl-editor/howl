@@ -20,7 +20,9 @@ While showing, `down`/`ctrl_n` and `up`/`ctrl_p` move the selection, and
 `page_down` and `page_up` move it a page at a time. The selected item is chosen
 with `tab` or `enter`, depending on the `popup_menu_accept_key` configuration
 variable. Any other key that doesn't insert a character, such as `escape`,
-closes the popup.
+closes the popup, while pressing a modifier key alone doesn't. A key that inserts
+a character is passed on to the editor, which closes the popup as the character
+is inserted.
 
 ---
 

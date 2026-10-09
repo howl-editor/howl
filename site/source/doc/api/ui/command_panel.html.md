@@ -12,7 +12,7 @@ line that appears at the bottom of the window to handle user input. The
 `howl.app.window.command_panel`.
 
 The recommended way to invoke and control the command panel is by using one of
-the [built-in interactions](../interact.md). The command panel API can also be
+the [built-in interactions](../interact.html). The command panel API can also be
 used directly for finer control of the command line. This API is described in
 this page.
 
@@ -101,23 +101,27 @@ interactions
 
 ## CommandPanel
 
-The `CommandPanel` only has one method called `run`.
+The `CommandPanel` is used through its `run` method.
 
 ### run(def, opts)
 
 Creates a `CommandLine`, displayes the command line, and invokes the `def`
-command line definition. `def` is table that provides the following fields:
+command line definition. `run` must be called from a coroutine, and returns
+once the command line is finished. `def` is table that provides the following
+fields:
 
 * `init(command_line, opts)` (required function): Invoked on command line
-initializaiont. `command_line` is the `CommandLine` object and `opts` is the
-`opts` object passed into the `run` method. Typically this function saves the
-`command_line` so it can use the CommandLine API (described below) while
-handling keypresses or text changes.
+initializaiont. `command_line` is the `CommandLine` object and `opts` is a table
+with `max_height` and `max_width`, the space available for widgets in pixels.
+Typically this function saves the `command_line` so it can use the CommandLine
+API (described below) while handling keypresses or text changes.
 
-* `keymap` (required table): Defines the keypress handling routines for the
+* `keymap` (optional table): Defines the keypress handling routines for the
 command line. The keys are key names (such as `enter`) and the values are
-functions that get called when the corresponding key is pressed. This is similar
-to other keymaps in Howl, see [bindings](../bindings.md) for more details.
+functions that get called with `def` when the corresponding key is pressed. This
+is similar to other keymaps in Howl, see [bindings](../bindings.html) for more
+details. A handler returning `false` lets the command line's own handling of the
+key take place.
 
 * `on_text_changed(text)` (optional function): Invoked whenever the user types
 something and the editable text in the command line changes.
@@ -125,7 +129,7 @@ something and the editable text in the command line changes.
 The `opts` table may provide the following fields:
 
 * `text`: The intial value for the editable command line text.
-* `help`: A [HelpContext](help_context.md) containing help for this invocation.
+* `help`: A [HelpContext](help_context.html) containing help for this invocation.
   The help is automatically displayed if the user presses `f1` while the command
   line is active.
 
@@ -157,7 +161,7 @@ Gets of sets the title shown just at the top of the widget.
 
 ### notification
 
-A [NotificationWidget](notification_widget.md) attached to the command line. To
+A [NotificationWidget](notification_widget.html) attached to the command line. To
 display a message call:
 
 ```
@@ -187,7 +191,9 @@ must be an instance of either [ListWidget] or [NotificationWidget].
 
 ### remove_widget (name)
 
-Removes the widget identified by `name` from the command line view.
+Forgets the widget identified by `name`, so that it's no longer returned by
+`get_widget`. The widget stays in the command line view until the command line is
+closed.
 
 [interactions]: ../interact.html
 [ListWidget]: list_widget.html

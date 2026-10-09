@@ -7,8 +7,8 @@ title: howl.ui.HelpContext
 ## Overview
 
 A HelpContext is an object that contains help information presented to the user.
-It is typically created to be passed to [interactions](../interact.md) and the
-[CommandPanel](command_panel.md).
+It is typically created to be passed to [interactions](../interact.html) and the
+[CommandPanel](command_panel.html).
 
 ## Methods
 
@@ -34,7 +34,7 @@ contains the shortcut keystroke associated with that command.
 
 ### get_buffer ->
 
-Returns an [ActionBuffer](action_buffer.md) containing all the help information
+Returns an [ActionBuffer](action_buffer.html) containing all the help information
 added to this object.
 
 

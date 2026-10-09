@@ -53,7 +53,7 @@ fields:
 * `prompt`: The text prompt to be displayed. Often of the form `:command-name`
 * `text`: Any text value already entered by the user. This may be non blank
   if a command is selected form the history, for instance.
-* `help`: A [HelpContext](ui/help_context.md) object that contains help
+* `help`: A [HelpContext](ui/help_context.html) object that contains help
   information for this command.
 
 These fields are often passed through to an [interaction] invoked inside the
@@ -72,7 +72,7 @@ underscores. For example, the "buffer-reload" command can be invoked via
 
 When called via the `run` function, e.g. `howl.command.run('open')` the input
 function is invoked if present and the behavior is identical to invoking the
-command from the [command line](../manual/running_commands.md). When called
+command from the [command line](../manual/running_commands.html). When called
 directly as a function, e.g. `howl.command.open(howl.io.File('/tmp/somefile))`,
 the input function is not invoked and the command must be passed a value
 accepted by the handler.
@@ -169,4 +169,4 @@ the command.
 [interaction]: interact.html
 [interactions]: interact.html
 [File]: io/file.html
-[command line]: ui/command_line.html
+[command line]: ui/command_panel.html

@@ -39,7 +39,7 @@ keys:
 
 - `scrollable`: When true, the popup handles keys for scrolling its contents
 (`up`, `down`, `left`, `right`, `home`, `end`, `page_up`, `page_down`, `space`
-and `backspace`) and `escape` for closing it.
+and `backspace`), and ignores all other keys until it's closed with `escape`.
 - `show_lines`: The maximum number of lines to show. By default all lines are
 shown, except for an empty last line.
 - `show_line_numbers`: Whether to show line numbers. Defaults to false.

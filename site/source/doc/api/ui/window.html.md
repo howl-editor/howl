@@ -13,7 +13,7 @@ examples of this.
 
 A window has, apart from the grid components described above, always two
 graphical elements associated with it; A [Status] instance used for displaying
-informational message to the user, and a [CommandLine] instance allowing for
+informational message to the user, and a [CommandPanel] instance allowing for
 user input. It can also optionally display arbitrary widgets at the bottom via
 the use of [push_widget].
 
@@ -35,9 +35,9 @@ _See also_:
 
 ## Properties
 
-### command_line
+### command_panel
 
-A [CommandLine] instance associated with the window.
+The [CommandPanel] of the window, which runs its command line.
 
 ### current_view
 
@@ -152,7 +152,7 @@ siblings will wrap around in a left-to-right, top-to-bottom order fashion.
 
 Returns the underlying Gtk window.
 
-[CommandLine]: command_line.html
+[CommandPanel]: command_panel.html
 [Editor]: editor.html
 [Status]: status.html
 [push_widget]: #push_widget

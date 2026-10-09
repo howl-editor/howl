@@ -29,8 +29,8 @@ _See also_:
 Creates a new popup displaying `child`, a Gtk widget. `opts` can contain the
 following keys:
 
-- `width`, `height`: The size of the popup, in pixels. A popup needs both of
-these to be shown.
+- `width`, `height`: The size of the popup's content, in pixels, not including
+the padding the theme gives popups. A popup needs both of these to be shown.
 
 Any other keys are set as properties of the underlying Gtk popover.
 
@@ -94,12 +94,14 @@ within the widget otherwise.
 ## Editor hooks
 
 A popup shown in an editor can define the following, which the editor uses while
-the popup is showing:
+it holds the popup. That lasts until the popup is removed, which for a popup that
+closed itself happens at the next key press.
 
 ### keymap
 
-A [keymap] for handling key presses. A key press handled by the keymap is not
-passed on to the editor.
+A [keymap] for handling key presses, with the popup as the handlers' `self`. A
+key press handled by the keymap is not passed on to the editor. `escape` never
+reaches the keymap, since the editor removes the popup first.
 
 ### on_delete_back (editor, args)
 

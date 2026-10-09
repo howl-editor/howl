@@ -160,7 +160,7 @@ overwrites them.
 ### popup
 
 The [popup][Popup] currently showing in the editor, shown with
-[show_popup](#show_popup), or `nil` if there's none. Read-only.
+[show_popup](#show_popup-popup-options), or `nil` if there's none. Read-only.
 
 ### searcher
 
@@ -349,14 +349,15 @@ level to the right.
 Display the [popup][Popup] for the specific editor. The popup is displayed at
 the current cursor position, unless otherwise specified in `options`. There can
 only be one popup for a given editor at one time, invoking `show_popup` when an
-existing popup is active will cause that popup to close.
+existing popup is active will cause that popup to be removed. While the
+completion popup is showing, `show_popup` does nothing.
 
 `options` can contain the
 following keys:
 
 - `position`: The character position at which to show the popup, or `'center'` to center it in the editor.
-- `persistent`: A boolean indicating whether the popup should remain shown as the user types. The default behaviour is to automatically remove the popup in response to a key press.
-- `keep_alive`: A boolean indicating whether the popup should only be closed when removed, so that it can be shown again. The default behaviour is to release the popup when it's removed.
+- `persistent`: A boolean indicating whether the popup should remain shown as the user types. The default behaviour is to automatically remove the popup in response to a key press that the popup doesn't handle. A persistent popup is still removed by `escape`, a mouse click in the text, the editor losing focus, switching buffers and saving the buffer.
+- `keep_alive`: A boolean indicating whether the popup should only be closed when removed, so that it can be shown again. The default behaviour is to release the popup when it's removed, after which it can't be shown again.
 
 ### smart_tab ()
 

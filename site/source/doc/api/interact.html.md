@@ -93,10 +93,14 @@ Unregister an interaction with the name `name`.
 ## Built-in interactions <a name="builtin"></a>
 
 Howl provides a number of predefined interactions out of the box. These are
-described in the following sections. All interactions are invoked with a single
+described in the following sections. The interactions are invoked with a single
 `opts` argument which is a table containing fields specific to the interaction.
-The optional `help` field is common to all interactions and contains a
-[HelpContext].
+Fields an interaction doesn't use are ignored. Interactions need to be invoked
+from a coroutine, as is the case for command handlers and key bindings.
+
+`read_text`, `select_location`, `select_buffer`, the file and directory
+selections, `explore` and `buffer_search` also accept an optional `help` field,
+containing a [HelpContext] shown when the user presses `f1`.
 
 ## User text input
 
@@ -108,6 +112,7 @@ by the user when the user presses `enter`, or `nil` if the user presses
 
 - `prompt`: _[optional]_ The prompt displayed in the command line.
 - `title`: _[optional]_ The title displayed in the command line title bar.
+- `text`: _[optional]_ The initial text.
 
 Example:
 
@@ -128,8 +133,9 @@ filtered to show only those items that match the entered text.
 Allows customization such as multiple columns, column headers, styling, user
 provided selection etc. These are described below.
 
-If the user presses `enter`, returns the selected item. If the user presses
-`escape`, `nil` is returned.
+If the user presses `enter`, returns the selected item. Pressing `enter` when no
+item matches the entered text does nothing. If the user presses `escape`, or
+`backspace` with no text entered, `nil` is returned.
 
 `opts` is a table that specifies:
 
@@ -143,18 +149,12 @@ of strings, one each for each column. Instead of a string, a
 - `columns`: _[optional]_ A table containing the header text and style for each
 column. Identical to the `columns` argument in the
 [StyledText.for_table](ui/styled_text.html#styledtext.for_table) function.
-- `keymap`: _[optional]_ An additional keymap to used for this interaction.
-- `on_change`: _[optional]_ A function callback that is called whenever the user
-changes the currently selected item or updates the text in the command line. The
-callback function is called with the three arguments `(selection, text, items)`,
-where:
-  - `selection` is the newly selected item
-  - `text` is the current text in the command line
-  - `items` is the current (possibly filtered) list of items
 - `selection`: _[optional]_ The item that is initially selected by default. This
 must be an item in the `items` list.
-- `reverse`: _[optional, default: false]_ When set to `true`, the list is displayed reversed,
-i.e. the first item is displayed at the bottom and subsequent items above it.
+- `text`: _[optional]_ The initial text, filtering the items.
+
+For reacting to selection changes, use the [explore](#explore) interaction
+instead.
 
 Examples:
 
@@ -195,7 +195,7 @@ Lets the user select a buffer from a list of all buffers. `opts` is a table
 containing:
 
 - `prompt`: _[optional]_ The prompt displayed in the command line. Default is no prompt.
-- `title`: _[optional]_ The title displayed in the command line title bar. Default is 'Buffers'.
+- `text`: _[optional]_ The initial text, filtering the buffers.
 
 Returns the [Buffer](buffer.html) selected by the user, or `nil` if the user
 presses `escape`.
@@ -203,9 +203,18 @@ presses `escape`.
 
 ### select_location(opts)
 
-Very similar to [select](#select), but lets the user select a location from a
+Very similar to [select](#select-opts), but lets the user select a location from a
 list of location. In addition, it displays a preview of the currently selected
-option in the editor. Each item in `items` can have the following fields:
+option in the editor. Returns the selected item, or `nil` if the user presses
+`escape`.
+
+`opts` can contain `items`, `prompt` (default `'> '`), `title`, `text`,
+`columns` and `selection` as for [select](#select-opts), where `selection` must be
+one of the tables in `items`, and `preserve_order`, which keeps the items in
+their given order when filtering.
+
+As for `select`, the numerically indexed fields of an item are the displayed
+columns. Each item can also have the following fields:
 
 - `file`, `buffer` or `chunk`: One of `file`, `buffer` or `chunk` must be
 provided. This specifies which file or buffer is previewed in the editor when
@@ -218,21 +227,27 @@ When a file or buffer is provided, the position within it is specified by
 the following fields:
 - `line_nr`: _[optional]_ The line number in `file` or `buffer`
 - `start_column`: _[optional]_ The starting column within the line
-- `end_column`: _[optional]_ The ending column within the line
+- `end_column`: _[optional]_ The column just after the end of the span within the line
+- `byte_start_column`, `byte_end_column`: _[optional]_ Byte oriented versions of
+  `start_column` and `end_column`
 - `pos`: _[optional]_ The character offset from the start of the buffer
 
-One of either `line` or `pos` may be specified, but not both. The `start_column`
-and `end_column` may only be specified if `line_nr` is specified.
+One of either `line_nr` or `pos` may be specified, but not both. The column
+fields may only be specified if `line_nr` is specified. The span between the
+start and end column is highlighted in the preview: the whole line without a
+start column, and the character at the start without an end column.
 
-When a chunk is provided, none of `line_nr`, `start_column`, `end_column` or
-`pos` is applicable since the chunk identifies the buffer as well as a span
-within it.
+When a chunk is provided, none of `line_nr`, the column fields or `pos` is
+applicable since the chunk identifies the buffer as well as a span within it.
+
+An item can also have a `popup` field, with text to show in a popup at the
+location while it's previewed.
 
 ### yes_or_no (opts)
 
-Lets the user select either 'Yes' or 'No' as an answer to a question. Returns
-`true` if the user selects 'Yes', `false` if the user selects 'No' and `nil` if
-the user presses `escape`. `opts` is table containing:
+Lets the user select either 'Yes' or 'No' as an answer to a question, with 'No'
+initially selected. Returns `true` if the user selects 'Yes', `false` if the user
+selects 'No' and `nil` if the user presses `escape`. `opts` is table containing:
 
 - `prompt`: _[optional]_ The prompt displayed in the command line. Default is no prompt.
 - `title`: _[optional]_ The title displayed in the command line title bar. Default is no title.
@@ -247,8 +262,9 @@ in the command line.
 
 `opts` is a table containing:
 
-- `title`: _[optional]_ The title displayed in the command line title bar.
-Default is 'File'.
+- `path`: _[optional]_ The path of the directory to start in. Default is the
+home directory.
+- `prompt`: _[optional]_ The prompt displayed in the command line.
 - `allow_new`: _[optional, default: false]_ When `true`, allows the user to
 choose a nonexistent path by typing it in the command line and pressing enter.
 - `show_subtree`: _[optional, default: false]_ When `true` the file browser
@@ -263,6 +279,9 @@ nonexistent path.
 Lets the user select a file from a completion list containing all files in the
 current project. `opts` is a table containing:
 
+- `project`: _[optional]_ The project to select from. Default is the project of
+the current buffer's file. Without a project, `nil` is returned.
+- `prompt`: _[optional]_ The prompt displayed in the command line.
 - `title`: _[optional]_ The title displayed in the command line title bar.
 Default is the project path.
 
@@ -276,13 +295,12 @@ or typing a path in the command line.
 
 `opts` is a table containing:
 
-- `title`: _[optional]_ The title displayed in the command line title bar. Default is 'Directory'.
-- `allow_new`: _[optional, default: false]_ When `true`, allows the user to
-choose a nonexistent path by typing it in the command line and pressing enter.
+- `path`: _[optional]_ The path of the directory to start in. Default is the
+home directory.
+- `prompt`: _[optional]_ The prompt displayed in the command line.
+- `title`: _[optional]_ The title displayed in the command line title bar.
 
 Returns the [File] selected by the user, or `nil` if the user presses `escape`.
-Note that if `allow_new` was specified, the returned file object may refer to a
-nonexistent path.
 
 ## Rich multilevel exploration
 
@@ -395,7 +413,12 @@ subdir explorer (if it exists) is immediately selected - you don't have to type
   which specifies the new object that should be focussed somewhere completely
   different in the tree.
 
-* `preview` (function): Returns a table describing what should be previewed
+* `preview` (function): Called when this object is selected, and returns a table
+describing what to preview in the editor, or `nil` for no preview. The table
+contains one of `text` (a string), `buffer` (a [Buffer]), `file` (a [File]) or
+`chunk` (a [Chunk], highlighted in the preview), and optionally `title`, the
+title of the previewed buffer, and `popup`, text to show in a popup at the
+chunk.
 
 
 ## Search and replace
@@ -491,6 +514,6 @@ buffer if desired.
 [CommandPanel]: ui/command_panel.html
 [File]: io/file.html
 [Line]: ../spec/buffer_lines_spec.html#line-objects
-[Chunk]: chunk.md
+[Chunk]: chunk.html
 [ListWidget]: ui/list_widget.html
 [HelpContext]: ui/help_context.html

@@ -192,7 +192,7 @@ Returns a [Chunk] for the given range.
 ### chunk_for_span(span [, line_nr])
 
 Returns a [Chunk] for the given `span` and optional `line_nr`. The span is
-resolved using [resolve_span](#resolve_span), so its end is exclusive: the chunk
+resolved using [resolve_span](#resolve_span-span-line_nr), so its end is exclusive: the chunk
 ends at the character before it.
 
 ### context_at(pos)

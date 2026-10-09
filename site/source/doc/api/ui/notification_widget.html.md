@@ -55,5 +55,5 @@ Shows the widget.
 
 Displays a warning message.
 
-[CommandLine]: command_line.html
-[command line]: command_line.html
+[CommandLine]: command_panel.html#commandline
+[command line]: command_panel.html
