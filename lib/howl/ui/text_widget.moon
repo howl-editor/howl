@@ -21,6 +21,7 @@ class TextWidget extends PropertyObject
       .view_line_padding = config.line_padding
       .view_show_h_scrollbar = false
       .view_line_wrap = @opts.line_wrap
+      .view_tab_size = @opts.tab_size if @opts.tab_size
 
     @selection = Selection @view
     @cursor = Cursor self, @selection

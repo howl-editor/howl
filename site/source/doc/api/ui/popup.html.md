@@ -31,6 +31,9 @@ following keys:
 
 - `width`, `height`: The size of the popup's content, in pixels, not including
 the padding the theme gives popups. A popup needs both of these to be shown.
+- `css_class`: A CSS class to add to the popover, for themes to style the popup
+by. Popups opened by an explicit action, such as a menu of choices, use
+`action-popup`.
 
 Any other keys are set as properties of the underlying Gtk popover.
 

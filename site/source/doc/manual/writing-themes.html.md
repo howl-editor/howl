@@ -156,9 +156,13 @@ are the selectors for Howl's parts of the window:
 | `.gutter` | The line number gutter |
 | `window .status` | The status messages. `.info`, `.warning` or `.error` is set along with it |
 | `popover`, `popover contents` | Popups, such as the completion list |
+| `popover.action-popup contents` | Popups opened by an explicit action, such as the `goto` menu and the documentation popup, as opposed to those that appear while typing |
 | `scrollbar` | Scrollbars, e.g. `scrollbar range trough slider` |
 
-The background of an editor is that of its `.content-box`. The font family and
+The background of an editor is that of its `.content-box`. Howl gives
+`.action-popup` popups some padding, a 2px border and rounded corners, so they
+stand out from the other popups. Themes typically set an accent color for their
+border, and possibly a background of their own. The font family and
 size come from the `font` and `font_size` configuration variables, so themes
 shouldn't set them for the window. Howl draws the line numbers in the gutter
 itself, using the `color` of the `.gutter` rule.
@@ -261,6 +265,7 @@ Howl shows in popups.
 |---|---|---|
 | `default` | All text, and the base for the other styles | |
 | `popup` | Popups, if it sets a `background-color` | `default` |
+| `menu_icon` | Icons in popup menus, such as the `goto` menu | `special` |
 | `info`, `warning`, `error` | Messages, such as in notifications and the journal | |
 | `prompt` | The command line prompt | `keyword` |
 | `command_name` | Command names | `keyword` |

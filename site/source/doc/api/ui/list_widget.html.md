@@ -48,6 +48,8 @@ that the list never shrinks, even if the list is updated to contain fewer items.
 By default the height of the widget is adjusted to fit the space occupied by the
 list.
 
+  - `tab_size`: _[optional, default:4]_ The width of a tab, in spaces.
+
 ## Properties
 
 ### height

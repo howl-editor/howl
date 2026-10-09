@@ -20,9 +20,13 @@ class Popup extends PropertyObject
     props.child = @child
     @width = props.width
     @height = props.height
+    css_class = props.css_class
     props.width = nil
     props.height = nil
+    props.css_class = nil
     @popover = Popover props
+    -- added, as setting `css_classes` would drop the popover's own classes
+    @popover\add_css_class css_class if css_class
     @_set_size @width, @height
     @showing = false
     super!

@@ -18,6 +18,11 @@ describe 'BufferPopup', ->
   width_of = (popup, text) ->
     popup.view\text_dimensions(text).width
 
+  it 'adds opts.css_class to the popover', ->
+    popup = BufferPopup ActionBuffer!, css_class: 'action-popup'
+    assert.includes popup.popover.css_classes, 'action-popup'
+    popup\release!
+
   context 'sizing', ->
     it 'fits a buffer filled after creating the popup once shown', ->
       buf = ActionBuffer!

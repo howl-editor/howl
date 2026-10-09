@@ -34,13 +34,31 @@ _See also_:
 
 ## Constructor
 
-### MenuPopup (items, callback)
+### MenuPopup (items, callback, opts = {})
 
 Creates a new MenuPopup for `items`, a list of the items to show. Items are
-displayed as for a [List]: strings, or tables with one value per column.
+displayed as for a [List]: strings, or tables with one value per column. A table
+item can have an `icon` field naming an icon from `howl.ui.icon`, such as
+`'font-awesome-cube'`, which is shown before its first
+column using the `menu_icon` style. The text after the icons is lined up, however
+wide each icon is.
 
 `callback` is invoked with the selected item when an item is chosen. The popup
 is closed if `callback` returns true.
+
+`opts` are the options for the underlying [Popup], such as `css_class`. A menu
+opened by an explicit action, rather than while typing, should set it to
+`action-popup`:
+
+```moonscript
+items = {
+  { 'Definition', icon: 'goto-definition' },
+  { 'References', icon: 'goto-reference' }
+}
+menu = howl.ui.MenuPopup items, ((item) -> log.info "Chose #{item[1]}"; true),
+  css_class: 'action-popup'
+howl.app.editor\show_popup menu
+```
 
 ## Properties
 

@@ -5,6 +5,17 @@ import Popup from howl.ui
 Gtk = require 'ljglibs.gtk'
 
 describe 'Popup', ->
+  it 'adds opts.css_class to the popover, keeping its own classes', ->
+    plain = Popup Gtk.Box(Gtk.ORIENTATION_VERTICAL, {})
+    own_classes = plain.popover.css_classes
+    plain\release!
+
+    popup = Popup Gtk.Box(Gtk.ORIENTATION_VERTICAL, {}), css_class: 'action-popup'
+    classes = popup.popover.css_classes
+    assert.includes classes, 'action-popup'
+    assert.includes classes, cls for cls in *own_classes
+    popup\release!
+
   context 'resource management', ->
     child = Gtk.Box Gtk.ORIENTATION_VERTICAL, {}
 

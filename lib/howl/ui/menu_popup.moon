@@ -1,21 +1,39 @@
 -- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:List, :ListWidget, :Popup} = howl.ui
+{:List, :ListWidget, :Popup, :StyledText, :icon, :style} = howl.ui
 {:bindings, :config} = howl
 
+style.define_default 'menu_icon', 'special'
+
+-- Font Awesome icons, drawn small, are narrower than two monospace characters
+ICON_TAB_SIZE = 2
+
+-- the row showing item, which for an item with an icon starts with the icon
+-- and a tab, so that the texts after the icons line up whatever their widths
+row_for = (item) ->
+  return item unless type(item) == 'table' and item.icon
+  first = item[1]
+  first = StyledText(tostring(first), {}) unless typeof(first) == 'StyledText'
+  row = [cell for cell in *item]
+  row[1] = icon.get(item.icon, 'menu_icon') .. StyledText('\t ', {}) .. first
+  row._menu_item = item
+  row
+
 class MenuPopup extends Popup
-  new: (@items, @callback) =>
+  new: (@items, @callback, opts = {}) =>
     error('Missing argument #1: items', 3) if not @items
     error('Missing argument #2: callback', 3) if not @callback
 
-    @list = List -> @items
-    @list_widget = ListWidget @list, auto_fit_width: true
+    @list = List -> [row_for item for item in *@items]
+    @list_widget = ListWidget @list, auto_fit_width: true, tab_size: ICON_TAB_SIZE
 
     @highlight_matches_for = ''
     @list_widget\show!
 
-    super @list_widget\to_gobject!, width: @list_widget.width, height: @list_widget.height
+    opts = moon.copy opts
+    opts.width, opts.height = @list_widget.width, @list_widget.height
+    super @list_widget\to_gobject!, opts
 
   refresh: =>
     @list\update @highlight_matches_for
@@ -24,7 +42,9 @@ class MenuPopup extends Popup
     super @list_widget.width, @list_widget.height
 
   choose: =>
-    if self.callback @list.selection
+    row = @list.selection
+    item = type(row) == 'table' and row._menu_item or row
+    if self.callback item
       @close!
 
   on_insert_at_cursor: (editor, args) =>

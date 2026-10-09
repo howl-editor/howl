@@ -45,6 +45,8 @@ shown, except for an empty last line.
 - `show_line_numbers`: Whether to show line numbers. Defaults to false.
 - `first_visible_line`, `middle_visible_line`, `last_visible_line`: A line to
 show at the top, middle or bottom of the popup.
+- `css_class`: A CSS class to add to the popover, as for [Popup]. The
+documentation popup uses `action-popup`.
 
 ## Properties
 

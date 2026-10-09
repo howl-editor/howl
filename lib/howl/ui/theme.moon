@@ -53,6 +53,14 @@ popover arrow {
   background: red;
 }
 
+/* Popups opened by an explicit action stand out more than those that appear
+   while typing, such as completions */
+popover.action-popup contents {
+  padding: 4px 6px;
+  border-width: 2px;
+  border-radius: 6px;
+}
+
 scrollbar {
   background-color: #00000000;
 }

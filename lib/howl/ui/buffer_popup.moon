@@ -57,7 +57,9 @@ class BufferPopup extends Popup
       @keymap = keymap
 
     @_place_view!
-    super @bin, @_get_dimensions!
+    popup_opts = @_get_dimensions!
+    popup_opts.css_class = opts.css_class
+    super @bin, popup_opts
 
   @property buffer:
     get: => @_buffer

@@ -51,6 +51,10 @@ popover contents {
   background-color: #00346e;
 }
 
+popover.action-popup contents {
+  border: 2px solid var(--orange);
+}
+
 .content-box {
   margin: 1px;
   background-color: var(--background);

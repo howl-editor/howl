@@ -53,6 +53,13 @@ popover contents {
   border: 1px solid grey;
 }
 
+popover.action-popup contents {
+  padding: 6px 10px;
+  background-color: #444444;
+  border-color: var(--lightblue);
+  border-radius: 10px;
+}
+
 .gutter {
   color: gray;
   background: linear-gradient(to bottom,

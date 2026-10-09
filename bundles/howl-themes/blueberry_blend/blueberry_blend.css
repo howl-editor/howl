@@ -60,6 +60,11 @@ popover contents {
   border: 1.5px solid var(--dark-blue-off);
 }
 
+popover.action-popup contents {
+  background-color: var(--dark-blue);
+  border-color: var(--yellow);
+}
+
 .content-box {
   background-color: var(--deep-dark-blue);
   border: 1px solid var(--deep-dark-blue);

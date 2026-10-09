@@ -49,6 +49,11 @@ popover contents {
   border: 1px solid var(--grey);
 }
 
+popover.action-popup contents {
+  background-color: var(--grey-darker);
+  border-color: var(--magenta);
+}
+
  /* General styling for context boxes (editor, command_line) */
 .content-box {
   margin: 1px;

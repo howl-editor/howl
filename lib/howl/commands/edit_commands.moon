@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:activities, :app, :command, :interact, :timer} = howl
-{:ActionBuffer, :BufferPopup, :MenuPopup, :markup} = howl.ui
+{:ActionBuffer, :BufferPopup, :MenuPopup, :icon, :markup} = howl.ui
 {:Process} = howl.io
 
 command.register
@@ -172,7 +172,7 @@ command.register
         doc_buf\append markup.markdown(node.description)
 
     if doc_buf
-      app.editor\show_popup BufferPopup doc_buf, scrollable: true
+      app.editor\show_popup BufferPopup doc_buf, scrollable: true, css_class: 'action-popup'
     else
      log.info "No documentation found for '#{ctx.word}'"
 
@@ -247,7 +247,8 @@ command.register
 
     app\open loc if loc
 
--- the targets offered by `goto`, with the server capability each needs
+-- the targets offered by `goto`, with the server capability each needs. The
+-- icons are named after the commands.
 goto_targets = {
   { label: 'Definition', cmd: 'goto-definition', provider: 'definitionProvider' }
   { label: 'Declaration', cmd: 'goto-declaration', provider: 'declarationProvider' }
@@ -255,6 +256,12 @@ goto_targets = {
   { label: 'Implementation', cmd: 'goto-implementation', provider: 'implementationProvider' }
   { label: 'References', cmd: 'goto-reference', provider: 'referencesProvider' }
 }
+
+icon.define_default 'goto-definition', 'font-awesome-crosshairs'
+icon.define_default 'goto-declaration', 'font-awesome-bookmark-o'
+icon.define_default 'goto-type-definition', 'font-awesome-cube'
+icon.define_default 'goto-implementation', 'font-awesome-cogs'
+icon.define_default 'goto-reference', 'font-awesome-link'
 
 command.register
   name: 'goto',
@@ -275,7 +282,7 @@ command.register
     client = state.client
     items = for t in *goto_targets
       continue if client.initialized and not client.capabilities[t.provider]
-      { t.label, cmd: t.cmd }
+      { t.label, icon: t.cmd, cmd: t.cmd }
 
     if #items == 0
       log.warn "The LSP server for '#{buffer.title}' supports no goto requests"
@@ -286,7 +293,7 @@ command.register
       timer.asap -> command.run item.cmd
       true
 
-    editor\show_popup MenuPopup items, run_target
+    editor\show_popup MenuPopup items, run_target, css_class: 'action-popup'
 
 command.register
   name: 'buffer-mode',

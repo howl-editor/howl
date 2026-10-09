@@ -68,6 +68,11 @@ popover contents {
   border: 1px solid alpha(var(--base1), 0.5);
 }
 
+popover.action-popup contents {
+  background-color: var(--background);
+  border-color: var(--blue);
+}
+
 .content-box {
   margin: 1px;
   background-color: var(--background);
