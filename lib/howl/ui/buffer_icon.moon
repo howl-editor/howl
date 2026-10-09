@@ -9,12 +9,12 @@ config.define
   type_of: 'boolean'
   default: true
 
-icon.define_default 'buffer', 'font-awesome-square'
-icon.define_default 'buffer-modified', 'font-awesome-pencil-square-o'
-icon.define_default 'buffer-modified-on-disk', 'font-awesome-clone'
-icon.define_default 'process-success', 'font-awesome-check-circle'
-icon.define_default 'process-running', 'font-awesome-play-circle'
-icon.define_default 'process-failure', 'font-awesome-exclamation-circle'
+icon.define_default 'buffer', 'nerd-square'
+icon.define_default 'buffer-modified', 'nerd-pencil-square-o'
+icon.define_default 'buffer-modified-on-disk', 'nerd-clone'
+icon.define_default 'process-success', 'nerd-check-circle'
+icon.define_default 'process-running', 'nerd-play-circle'
+icon.define_default 'process-failure', 'nerd-exclamation-circle'
 
 
 buffer_status_icon = (buffer) ->

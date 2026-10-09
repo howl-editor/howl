@@ -19,9 +19,9 @@ howl.config.define
 
 style.define_default 'directory', 'key'
 style.define_default 'filename', 'string'
-icon.define_default 'directory', 'font-awesome-folder'
-icon.define_default 'file', 'font-awesome-file'
-icon.define_default 'file-new', 'font-awesome-plus-circle'
+icon.define_default 'directory', 'nerd-folder'
+icon.define_default 'file', 'nerd-file'
+icon.define_default 'file-new', 'nerd-plus-circle'
 
 is_path_directory = (path) -> path[#path] == separator
 path_demoted = (path) -> path[1] == '.' and path != current_dir_specifier  -- rename

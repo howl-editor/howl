@@ -4,7 +4,7 @@
 {:app, :bindings, :config, :interact, :Project} = howl
 {:File} = howl.io
 
-require 'howl.ui.icons.font_awesome'
+require 'howl.ui.icons.nerd_fonts'
 require 'howl.interactions.explorer'
 require 'howl.interactions.select'
 require 'howl.interactions.location_selection'

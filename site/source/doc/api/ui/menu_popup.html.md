@@ -39,7 +39,7 @@ _See also_:
 Creates a new MenuPopup for `items`, a list of the items to show. Items are
 displayed as for a [List]: strings, or tables with one value per column. A table
 item can have an `icon` field naming an icon from `howl.ui.icon`, such as
-`'font-awesome-cube'`, which is shown before its first
+`'nerd-cube'`, which is shown before its first
 column using the `menu_icon` style. The text after the icons is lined up, however
 wide each icon is.
 

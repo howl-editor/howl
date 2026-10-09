@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
-require 'howl.ui.icons.font_awesome'
+require 'howl.ui.icons.nerd_fonts'
 {:bindings, :config, :dispatch, :timer} = howl
 {:PropertyObject} = howl.util.moon
 {:NotificationWidget, :BufferPopup, :TextWidget, :IndicatorBar, :ContentBox, :HelpContext, :style} = howl.ui
@@ -231,8 +231,8 @@ class CommandLine extends PropertyObject
       @_help_context\merge def_help
 
     -- when help is available, show help info/keyboard icons in header
-    info_icon = howl.ui.icon.get('font-awesome-info')
-    keyboard_icon = howl.ui.icon.get('font-awesome-keyboard-o')
+    info_icon = howl.ui.icon.get('nerd-info')
+    keyboard_icon = howl.ui.icon.get('nerd-keyboard-o')
     text = ''
 
     if #@_help_context.sections > 0

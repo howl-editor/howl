@@ -614,7 +614,7 @@ class Application extends PropertyObject
     require 'howl.modes'
 
   _load_core: =>
-    require 'howl.ui.icons.font_awesome'
+    require 'howl.ui.icons.nerd_fonts'
     require 'howl.completion.in_buffer_completer'
     require 'howl.completion.api_completer'
     require 'howl.lsp.completer'

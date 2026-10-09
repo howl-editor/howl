@@ -6,7 +6,7 @@
 
 style.define_default 'menu_icon', 'special'
 
--- Font Awesome icons, drawn small, are narrower than two monospace characters
+-- Icon glyphs, drawn small, are narrower than two monospace characters
 ICON_TAB_SIZE = 2
 
 -- the row showing item, which for an item with an icon starts with the icon

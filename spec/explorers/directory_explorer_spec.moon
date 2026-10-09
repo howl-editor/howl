@@ -1,4 +1,4 @@
-require 'howl.ui.icons.font_awesome'  -- icons required by DirectoryExplorer
+require 'howl.ui.icons.nerd_fonts'  -- icons required by DirectoryExplorer
 {:DirectoryExplorer} = howl.explorers
 {:File} = howl.io
 

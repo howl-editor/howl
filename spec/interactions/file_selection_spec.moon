@@ -4,7 +4,7 @@
 import app, config, interact from howl
 import File from howl.io
 import Window from howl.ui
-require 'howl.ui.icons.font_awesome'
+require 'howl.ui.icons.nerd_fonts'
 require 'howl.interactions.explorer'
 require 'howl.interactions.file_selection'
 

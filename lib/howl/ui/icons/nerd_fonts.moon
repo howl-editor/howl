@@ -1,7 +1,8 @@
 -- Copyright 2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
--- Font Awesome version 4.4.0
+-- Font Awesome glyph set (version 4.4.0 codepoints), as provided by the
+-- Nerd Fonts "Symbols Only" font (version 3.5.1).
 
 icon_text = {
   '500px': '\239\137\174',
@@ -681,8 +682,8 @@ icon_text = {
 }
 
 for name, text in pairs icon_text
-  howl.ui.icon.define 'font-awesome-'..name,
+  howl.ui.icon.define 'nerd-'..name,
     font:
-      family: 'Font Awesome'
+      family: 'Symbols Nerd Font'
       size: 'small'
     :text
