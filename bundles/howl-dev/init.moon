@@ -12,9 +12,10 @@ is_under_src_directory = (file) ->
 on_buffer_saved = (args) ->
   file = args.buffer.file
 
-  -- automatically update bytecode for howl files
+  -- automatically update bytecode for howl files (never for spec files)
   if file.extension and
     file.extension\umatch(r'(lua|moon)') and
+    not file.basename\match('_spec%.moon$') and
     is_under_src_directory(file)
 
     bc_file = File file.path\gsub "#{file.extension}$", 'bc'

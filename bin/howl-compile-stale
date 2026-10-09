@@ -26,10 +26,10 @@ while [ $# -gt 0 ]; do
 Usage: howl-compile-stale [--prune] [<file>|<dir>...]
 
 Recompiles every .moon file that has a sibling .bc older than itself. With no
-arguments, sweeps lib/ and bundles/. Exits 0 when there was nothing to do.
+arguments, sweeps lib/, bundles/ and spec/. Exits 0 when there was nothing to do.
 
-  --prune      also delete stray *_spec.bc files (left behind by 'make -C src bytecode';
-               harmless, since the spec runner loadfile's the .moon, but noise)
+  --prune      also delete stray *_spec.bc files (harmless, since the spec runner
+               loadfile's the .moon, but noise)
   -h, --help   this help
 EOF
       exit 0
@@ -40,7 +40,7 @@ EOF
   shift
 done
 
-[ -n "$PATHS" ] || PATHS="lib bundles"
+[ -n "$PATHS" ] || PATHS="lib bundles spec"
 
 if [ "$PRUNE" = yes ]; then
   pruned=$(find $PATHS -name '*_spec.bc' -print -delete 2>/dev/null | wc -l)

@@ -119,13 +119,17 @@ end
 local function compile(args)
   for i = 2, #args do
     local file = args[i]
-    local target = file:gsub('%.%w+$', '.bc')
-    print('Compiling ' .. file)
-    local func = assert(loadfile(file))
-    local bytecode = string.dump(func, false)
-    local fd = assert(io.open(target, 'wb'))
-    assert(fd:write(bytecode))
-    fd:close()
+    if file:match('_spec%.moon$') then
+      print('Skipping spec file ' .. file .. ' (specs are never compiled)')
+    else
+      local target = file:gsub('%.%w+$', '.bc')
+      print('Compiling ' .. file)
+      local func = assert(loadfile(file))
+      local bytecode = string.dump(func, false)
+      local fd = assert(io.open(target, 'wb'))
+      assert(fd:write(bytecode))
+      fd:close()
+    end
   end
 end
 

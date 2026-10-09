@@ -27,6 +27,16 @@ describe 'dev bundle', ->
         buffer\save_as dir\join('m-test.moon')
         assert.is_true dir\join('m-test.bc').exists
 
+    it "does not compile spec files", ->
+      buffer = Buffer!
+
+      with_tmpdir (dir) ->
+        app.root_dir = dir
+
+        buffer.text = '{}'
+        buffer\save_as dir\join('m-test_spec.moon')
+        assert.is_false dir\join('m-test_spec.bc').exists
+
     it "does not try to compile files outside of the application's root dir", ->
       buffer = Buffer!
 

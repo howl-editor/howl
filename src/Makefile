@@ -74,7 +74,7 @@ clean:
 
 bytecode: howl
 	-@find ../lib ../bundles -name '*.bc' | xargs rm
-	@find ../lib ../bundles -name '*.lua' -o -name '*.moon' | xargs ./howl --compile
+	@find ../lib ../bundles \( -name '*.lua' -o -name '*.moon' \) ! -name '*_spec.moon' | xargs ./howl --compile
 
 install: all
 	@echo Installing to $(DESTDIR)$(PREFIX)..
