@@ -157,6 +157,11 @@ Returns the buffer mode located at the cursor using [Buffer.mode_at].
 A boolean indicating whether typing inserts new characters in the [.buffer] or
 overwrites them.
 
+### popup
+
+The [popup][Popup] currently showing in the editor, shown with
+[show_popup](#show_popup), or `nil` if there's none. Read-only.
+
 ### searcher
 
 A [Searcher] instance for the particular editor. Can be used to initialize and

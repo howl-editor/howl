@@ -372,6 +372,30 @@ describe 'inspect', ->
         assert.equal 2, marker.start_offset
         assert.equal 5, marker.end_offset
 
+  describe 'on buffer-saved', ->
+    local editor
+
+    before_each ->
+      buffer.mode.config.inspectors_on_save = {'test-save-inspector'}
+      editor = {
+        :buffer,
+        completion_popup: { showing: false },
+        indicator: { inspections: {} }
+      }
+      table.insert howl.app._editors, editor
+
+    after_each ->
+      howl.app._editors = [e for e in *howl.app._editors when e != editor]
+
+    it 'runs the save inspectors', ->
+      howl.signal.emit 'buffer-saved', :buffer
+      assert.spy(save_inspector).was_called_with(match.is_ref(buffer))
+
+    it 'runs no inspectors while the completion popup is showing', ->
+      editor.completion_popup.showing = true
+      howl.signal.emit 'buffer-saved', :buffer
+      assert.spy(save_inspector).was_not_called!
+
   describe 'publish(buffer, source, items)', ->
     before_each ->
       buffer.text = 'åäö 1\nline 2\nline 3'

@@ -287,6 +287,10 @@ class Editor extends PropertyObject
   @property mode_at_cursor: get: => @buffer\mode_at @cursor.pos
   @property config_at_cursor: get: => @buffer\config_at @cursor.pos
 
+  -- the popup showing in the editor, if any. A popup that closed itself stays
+  -- in @pop until the next key press, but isn't showing
+  @property popup: get: => @pop and @pop.popup.showing and @pop.popup or nil
+
   refresh_display: => @view\refresh_display from_line: 1, invalidate: true
   grab_focus: => @view\grab_focus!
   newline: =>

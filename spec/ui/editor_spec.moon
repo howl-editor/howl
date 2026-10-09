@@ -1,7 +1,7 @@
 match = require 'luassert.match'
 
 {:Buffer, :config, :clipboard, :sys} = howl
-{:Editor} = howl.ui
+{:ActionBuffer, :BufferPopup, :Editor} = howl.ui
 
 describe 'Editor', ->
   local buffer, lines
@@ -402,6 +402,37 @@ describe 'Editor', ->
         editor\preview Buffer {}
       sys.time= time
       assert.same now, buffer.last_shown
+
+  describe '.popup', ->
+    -- popups can only be shown for an editor in a window
+    local shown_editor, window
+
+    before_each ->
+      shown_editor = Editor Buffer {}
+      window = test_window shown_editor\to_gobject!
+
+    after_each ->
+      shown_editor\remove_popup!
+      window\destroy!
+
+    it 'is nil when no popup is shown', ->
+      assert.is_nil shown_editor.popup
+
+    it 'is the popup shown with show_popup()', ->
+      popup = BufferPopup ActionBuffer!
+      shown_editor\show_popup popup
+      assert.equals popup, shown_editor.popup
+
+    it 'is nil once the popup is removed', ->
+      shown_editor\show_popup BufferPopup ActionBuffer!
+      shown_editor\remove_popup!
+      assert.is_nil shown_editor.popup
+
+    it 'is nil once the popup has closed itself', ->
+      popup = BufferPopup ActionBuffer!
+      shown_editor\show_popup popup
+      popup\close!
+      assert.is_nil shown_editor.popup
 
   context 'indentation, tabs, spaces and backspace', ->
 

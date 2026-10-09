@@ -259,7 +259,7 @@ update_buffer = (buffer, editor, scope) ->
 
   editor or= app\editor_for_buffer buffer
 
-  return if editor and editor.completion_popup.active
+  return if editor and editor.completion_popup.showing
   data = buffer.data
   if data.last_inspect
     li = data.last_inspect
