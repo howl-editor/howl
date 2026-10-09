@@ -250,6 +250,18 @@ Without a language server, or when the server finds no definition, the command
 searches the project for the word at the cursor using `project-file-search`
 instead. See [Searching files](files.html#searching-files).
 
+## Finding references
+
+The `goto-reference` command, bound to `alt_comma` by default, lists the
+references to the symbol at the cursor, including its definition, as found by
+the file's [language server](language_servers.html). Each reference is shown
+with its line, and the one at the cursor is selected. Picking one goes there,
+and `navigate-back` (`ctrl_<`) takes you back again.
+
+Without a language server, or when the server finds no references, the command
+searches the project for the word at the cursor using `project-file-search`
+instead.
+
 ---
 
 *Next*: [Using multiple views](views.html)

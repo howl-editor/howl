@@ -201,6 +201,28 @@ command.register
     app\open loc if loc
 
 command.register
+  name: 'goto-reference',
+  description: 'Go to a reference to the symbol at cursor'
+  handler: ->
+    editor = app.editor
+    buffer = editor.buffer
+    locations, at_cursor = require('howl.lsp.references').locations_for buffer, editor.cursor.pos
+    -- the server's response might arrive after switching to another buffer
+    return if app.editor.buffer != buffer
+
+    -- without a language server's answer, search the project for the word
+    unless locations
+      command.run 'project-file-search'
+      return
+
+    loc = interact.select_location
+      title: "#{#locations} references to '#{editor.current_context.word}'"
+      items: locations
+      selection: at_cursor
+
+    app\open loc if loc
+
+command.register
   name: 'buffer-mode',
   description: 'Set a specified mode for the current buffer'
   input: (opts) -> interact.select_mode
