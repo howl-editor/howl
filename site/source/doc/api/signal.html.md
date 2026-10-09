@@ -14,7 +14,7 @@ workings to add your own additional functionality. Signals are defined by their
 name, and each signal can provide additional information about the event as
 parameters. Each signal can have multiple handlers connected at a given time,
 which will all be invoked, provided a handler does not explicitly halt the
-processing (see [emit](#emit) for more information).
+processing (see [emit](#emit-name-parameters) for more information).
 
 To view the list of currently registered signals within Howl as well as
 information about the parameters you can use the `describe-signal` command.
@@ -28,13 +28,13 @@ _See also_:
 ### .abort
 
 A sentinel value used for causing an early exit during signal dispatch (see
-[emit](#emit) for more information).
+[emit](#emit-name-parameters) for more information).
 
 ### .all
 
 This is a table of all currently defined signals within Howl, keyed by their
 name. The value associated with each key is the  signal information as passed to
-[register](#register).
+[register](#register-name-options).
 
 ## Functions
 
@@ -57,7 +57,7 @@ Disconnects `handler` from the signal specified by `name`.
 
 Emits the signal specified by `name`, along with any optional parameters
 contained in `parameters`. `parameters`, if specified, should be a table with
-keys matching those of the parameters specified for [register](#register). An
+keys matching those of the parameters specified for [register](#register-name-options). An
 error is raised when trying to emit a signal that has not been registered.
 
 When a signal is emitted each connected handler is invoked in turn, with

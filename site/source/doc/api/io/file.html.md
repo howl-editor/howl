@@ -238,7 +238,7 @@ within the directory. In addition to the paths, a boolean is returned indicated
 whether the result is partial or not (`true` indicating a partial result and
 `false` a complete result). The result will always be complete, unless the
 execution is prematurely halted by use of the `on_enter` option. In contrast to
-[find](#find) this will return a table of strings, and not files. Compared to
+[find](#find-options) this will return a table of strings, and not files. Compared to
 find this is also a much more performant operation if all you want is a list of
 directories or files. In order to get any detailed information about type, etc.,
 you will have to instantiate File object, but the basic type of entry (directory

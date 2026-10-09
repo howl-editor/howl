@@ -224,4 +224,4 @@ adapted for future needs.
 
 --
 [Scintilla]: http://www.scintilla.org
-[GtkSourceView]: (https://wiki.gnome.org/Projects/GtkSourceView)
+[GtkSourceView]: https://wiki.gnome.org/Projects/GtkSourceView

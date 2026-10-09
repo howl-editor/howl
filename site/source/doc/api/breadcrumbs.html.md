@@ -29,7 +29,7 @@ As can be seen above, a crumb has a file reference, or a buffer reference via
 the `buffer_marker` field, or both at the same time. In the case where a marker
 is available that should be used for determining the correct position, as `pos`
 could be stale in those cases, due to later editing or modifications.
-[crumb_pos](#crumb_pos) can be used for correctly determining the up-to-date
+[crumb_pos](#crumb_pos-crumb) can be used for correctly determining the up-to-date
 position of a given crumb.
 
 ---
@@ -45,7 +45,7 @@ from the command line to navigate the crumbs.
 
 The current location in the trail. As the user edits this will typically point
 to an uninitialized crumb, as it points to the position that will be next used
-for storing a crumb using [drop](#drop).
+for storing a crumb using [drop](#drop-opts).
 
 ### next
 

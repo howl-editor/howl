@@ -38,7 +38,7 @@ highlighted for a particular item as it's displayed, by defining a
 highlights](#item-highlights) section at the end of this section).
 
   The `matcher` is called on initialization and whenever the
-[update()](#update) function is called. The `search_text` argument provided in
+[update()](#update-search_text-preserve_position-false) function is called. The `search_text` argument provided in
 `update()` is passed to the `matcher` and the displayed items are replaced with
 the new list of items returned from the `matcher`.
 
@@ -88,7 +88,7 @@ Start positions can be specified by using one of the below:
 
 A table specifying a header and styles for each column. The schema of this table
 is identical to the `columns` argument in the
-[StyledText.for_table](styled_text.html#styledtext.for_table) function.
+[StyledText.for_table](styled_text.html#styledtext-for_table-items-columns-nil) function.
 Read/write.
 
 ### items
@@ -136,7 +136,7 @@ the buffer.
 ### insert (buffer)
 
 Associates the list with the specified `buffer`. Any subsequent calls to
-[draw](#draw) or [update](#update) will cause the list to be drawn into the
+[draw](#draw) or [update](#update-search_text-preserve_position-false) will cause the list to be drawn into the
 given buffer.
 
 ### next_page ()

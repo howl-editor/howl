@@ -102,4 +102,4 @@ Selects all the text in the associated editor.
 [empty]: #empty
 [Editor]: editor.html
 [clipboard]: ../clipboard.html
-[clipboard.push]: ../clipboard.html#push
+[clipboard.push]: ../clipboard.html#push-item-options

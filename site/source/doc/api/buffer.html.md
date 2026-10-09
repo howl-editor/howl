@@ -21,8 +21,8 @@ register it with, [Application].
 _See also_:
 
 - The [spec](../spec/buffer_spec.html) for Buffer
-- [Application.new_buffer](application.html#new_buffer)
-- [Application.add_buffer](application.html#add_buffer)
+- [Application.new_buffer](application.html#new_buffer-buffer_mode-nil)
+- [Application.add_buffer](application.html#add_buffer-buffer-show-true)
 
 ## Properties
 
@@ -54,7 +54,7 @@ buffer's mode's config property, meaning it will defer to what is set for the
 mode (and in extension set globally) should a particular configuration variable
 not be set specifically for the buffer.
 
-Note that, in most cases, you probably want to use [config_at](#config_at).
+Note that, in most cases, you probably want to use [config_at](#config_at-pos).
 
 ### data
 
@@ -108,7 +108,7 @@ The buffer's root [mode]. When assigning to this:
 - the `buffer-mode-set` signal is emitted.
 - any previously lexed content is re-lexed using the new mode's lexer, if any
 
-Note that, in most cases, you probably want to use [mode_at](#mode_at).
+Note that, in most cases, you probably want to use [mode_at](#mode_at-pos).
 
 ### modified
 
@@ -211,7 +211,7 @@ position `init`. Returns character offsets `start_pos`, `end_pos` of the first
 match, or `nil` if no match was found. A negative `init` specifies an offset
 from the end, where -1 means the last character of the buffer.
 
-See also: [rfind()](#rfind)
+See also: [rfind()](#rfind-search-init-length)
 
 ### get_ptr(start_pos, end_pos)
 
@@ -307,7 +307,7 @@ character of the buffer. The rightmost character of the match found may be at
 the `init` position, however, no part of the match will be to the right of
 `init`.
 
-See also: [find()](#find)
+See also: [find()](#find-search-init-1)
 
 ### save()
 
@@ -341,10 +341,10 @@ print(buffer\sub(-2, -1))
 Undo the last buffer modification.
 
 [Application]: application.html
-[Lines]: lines.html
+[Lines]: ../spec/buffer_lines_spec.html
 [Chunk]: chunk.html
 [BufferContext]: buffer_context.html
 [Editor]: ui/editor.html
 [config]: config.html
-[mode]: mode.html
+[mode]: ../spec/mode_spec.html
 [regular expression]: regex.html

@@ -87,7 +87,7 @@ configuration variable instead of being set explicitly for an editor instance.
 ### indicator
 
 A table of "indicators" for the current editor. An error is raised if you try to
-access an unknown indicator (see [register_indicator](#register_indicator) for
+access an unknown indicator (see [register_indicator](#register_indicator-id-placement-bottom_right-factory-nil) for
 more information).
 
 Example of modifying an existing indicator from a key handler:
@@ -185,7 +185,7 @@ configuration variable instead of being set explicitly for an editor instance.
 
 Constructs a new Editor instance, displaying the specified `buffer`. You would
 typically not use this directly, but instead create a new editor via
-[Application.new_editor](../application.html#new_editor).
+[Application.new_editor](../application.html#new_editor-options).
 
 ### register_indicator (id, placement = 'bottom_right', factory = nil)
 
@@ -264,11 +264,11 @@ span. `hl` specifies the span of the highlight, and optionally what highlight to
 apply.
 
 The highlight's span can be specified in several different fashions. It will be
-resolved using [Buffer.resolve_span(..)](../buffer.html#resolve_span), so please
+resolved using [Buffer.resolve_span(..)](../buffer.html#resolve_span-span-line_nr), so please
 have a look at `resolve_span`'s documentation to see the available options. The
 optional `line_nr` parameter can be used to anchor the `hl` options to a
 specific line, and will be forwarded to
-[Buffer.resolve_span(..)](../buffer.html#resolve_span) as well.
+[Buffer.resolve_span(..)](../buffer.html#resolve_span-span-line_nr) as well.
 
 The highlight to use can optionally be specified by defining `hl.highlight`.
 If not present it will default to the ephemeral 'search' highlight.
@@ -392,7 +392,7 @@ the request to the current [mode].
 ### transform_active_lines (f)
 
 A helper for transforming [.active_lines] within the scope of
-[Buffer.as_one_undo](../buffer.html#as_one_undo) for the current buffer. Invokes
+[Buffer.as_one_undo](../buffer.html#as_one_undo-f) for the current buffer. Invokes
 `f` with [.active_lines], with any modifications being recorded as one undo
 operation.
 
@@ -419,17 +419,17 @@ selected. If `f` modifies text outside of the current selection, the selection
 is preserved exactly. If `f` adds or removes text within the selection, the selection
 is adjusted to contain the modified text. If `f` deletes text at the boundary of the selection, the selection is trimmed.
 
-[.active_lines]: #.active_lines
-[.buffer]: #.buffer
-[.current_line]: #.current_line
+[.active_lines]: #active_lines
+[.buffer]: #buffer
+[.current_line]: #current_line
 [Buffer]: ../buffer.html
-[Buffer.mode_at]: ../buffer.html#mode_at
-[Buffer.config_at]: ../buffer.html#config_at
+[Buffer.mode_at]: ../buffer.html#mode_at-pos
+[Buffer.config_at]: ../buffer.html#config_at-pos
 [Chunk]: ../chunk.html
-[Context]: ../context.html
+[Context]: ../buffer_context.html
 [Cursor]: cursor.html
-[Line]: ../line.html
-[mode]: ../mode.html
-[Searcher]: searcher.html
+[Line]: ../../spec/buffer_lines_spec.html#line-objects
+[mode]: ../../spec/mode_spec.html
+[Searcher]: ../../spec/ui/searcher_spec.html
 [Selection]: selection.html
 [Popup]: popup.html

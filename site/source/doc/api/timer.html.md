@@ -68,7 +68,7 @@ Invokes `callback` after `seconds` seconds, passing along any optional extra
 parameters passed to `after`. `seconds` can contain fractions, allowing you
 schedule callbacks at sub-second rates. Callbacks registered with this function
 are dispatched using private high precision timers. As this requires more
-resources, it is preferable to use [after_approximately] (or [after]) if the
+resources, it is preferable to use [after_approximately], or [after], if the
 requirements allow for the lower precision.
 
 Returns an opaque handle for the timer, which can be passed to [cancel] in order
@@ -77,7 +77,7 @@ to cancel the timer.
 ### cancel (handle)
 
 Cancels the timer associated with `handle`. `handle` must be one the values
-returned from [asap](#asap), [after](#after) or [on_idle](#on_idle).
+returned from [asap](#asap-callback), [after](#after-seconds-callback) or [on_idle](#on_idle-seconds-callback).
 
 ### on_idle (seconds, callback, ...)
 
@@ -88,7 +88,7 @@ Invokes `callback` after the application has been idle for approximately
 Returns an opaque handle for the timer, which can be passed to [cancel] in order
 to cancel the timer.
 
-[cancel]: #cancel
-[after]: #after
-[after_exactly]: #after_exactly
-[after_approximately]: #after_approximately
+[cancel]: #cancel-handle
+[after]: #after-seconds-callback
+[after_exactly]: #after_exactly-seconds-callback
+[after_approximately]: #after_approximately-seconds-callback

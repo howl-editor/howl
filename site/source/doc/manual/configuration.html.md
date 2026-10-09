@@ -208,7 +208,7 @@ A few notes on the above example:
   instead means that it will be set once the mode is loaded (or straight away
   should the mode already be loaded).
 
-- We use [config.for_file](../api/config.html#for_file) to add access a config
+- We use [config.for_file](../api/config.html#for_file-path) to add access a config
   *proxy* object that sets and gets variables for the file scope.
 
 ### Automatic persistence

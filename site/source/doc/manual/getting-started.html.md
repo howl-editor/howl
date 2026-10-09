@@ -38,7 +38,7 @@ time. Editors themselves contain other visual components, such as header and
 footer components with "indicators" used for displaying for example the current
 position in the file. An editor always displays exactly one [buffer](#buffers).
 As can be seen in one of the [screen
-shots](/images/screenshots/howl-solarized.png) it's possible to have multiple
+shots](/images/screenshots/solarized-light/multi-views.png) it's possible to have multiple
 views/editors along each other in the same window.
 
 ### Command line

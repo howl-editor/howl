@@ -15,7 +15,7 @@ A window has, apart from the grid components described above, always two
 graphical elements associated with it; A [Status] instance used for displaying
 informational message to the user, and a [CommandPanel] instance allowing for
 user input. It can also optionally display arbitrary widgets at the bottom via
-the use of [push_widget].
+the use of [add_widget].
 
 The currently focused window is accessible as
 [Application.window](../application.html#window).
@@ -154,6 +154,6 @@ Returns the underlying Gtk window.
 
 [CommandPanel]: command_panel.html
 [Editor]: editor.html
-[Status]: status.html
-[push_widget]: #push_widget
-[remove_widget]: #remove_widget
+[Status]: ../../spec/ui/status_spec.html
+[add_widget]: #add_widget-widget
+[remove_widget]: #remove_widget-widget

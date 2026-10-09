@@ -11,12 +11,12 @@ a specific buffer. It provides an easy way of retrieving additional information
 for a specific position. It is typically used with the current editing position
 but could point to any valid location within a buffer. While it's possible to
 explicitly create a new context it's more often retrieved using
-[Buffer.context_at](buffer.html#context_at), or passed to various handlers.
+[Buffer.context_at](buffer.html#context_at-pos), or passed to various handlers.
 
 _See also_:
 
 - The [spec](../spec/buffer_context_spec.html) for BufferContext
-- [Buffer.context_at](buffer.html#context_at)
+- [Buffer.context_at](buffer.html#context_at-pos)
 
 ## Properties
 
@@ -103,5 +103,5 @@ b.text = 'HƏllo, said Mr.Bačon'
 context_at(3).word.text -- => 'HƏ'
 ```
 
-[BufferLines]: buffer_lines.html
+[BufferLines]: ../spec/buffer_lines_spec.html
 [Chunk]: chunk.html

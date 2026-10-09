@@ -75,6 +75,6 @@ Returns the length of the Chunk.
 
 ### tostring (chunk)
 
-Returns the [text](.text) of the Chunk.
+Returns the [text](#text) of the Chunk.
 
 [Buffer]: buffer.html

@@ -17,7 +17,7 @@ registers.
 A clipboard item is a simple Lua table. The simplest and most common type of
 item contains only one field, `text`, that contains the text of the item. There
 is no real restriction on what additional fields can be available for a
-clipboard item (the fields can be specified when doing a [push](#push)), but so
+clipboard item (the fields can be specified when doing a [push](#push-item-options)), but so
 far one specific field is in use; The `whole_lines` field, when set to `true`,
 indicates that the text should be considered a block of stand-alone lines,
 rather than a simple chunk of text.
@@ -35,7 +35,7 @@ _See also_:
 A table (list) of clipboard items available on the clipboard, with the most
 recent item being at index 1 in the table. The maximum number of clipboard items
 is controlled by the `clipboard_max_items` config variable. `clips` is
-automatically updated whenever a new item is [push()ed](#push), prepending the
+automatically updated whenever a new item is [push()ed](#push-item-options), prepending the
 new item and removing older items as necessary.
 
 ### current
@@ -67,7 +67,7 @@ primary\clear!
 ### registers
 
 A table containing named clipboard items. As an example, suppose a clipboard
-item containing the text "hello" has been [push()ed](#push) to the `abc`
+item containing the text "hello" has been [push()ed](#push-item-options) to the `abc`
 register. In that case the `registers` table would look like the following:
 
 ```lua

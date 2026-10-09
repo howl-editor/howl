@@ -15,7 +15,7 @@ included in Howl's [string extensions](ustring.html), making it easy to use
 within your code. Since regular expressions are not native to Lua, there's no
 syntactical sugar available for constructing a regular expression. Instead
 regular expression are constructed as ordinary strings. The global function
-[r](#r) provides a constructor function for this. Since this is available in the
+[r](#r-pattern) provides a constructor function for this. Since this is available in the
 global namespace, it's possible to construct a regular expression anywhere
 within Howl just by prefixing a string with `r`, like so:
 

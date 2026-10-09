@@ -38,8 +38,8 @@ Below you can see an example of a key event resulting from pressing
 }
 ```
 
-As part of [processing](#process) the key event is translated to a list of
-possible string representations using [translate_key](#translate_key), which
+As part of [processing](#process-key_event-source-extra_keymaps) the key event is translated to a list of
+possible string representations using [translate_key](#translate_key-event), which
 for the above example would result in the following list of translations:
 
 ```lua
@@ -51,7 +51,7 @@ for the above example would result in the following list of translations:
 ```
 
 All keymaps are then searched in order for keys matching any of the translations.
-If you read the documentation for [process](#process) you'll see that all key
+If you read the documentation for [process](#process-key_event-source-extra_keymaps) you'll see that all key
 events are processed for a particular originating source. In the typical case
 this will be "editor", indicating the key press originated from an
 [editor](ui/editor.html). When searching keymaps, any keymap is first inspected
@@ -78,21 +78,21 @@ an editor instance in this case.
 Any matching value found in a keymap is considered an action. Should a keymap not have any
 matching keys but have a callable field named `on_unhandled`, that is
 invoked with the key event, event source, key translations and any extra parameters
-passed to [dispatch](#dispatch), and any truthy result is used as the action.
+passed to [dispatch](#dispatch-key_event-source-keymaps), and any truthy result is used as the action.
 See the documentation for dispatch for further information about these parameters.
 
 Actions can be one of three different things:
 
 - It can be a string, in which case it's considered a command and will be dispatched
-using [command.run](command.html#run).
+using [command.run](command.html#run-cmd_string-nil).
 
 - It can be a callable object (a function or table providing a meta-table __call), in
-which case it's invoked with any extra parameters passed to [dispatch](#dispatch)
+which case it's invoked with any extra parameters passed to [dispatch](#dispatch-key_event-source-keymaps)
 (the typical case being the editor instance for which the key press originated).
 The key event will be considered handled unless the handler returns false.
 
 - It can be an ordinary, non-callable, table. This table is interpreted as an additional
-keymap, which will be [pushed](#push) using the `pop` option.
+keymap, which will be [pushed](#push-keymap-options) using the `pop` option.
 
 ### Indirect bindings
 
@@ -150,7 +150,7 @@ Removes any installed capture handler.
 ### capture (handler)
 
 Installs a capture handler. The handler, which should be callable, will
-intercept any key events being sent to [process](#process) for processing. It
+intercept any key events being sent to [process](#process-key_event-source-extra_keymaps) for processing. It
 will be invoked with the key event, source, key translations and any extra
 parameters passed to process. Unless the handler returns `false`, it will
 automatically be removed after the invocation. There can be only one capture
@@ -166,7 +166,7 @@ as is to any callable actions.
 
 *Note*:
 
-Unlike [process](#process), dispatch will not automatically include any of the
+Unlike [process](#process-key_event-source-extra_keymaps), dispatch will not automatically include any of the
 keymaps in the binding stack, it will only search `keymaps`.
 
 ### keystrokes_for (action, source)
@@ -206,7 +206,7 @@ if specified these will be searched in order before any of the keymaps in the
 stack. Any additional arguments are passed as is to any callable
 actions.
 
-Should any capture handler be installed via [capture](#capture), this will be
+Should any capture handler be installed via [capture](#capture-handler), this will be
 invoked first and further processing will be skipped.
 
 The `key-press` signal is emitted before dispatching, and further processing

@@ -143,6 +143,6 @@ activities.run {
     map_entry entries[i]
 ```
 
-[run]: #run
-[run_process]: #run_process
+[run]: #run-options-f
+[run_process]: #run_process-options-f
 [yield]: #yield

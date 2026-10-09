@@ -39,7 +39,7 @@ action:
 ### Revamped command line API
 
 The readline and inputs API has been completely revamped and replaced with a new
-[`CommmandLine`](/doc/api/ui/command_line.html) and
+[`CommmandLine`](/versions/0.6/doc/api/ui/command_line.html) and
 [interactions](/doc/api/interact.html) APIs.
 
 ### New and improved commands

@@ -8,7 +8,7 @@ title: howl.ui.ListWidget
 
 ListWidget is a graphical widget containing a [List] component. A ListWidget is
 primarily used to display a selection list attached to the [command line]. For
-example, the [interact.select](../interact.html#select) interaction uses the
+example, the [interact.select](../interact.html#select-opts) interaction uses the
 ListWidget to display a selection list. It can be used wherever a graphical
 component is expected, such as in a popup.
 
@@ -27,7 +27,7 @@ _See also_:
 - The [List] component
 - The [CommandLine] API
 - The [spec](../../spec/ui/list_widget_spec.html) for ListWidget
-- The [interact.select](../interact.html#select) interaction which displays a
+- The [interact.select](../interact.html#select-opts) interaction which displays a
 selection list using ListWidget
 
 ## Constructor

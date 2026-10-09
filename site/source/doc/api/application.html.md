@@ -82,7 +82,7 @@ property. The editor is added to [.editors] before the return of the method.
 - *buffer*: The buffer that should be shown in the editor. Defaults to [.next_buffer].
 - *window*: The window to add the editor to. Defaults to the currently focused window.
 - *placement*: How the new editor should be placed in the target window. See
-  [Window.add_view](ui/window.html#add_view) for more information about possible
+  [Window.add_view](ui/window.html#add_view-view-placement-right_of-anchor-focus_child) for more information about possible
   placement values.
 
 #### Example use (Moonscript):
@@ -130,14 +130,14 @@ cursor at the end of the line. Can only be used in conjunction with `line_nr`.
 would typically be used to highlight a particular segment of the line, though it
 can be used to highlight arbitrary sections of the buffer. Can only be used in
 conjunction with `line_nr`. Each highlight is applied using
-[Editor.highlight(..)](ui/editor.html#highlight), and is resolved relative to
+[Editor.highlight(..)](ui/editor.html#highlight-hl-line_nr), and is resolved relative to
 `line_nr`.
 
 Returns the [Buffer] and the [Editor] holding the buffer.
 
 ### open_file (file, editor = _G.editor)
 
-Opens the provided [file](fs/file.html). By default, unless `editor` specifies a
+Opens the provided [file](io/file.html). By default, unless `editor` specifies a
 specific editor to open the file into, the file is opened in the currently
 active editor. Emits the `file-opened` signal if the file was opened
 successfully. If the file was successfully opened, returns the [Buffer] and the
@@ -169,12 +169,12 @@ recently modified than the buffer.
 Requests for Howl to quit. If any open buffers are modified, and `force` is not
 true, the user will be prompted for verification before actually quitting.
 
-[.buffers]: #.buffers
-[.editors]: #.editors
-[.next_buffer]: #.next_buffer
-[.windows]: #.windows
+[.buffers]: #buffers
+[.editors]: #editors
+[.next_buffer]: #next_buffer
+[.windows]: #windows
 [Buffer]: buffer.html
 [Editor]: ui/editor.html
 [Window]: ui/window.html
-[mode]: mode.html
-[default mode]: modes/default_mode.html
+[mode]: ../spec/mode_spec.html
+[default mode]: ../spec/modes/default_mode_spec.html

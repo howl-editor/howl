@@ -90,7 +90,7 @@ returned:
 
 ### API
 
-The primitive API consists of [`get()`](#get) and [`set`](#set) calls which
+The primitive API consists of [`get()`](#get-name-scope-layer) and [`set`](#set-name-value-scope-layer-default) calls which
 accept scope and layer as additional parameters. However, the following code
 snippet illustrates the idiomatic ways of setting variables globally, for a
 mode, for a specific buffer and for a specific file only:
@@ -103,7 +103,7 @@ howl.config.for_file('/path/to/file').my_var = 'foo'
 ```
 
 Note that internally the values are organized within scopes and layers, but this
-convenient API is available on [buffer] and [mode] objects. [Proxy](#proxy)
+convenient API is available on [buffer] and [mode] objects. [Proxy](#proxy-scope-write_layer-default-read_layer)
 objects, described below are used to build the convenience API.
 
 _See also_:
@@ -115,7 +115,7 @@ _See also_:
 ### definitions
 
 A table of all known variables definitions, keyed by the variable name. For more
-information about the structure of the definitions, see [define](#define).
+information about the structure of the definitions, see [define](#define-options).
 
 ## Functions
 
@@ -169,7 +169,7 @@ into a native representation.
 
 ### for_file (path)
 
-Returns a [proxy](#proxy) config object for the specified file scope. The
+Returns a [proxy](#proxy-scope-write_layer-default-read_layer) config object for the specified file scope. The
 returned object can be used to get and set configuration variables directly for the file scope, for instance:
 
 ```moonscript
@@ -188,7 +188,7 @@ just index the config module, like so:
 local val = howl.config.my_variable
 ```
 
-The [Evaluation](#Evaluation) section above describes how the value is computed.
+The [Evaluation](#evaluation) section above describes how the value is computed.
 
 ### proxy (scope, write_layer='default', read_layer)
 
@@ -216,7 +216,7 @@ when getting and setting values. When `read_layer` is also specified, that layer
 is used when getting values only.
 
 Note that `proxy` objects are used to provide the convenient config API for
-[buffer] and [mode] objects, as described in [API](#API) above.
+[buffer] and [mode] objects, as described in [API](#api) above.
 
 ### set (name, value, scope='', layer='default')
 
@@ -249,4 +249,4 @@ callable, will be invoked whenever the specified variable has a new value set.
 *is_local* - A boolean indicating whether the value was set locally or globally.
 
 [buffer]: buffer.html
-[mode]: mode.html
+[mode]: ../spec/mode_spec.html

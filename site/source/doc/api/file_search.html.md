@@ -134,8 +134,8 @@ be ranked according to their relevance to the given position.
 
 Unregisters the searcher with name `name`.
 
-[register_searcher]: #register_searcher
-[unregister_searcher]: #unregister_searcher
+[register_searcher]: #register_searcher-searcher
+[unregister_searcher]: #unregister_searcher-name
 [File]: io/file.html
 [Process]: io/process.html
 [activities]: activities.html

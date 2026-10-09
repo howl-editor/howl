@@ -54,7 +54,7 @@ Suspends the coroutine from which `wait` is invoked until `handle`, a parking
 handle obtained from [park], is resumed from either [resume] or
 [resume_with_error].
 
-[wait]: #wait
-[resume]: #resume
-[resume_with_error]: #resume_with_error
-[park]: #park
+[wait]: #wait-handle
+[resume]: #resume-handle
+[resume_with_error]: #resume_with_error-handle-err-level-1
+[park]: #park-description

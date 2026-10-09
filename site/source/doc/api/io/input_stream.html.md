@@ -35,13 +35,13 @@ parameter will be the data read, as a string. Upon end-of-file, this will be
 `nil`. If the read failed, the second parameter will be an error string
 containing information about the failure.
 
-Note that just as for [read](#read), the actual number of bytes read can be
+Note that just as for [read](#read-num), the actual number of bytes read can be
 smaller than `num`. Also note that the name might give the indication that the
-alternative, [read](#read), is not asynchronous while `read_async` is. This is
+alternative, [read](#read-num), is not asynchronous while `read_async` is. This is
 not actually the case, as both are asynchronous in the sense that neither will
 block Howl; `read_async` is for the case where you don't want to block execution
 flow, e.g. when you need to read from multiple input streams at the same time.
-If this is not the case then [read](#read) is likely a better alternative.
+If this is not the case then [read](#read-num) is likely a better alternative.
 
 ### read_all ()
 

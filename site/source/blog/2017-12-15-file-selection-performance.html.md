@@ -69,7 +69,7 @@ there were other candidates for using the new module. Unsurprisingly, the
 recursive file listing was one such example, where use of the module could also
 help solve a known and irritating issue. Thus some time was spent in converting
 the
-[File.find](/doc/api/io/file.html#find) to be asynchronous in supported
+[File.find](/doc/api/io/file.html#find-options) to be asynchronous in supported
 contexts, and converting the recursive file listing code to use the new
 activities module. And voila! Below you can see this in effect, as we switch to
 a recursive file listing in a very large directory.
@@ -155,7 +155,7 @@ We have so far only looked at the first step. As part of the optimization
 efforts the third part, the matcher, was also optimized for a smaller speedup.
 However, it's now time to have a look at the second part. This part hadn't been
 optimized at all, and it created styled list entries by constructing
-[howl markup](doc/api/ui/markup/howl.html) for each entry. The markup parsing is
+[howl markup](/doc/api/ui/markup/howl.html) for each entry. The markup parsing is
 not typically a performance issue, but it quickly adds up in this case. We avoid
 this by creating
 [StyledText](/doc/api/ui/styled_text.html) instances directly:

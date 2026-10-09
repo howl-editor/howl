@@ -148,7 +148,7 @@ of strings, one each for each column. Instead of a string, a
 - `title`: _[optional]_ The title displayed in the command line title bar.
 - `columns`: _[optional]_ A table containing the header text and style for each
 column. Identical to the `columns` argument in the
-[StyledText.for_table](ui/styled_text.html#styledtext.for_table) function.
+[StyledText.for_table](ui/styled_text.html#styledtext-for_table-items-columns-nil) function.
 - `selection`: _[optional]_ The item that is initially selected by default. This
 must be an item in the `items` list.
 - `text`: _[optional]_ The initial text, filtering the items.
