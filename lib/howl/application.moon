@@ -626,7 +626,6 @@ class Application extends PropertyObject
     require 'howl.interactions.external_command'
     require 'howl.interactions.explorer'
     require 'howl.interactions.file_selection'
-    require 'howl.interactions.line_selection'
     require 'howl.interactions.location_selection'
     require 'howl.interactions.mode_selection'
     require 'howl.interactions.search'
