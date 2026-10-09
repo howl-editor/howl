@@ -7,7 +7,7 @@ per_page: 5
 
   %h1
     The Howl blog
-    = link_to image_tag('blog/feed-icon-28x28.png'), 'feed.xml'
+    = link_to image_tag('blog/feed-icon-28x28.png'), '/blog/feed.xml'
 
   - page_articles.each_with_index do |article, i|
     .article
@@ -16,7 +16,7 @@ per_page: 5
         —
         = article.title
 
-      != article.summary
+      != article_summary(article)
       .read-more= link_to '➥ Read more..', article, :find_resource => true
 
   - if paginate && num_pages > 1

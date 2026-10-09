@@ -70,6 +70,24 @@ helpers do
     "<h4><span class=\"hdr-idx\">#{idx}</span> #{link_to title, path}</h4>".html_safe
   end
 
+  # An article's summary keeps the links made relative to the article itself, so
+  # on a page listing articles they are rebased onto the listing page
+  def article_summary(article)
+    article_path = Pathname.new("/#{article.destination_path}")
+    page_dir = Pathname.new("/#{current_resource.destination_path}").parent
+    article.summary.gsub(/href="([^"]*)"/) do
+      href = $1
+      target = if href.start_with?('#')
+        article_path.relative_path_from(page_dir).to_s + href
+      elsif href =~ %r{\A(?:[a-z][a-z0-9+.-]*:|/)}i
+        href
+      else
+        (article_path.parent + href).relative_path_from(page_dir).to_s
+      end
+      %(href="#{target}")
+    end
+  end
+
   def breadcrumbs
     component = Struct.new(:path, :title, :document_exists?)
     base = Pathname.new("/#{current_resource.destination_path}").parent
