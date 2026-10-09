@@ -19,9 +19,9 @@ howl.config.define
 
 style.define_default 'directory', 'key'
 style.define_default 'filename', 'string'
-icon.define_default 'directory', 'nerd-folder'
-icon.define_default 'file', 'nerd-file'
-icon.define_default 'file-new', 'nerd-plus-circle'
+icon.define_default 'directory', 'nerd-cod-folder'
+icon.define_default 'file', 'nerd-cod-file'
+icon.define_default 'file-new', 'nerd-cod-new-file'
 
 is_path_directory = (path) -> path[#path] == separator
 path_demoted = (path) -> path[1] == '.' and path != current_dir_specifier  -- rename
@@ -98,8 +98,8 @@ directory_lister = {
     return true unless file.exists
 }
 
-dir_icon = icon.get('directory', 'directory')
-file_icon = icon.get('file', 'filename')
+dir_icon = icon.list_cell icon.get('directory', 'directory')
+file_icon = icon.list_cell icon.get('file', 'filename')
 
 display_row = (parent, path, with_icons=config.file_icons) ->
   tag = path_hidden(path) and StyledText('[hidden]', 'keyword') or ''
@@ -144,7 +144,7 @@ class DirectoryItem
   display_row: =>
     path = StyledText(@file.basename, 'filename') .. separator
     if config.file_icons
-      {icon.get('file', 'filename'), path, ''}
+      {icon.list_cell(icon.get('file', 'filename')), path, ''}
     else
       {path, ''}
 
@@ -156,7 +156,7 @@ class NewFile
 
   display_row: =>
     if config.file_icons
-      {icon.get('file-new', 'keyword'), StyledText(@relative_path, 'keyword'), StyledText('[New]', 'keyword')}
+      {icon.list_cell(icon.get('file-new', 'keyword')), StyledText(@relative_path, 'keyword'), StyledText('[New]', 'keyword')}
     else
       {StyledText(@relative_path, 'keyword'), StyledText('[New]', 'keyword')}
 

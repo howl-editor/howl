@@ -257,11 +257,11 @@ goto_targets = {
   { label: 'References', cmd: 'goto-reference', provider: 'referencesProvider' }
 }
 
-icon.define_default 'goto-definition', 'nerd-crosshairs'
-icon.define_default 'goto-declaration', 'nerd-bookmark-o'
-icon.define_default 'goto-type-definition', 'nerd-cube'
-icon.define_default 'goto-implementation', 'nerd-cogs'
-icon.define_default 'goto-reference', 'nerd-link'
+icon.define_default 'goto-definition', 'nerd-cod-target'
+icon.define_default 'goto-declaration', 'nerd-cod-symbol-interface'
+icon.define_default 'goto-type-definition', 'nerd-cod-symbol-class'
+icon.define_default 'goto-implementation', 'nerd-cod-type-hierarchy-sub'
+icon.define_default 'goto-reference', 'nerd-cod-references'
 
 command.register
   name: 'goto',

@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:app, :log} = howl
-{:ListWidget, :List, :ActionBuffer, :highlight, :StyledText} = howl.ui
+{:ListWidget, :List, :ActionBuffer, :highlight, :icon, :StyledText} = howl.ui
 {:Matcher} = howl.util
 {:Preview} = howl.interactions.util
 
@@ -81,7 +81,8 @@ class ExplorerView
         @command_line.notification\clear!
         level = @levels[#@levels]
         level.view\handle_selection_change selection
-    @list_widget = ListWidget @list, never_shrink: true
+    -- explorers start rows with icon.list_cell, for icons that line up
+    @list_widget = ListWidget @list, never_shrink: true, tab_size: icon.list_tab_size
 
     if opts.max_height
       @list_widget.max_height_request = opts.max_height

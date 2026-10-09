@@ -45,6 +45,15 @@ describe 'buffer_selection', ->
         buflist = list_items command_line, 2
       assert.same {'a1-buffer', 'a2-buffer', 'b-buffer', 'c-buffer'}, buflist
 
+    it 'starts rows with an icon and a tab, in a list with tabs as wide as icon.list_tab_size', ->
+      local lines, tab_size
+      within_command_line (-> interact.select_buffer :editor), (command_line) ->
+        list_widget = command_line\get_widget('explore_list')
+        lines = [l.text for l in *list_widget.text_widget.buffer.lines]
+        tab_size = list_widget.text_widget.view.config.view_tab_size
+      assert.match lines[1], '^[^\t ]+\t a1%-buffer'
+      assert.equals howl.ui.icon.list_tab_size, tab_size
+
     it 'filters the buffer list based on entered text', ->
       local buflist
       within_command_line  (-> interact.select_buffer :editor), (command_line) ->

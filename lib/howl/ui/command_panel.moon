@@ -231,8 +231,8 @@ class CommandLine extends PropertyObject
       @_help_context\merge def_help
 
     -- when help is available, show help info/keyboard icons in header
-    info_icon = howl.ui.icon.get('nerd-info')
-    keyboard_icon = howl.ui.icon.get('nerd-keyboard-o')
+    info_icon = howl.ui.icon.get('nerd-cod-info')
+    keyboard_icon = howl.ui.icon.get('nerd-cod-record-keys')
     text = ''
 
     if #@_help_context.sections > 0

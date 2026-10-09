@@ -6,16 +6,13 @@
 
 style.define_default 'menu_icon', 'special'
 
--- Icon glyphs, drawn small, are narrower than two monospace characters
-ICON_TAB_SIZE = 2
-
 -- the row showing item, which for an item with an icon starts with the icon
 -- and a tab, so that the texts after the icons line up whatever their widths
 row_for = (item) ->
   return item unless type(item) == 'table' and item.icon
   first = item[1]
   first = StyledText(tostring(first), {}) unless typeof(first) == 'StyledText'
-  prefix = icon.get(item.icon, 'menu_icon') .. StyledText('\t ', {})
+  prefix = icon.list_cell(icon.get(item.icon, 'menu_icon')) .. StyledText(' ', {})
   row = [cell for cell in *item]
   row[1] = prefix .. first
   row._menu_item = item
@@ -32,7 +29,7 @@ class MenuPopup extends Popup
 
     @list = List (-> [row_for item for item in *@items]),
       on_selection_change: -> @_flair_selection!
-    @list_widget = ListWidget @list, auto_fit_width: true, tab_size: ICON_TAB_SIZE
+    @list_widget = ListWidget @list, auto_fit_width: true, tab_size: icon.list_tab_size
     @list\on_refresh -> @_flair_selection!
 
     @highlight_matches_for = ''

@@ -3,6 +3,7 @@
 
 {:app, :config, :Project} = howl
 {:File} = howl.io
+{:icon} = howl.ui
 {:buffer_status_icon} = howl.ui.buffer_icon
 
 append = table.insert
@@ -49,7 +50,7 @@ class BufferItem
   new: (@buffer, @title) =>
   display_row: =>
     if config.buffer_icons
-      {buffer_status_icon(@buffer), @title, buffer_dir(@buffer)}
+      {icon.list_cell(buffer_status_icon(@buffer)), @title, buffer_dir(@buffer)}
     else
       {@title, buffer_status_text(@buffer), buffer_dir(@buffer)}
   preview: => buffer: @buffer

@@ -37,3 +37,11 @@ describe 'icon', ->
       assert.equals 'a', icon.get('a-icon').text
       assert.equals 'b-default-1', icon.get('b-icon').text
 
+  describe '.list_cell(styled_icon)', ->
+    it 'returns the styled icon followed by a tab', ->
+      icon.define 'cell-icon', text: 'c'
+      styled_icon = icon.get 'cell-icon', 'somestyle'
+      cell = icon.list_cell styled_icon
+      assert.equals 'c\t', cell.text
+      assert.same styled_icon.styles, cell.styles
+

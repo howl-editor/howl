@@ -9,12 +9,12 @@ config.define
   type_of: 'boolean'
   default: true
 
-icon.define_default 'buffer', 'nerd-square'
-icon.define_default 'buffer-modified', 'nerd-pencil-square-o'
-icon.define_default 'buffer-modified-on-disk', 'nerd-clone'
-icon.define_default 'process-success', 'nerd-check-circle'
-icon.define_default 'process-running', 'nerd-play-circle'
-icon.define_default 'process-failure', 'nerd-exclamation-circle'
+icon.define_default 'buffer', 'nerd-cod-file'
+icon.define_default 'buffer-modified', 'nerd-cod-circle-filled'
+icon.define_default 'buffer-modified-on-disk', 'nerd-cod-sync'
+icon.define_default 'process-success', 'nerd-cod-pass'
+icon.define_default 'process-running', 'nerd-cod-play-circle'
+icon.define_default 'process-failure', 'nerd-cod-error'
 
 
 buffer_status_icon = (buffer) ->

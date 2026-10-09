@@ -5,6 +5,13 @@
 
 icons = {}
 
+-- Icon glyphs differ in width, but drawn small they're all narrower than two
+-- monospace characters. Lists of rows starting with icons use tabs this wide, and
+-- follow each icon with a tab, so that the texts after the icons line up.
+list_tab_size = 2
+
+list_tab = StyledText '\t', {}
+
 style_name = (icon_name) -> '_icon_font_'..icon_name
 
 define = (name, definition={}) ->
@@ -31,8 +38,14 @@ get = (name, icon_style = 'icon') ->
   text = icon.text
   return StyledText(text, {1, icon_style, #text + 1})
 
+-- the styled icon, as returned by get, followed by the tab lining up the text
+-- after it in a list with list_tab_size
+list_cell = (styled_icon) -> styled_icon .. list_tab
+
 {
   :define
   :define_default
   :get
+  :list_cell
+  :list_tab_size
 }
