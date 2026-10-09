@@ -126,6 +126,11 @@ The number of rows used by the list in the buffer.
 
 The currently selected item. Read/write.
 
+### selected_line
+
+The buffer line showing the selected item, or nil if there is no selection or
+it's not on the current page.
+
 ## Methods
 
 ### draw ()

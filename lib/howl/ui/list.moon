@@ -132,6 +132,20 @@ class List extends PropertyObject
       else
         nil
 
+  -- the buffer line showing the selected item, if it's on the current page
+  @property selected_line:
+    get: =>
+      idx = @selected_idx
+      start_pos = @start_pos
+      return nil unless idx and start_pos
+
+      offset = idx - @page_start_idx + 1
+      return nil if offset < 1 or offset > @page_size
+
+      offset += 1 if @has_header
+      start_line = @buffer.lines\at_pos(start_pos).nr
+      @buffer.lines[offset + start_line - 1]
+
   insert: (@buffer, pos = 1) =>
     @remove!
     @_marker = "list-#{@}"
@@ -203,8 +217,7 @@ class List extends PropertyObject
         { name: @_marker, start_offset: start_pos, end_offset: start_pos}
       }
 
-    if @selected_idx
-      @_highlight_selection @selected_idx
+    @_highlight_selection!
 
     for listener in *@listeners
       pcall listener, @
@@ -322,7 +335,7 @@ class List extends PropertyObject
     if @buffer
       if idx
         @_scroll_to idx
-      @_highlight_selection idx
+      @_highlight_selection!
 
     changed = @selection != @_previous_selection
     @_previous_selection = @selection
@@ -339,23 +352,10 @@ class List extends PropertyObject
     elseif @page_start_idx + @page_size - 1 < idx
       @_jump_to_page_at idx - @page_size + 1
 
-  _highlight_selection: (idx) =>
+  _highlight_selection: =>
     highlight.remove_all 'list_selection', @buffer
-    return unless idx
-
-    offset = idx - @page_start_idx + 1
-    if offset < 1 or offset > @page_size
-      return
-
-    offset += 1 if @has_header
-
-    lines = @buffer.lines
-    start_line = @buffer.lines\at_pos(@start_pos).nr
-    line = lines[offset + start_line - 1]
-    if line
-      pos = line.start_pos
-      length = #line
-      highlight.apply 'list_selection', @buffer, pos, length
+    line = @selected_line
+    highlight.apply 'list_selection', @buffer, line.start_pos, #line if line
 
   _jump_to_page_at: (idx) =>
     start_of_last_page = #@_items - @page_size + 1

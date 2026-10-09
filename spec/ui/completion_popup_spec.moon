@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Buffer from howl
-import Editor, CompletionPopup from howl.ui
+import Editor, CompletionPopup, highlight from howl.ui
 
 describe 'CompletionPopup', ->
   context 'resource management', ->
@@ -60,3 +60,8 @@ describe 'CompletionPopup', ->
       completions = { 'bar' }
       notify!
       assert.spy(editor.show_completion_popup).was_not_called!
+
+    it 'does not flair the text of the selected completion as menus do', ->
+      completions = { 'bar' }
+      notify!
+      assert.not_includes highlight.at_pos(popup.list.buffer, 1), 'menu_selection'

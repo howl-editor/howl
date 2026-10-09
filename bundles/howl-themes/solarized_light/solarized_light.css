@@ -194,6 +194,11 @@ flair.list-selection {
   background-color: alpha(var(--blue), 0.2);
 }
 
+flair.menu-selection {
+  shape: rectangle;
+  color: var(--blue);
+}
+
 flair.list-highlight {
   shape: underline;
   color: var(--black);

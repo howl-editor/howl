@@ -358,12 +358,13 @@ These are the flairs Howl uses:
 | `list-selection` | The selected item in lists |
 | `list-highlight` | The characters matching what you typed, in lists |
 | `list-visited` | Items already visited in list buffers, such as search results |
+| `menu-selection` | The text of the selected item in popup menus, such as the `goto` menu, but not its icon. Drawn on top of `list-selection`, and not used for completions. A `rectangle` with only a `color` recolors the text |
 | `error`, `warning` | Errors and warnings reported by inspections |
 | `stderr` | Error output of external commands |
 
 Howl has built-in definitions for most of these. `brace-highlight`,
-`brace-highlight-secondary`, `replace-strikeout` and `list-highlight` have none,
-and are only visible if the theme defines them.
+`brace-highlight-secondary`, `replace-strikeout`, `list-highlight` and
+`menu-selection` have none, and are only visible if the theme defines them.
 
 ## Checking a theme
 

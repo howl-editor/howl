@@ -9,6 +9,8 @@ is_character = (event) ->
   event.text and event.text.ulen == 1 and event.text\umatch r'[\\pL_]'
 
 class CompletionPopup extends MenuPopup
+  -- completions are offered while typing, and shouldn't draw attention
+  selection_flair: false
 
   new: (editor) =>
     error('Missing argument #1: editor', 3) if not editor

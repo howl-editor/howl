@@ -180,6 +180,11 @@ flair.list-selection {
   background-color: alpha(var(--current), 0.3);
 }
 
+flair.menu-selection {
+  shape: rectangle;
+  color: var(--purple);
+}
+
 flair.list-highlight {
   shape: underline;
   border-color: var(--white);

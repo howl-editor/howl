@@ -222,6 +222,21 @@ three    four    ]] .. '\n', buf.text
       assert.equal 5, #buf.lines[1]
       assert.equal 5, #buf.lines[3]
 
+    describe '.selected_line', ->
+      it 'is the buffer line showing the selected item', ->
+        list.selection = 'two'
+        assert.equal 2, list.selected_line.nr
+
+      it 'skips any header', ->
+        list.columns = { { header: 'Head' } }
+        list\update!
+        assert.equal 2, list.selected_line.nr
+
+      it 'is nil without a selection', ->
+        items = {}
+        list\update!
+        assert.is_nil list.selected_line
+
     describe '.selection = <item>', ->
       it 'causes <item> to be selected', ->
         list.selection = 'two'

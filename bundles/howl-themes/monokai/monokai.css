@@ -177,6 +177,11 @@ flair.list-selection {
   background-color: alpha(var(--current), 0.3);
 }
 
+flair.menu-selection {
+  shape: rectangle;
+  color: var(--magenta);
+}
+
 flair.list-highlight {
   shape: underline;
   border-color: white;

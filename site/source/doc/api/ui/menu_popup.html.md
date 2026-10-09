@@ -75,6 +75,12 @@ The [List] displaying the items.
 
 Text to highlight within the items when refreshed, e.g. the text typed so far.
 
+### selection_flair
+
+The flair applied to the text of the selected item, not including any icon, on
+top of the list's `list_selection` flair. It's `menu_selection` by default, and
+false for the [CompletionPopup], so that completions don't draw attention.
+
 ## Methods
 
 ### choose ()
