@@ -91,9 +91,18 @@ while IFS= read -r arg; do
 done < "$HEADLESS_TMP/args"
 
 cd "$HEADLESS_CWD"
+
+# wtype is the virtual keyboard, and types nothing - it just needs to stay alive while
+# Howl runs. Kill it once Howl is done, or it outlives the session as an orphan sleeping
+# out its long delay.
 wtype -s 86400000 '' &
+wtype_pid=$!
+trap 'kill "$wtype_pid" 2> /dev/null' EXIT
+
 HOWL_HEADLESS=1 GDK_BACKEND=wayland "$HOWL" "$@" 2> "$HEADLESS_TMP/stderr"
-echo $? > "$HEADLESS_TMP/status"
+status=$?
+kill "$wtype_pid" 2> /dev/null
+echo $status > "$HEADLESS_TMP/status"
 swaymsg exit > /dev/null
 EOF
 
