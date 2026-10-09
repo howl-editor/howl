@@ -358,8 +358,10 @@ class Buffer extends PropertyObject
     return @config if mode_at == @mode
     return config.proxy @_config_scope, mode_at.config_layer
 
+  -- a span's end is exclusive, while a chunk's is inclusive
   chunk_for_span: (span, line_nr = nil) =>
-    @\chunk @resolve_span span, line_nr
+    start_pos, end_pos = @resolve_span span, line_nr
+    @\chunk start_pos, end_pos - 1
 
   resolve_span: (span, line_nr = nil) =>
     {:start_pos, :end_pos} = span

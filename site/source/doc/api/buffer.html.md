@@ -192,7 +192,8 @@ Returns a [Chunk] for the given range.
 ### chunk_for_span(span [, line_nr])
 
 Returns a [Chunk] for the given `span` and optional `line_nr`. The span is
-resolved using [resolve_span](#resolve_span).
+resolved using [resolve_span](#resolve_span), so its end is exclusive: the chunk
+ends at the character before it.
 
 ### context_at(pos)
 
@@ -268,7 +269,8 @@ expression].
 ### resolve_span(span [, line_nr])
 
 Resolves the provided span, returning the starting and ending position within
-the buffer.
+the buffer. The ending position is exclusive, i.e. the position just after the
+span.
 
 The passed `span` can specify the positions in various ways (hence the
 usefulness of this function). Common for both the starting and ending position
@@ -284,7 +286,8 @@ Start positions can be specified using one of the below:
   * `byte_start_column`: The starting byte-oriented column of the segment
     relative to a line (requires line number)
 
-  End positions can be specified by using one of the below:
+  End positions, all exclusive, can be specified by using one of the below. Without
+  one, the end of the line is used if a line number is given:
 
   * `end_pos`: An absolute position in the buffer
   * `byte_end_pos`: An absolute byte-oriented position in the buffer

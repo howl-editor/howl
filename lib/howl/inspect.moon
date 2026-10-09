@@ -414,7 +414,8 @@ command.register
 
     last_lnr = 0
     for i in *inspections
-      chunk = buffer\chunk i.start_offset, i.end_offset
+      -- the marker's end is exclusive, the chunk's inclusive
+      chunk = buffer\chunk i.start_offset, i.end_offset - 1
       l = buffer.lines\at_pos i.start_offset
       message = (i.message or '')\match('^[^\n]*')
       append items, {
@@ -438,6 +439,6 @@ command.register
     if res
       chunk = res.chunk
       app.editor.cursor.pos = chunk.start_pos
-      app.editor\highlight start_pos: chunk.start_pos, end_pos: chunk.end_pos
+      app.editor\highlight start_pos: chunk.start_pos, end_pos: chunk.end_pos + 1
 
 :inspect, :criticize, :publish

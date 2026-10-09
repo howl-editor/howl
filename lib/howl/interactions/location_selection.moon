@@ -67,10 +67,12 @@ class LocationItem
         if @location.start_column or @location.byte_start_column
           span = {
             start_column: @location.start_column
-            end_column: @location.end_column or @location.start_column
+            end_column: @location.end_column
             byte_start_column: @location.byte_start_column
-            byte_end_column: @location.byte_end_column or @location.byte_start_column
+            byte_end_column: @location.byte_end_column
           }
+          -- without an end, the span is the character at the start
+          span.count = 1 unless span.end_column or span.byte_end_column
           return buffer\chunk_for_span span, line_nr
         else
           return line.chunk

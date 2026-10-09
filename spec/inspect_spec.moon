@@ -482,3 +482,19 @@ describe 'inspect', ->
       howl.command.get('cursor-goto-inspection').input {}
       rows = [{item[1], tostring(item[2]), item[3]} for item in *select_opts.items]
       assert.same { {'2', 'line 2', 'first'}, {'·', 'line 2', 'second'} }, rows
+
+    it 'previews the text of each inspection', ->
+      buffer.text = 'line 1\nline 2'
+      inspect.publish buffer, 'lsp', { { line: 2, byte_start_col: 1, byte_end_col: 3, message: 'm' } }
+      howl.command.get('cursor-goto-inspection').input {}
+      assert.equals 'li', select_opts.items[1].chunk.text
+
+    it 'goes to and highlights the chosen inspection', ->
+      buffer.text = 'line 1\nline 2'
+      inspect.publish buffer, 'lsp', { { line: 2, byte_start_col: 1, byte_end_col: 3, message: 'm' } }
+      cmd = howl.command.get('cursor-goto-inspection')
+      cmd.input {}
+      howl.app.editor = buffer: buffer, cursor: {}, highlight: spy.new ->
+      cmd.handler select_opts.items[1]
+      assert.equals 8, howl.app.editor.cursor.pos
+      assert.spy(howl.app.editor.highlight).was_called_with howl.app.editor, start_pos: 8, end_pos: 10

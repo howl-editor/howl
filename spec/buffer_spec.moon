@@ -823,7 +823,11 @@ describe 'Buffer', ->
     it 'similar to resolve_span but returns a Chunk', ->
       chunk = buf\chunk_for_span start_pos: 4, end_pos: 7
       assert.same chunk.buffer, buf
-      assert.same 'åäö7', chunk.text
+      assert.same 'åäö', chunk.text
+
+    it 'returns a chunk for the line without its newline for a sole line_nr', ->
+      buf.text = 'åäö\nnext'
+      assert.same 'åäö', buf\chunk_for_span({}, 1).text
 
   describe 'get_ptr(start_pos, end_pos)', ->
     assert_returns = (s, count, ...) ->
