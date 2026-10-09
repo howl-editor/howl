@@ -263,6 +263,12 @@ command. These have no default bindings, and work the same way as
 
 Not all servers support these.
 
+The `goto` command offers all of these in one place. It opens a menu at the
+cursor listing what the file's language server can go to: the definition,
+declaration, type definition, implementations or references of the symbol at
+the cursor. Picking one runs the corresponding command. Without a language
+server for the file, or with the cursor not on a symbol, it tells you so instead.
+
 ## Finding references
 
 The `goto-reference` command, bound to `alt_comma` by default, lists the

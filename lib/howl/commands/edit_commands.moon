@@ -1,8 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:activities, :app, :command, :interact} = howl
-{:ActionBuffer, :BufferPopup, :markup} = howl.ui
+{:activities, :app, :command, :interact, :timer} = howl
+{:ActionBuffer, :BufferPopup, :MenuPopup, :markup} = howl.ui
 {:Process} = howl.io
 
 command.register
@@ -246,6 +246,47 @@ command.register
       selection: at_cursor
 
     app\open loc if loc
+
+-- the targets offered by `goto`, with the server capability each needs
+goto_targets = {
+  { label: 'Definition', cmd: 'goto-definition', provider: 'definitionProvider' }
+  { label: 'Declaration', cmd: 'goto-declaration', provider: 'declarationProvider' }
+  { label: 'Type definition', cmd: 'goto-type-definition', provider: 'typeDefinitionProvider' }
+  { label: 'Implementation', cmd: 'goto-implementation', provider: 'implementationProvider' }
+  { label: 'References', cmd: 'goto-reference', provider: 'referencesProvider' }
+}
+
+command.register
+  name: 'goto',
+  description: 'Choose where to go for the symbol at cursor'
+  handler: ->
+    editor = app.editor
+    buffer = editor.buffer
+    state = require('howl.lsp').attach buffer
+    unless state
+      log.warn "No LSP server available for '#{buffer.title}'"
+      return
+
+    if editor.current_context.word.empty
+      log.warn 'Please position the cursor on a symbol'
+      return
+
+    -- a server that's still starting hasn't told us what it supports yet
+    client = state.client
+    items = for t in *goto_targets
+      continue if client.initialized and not client.capabilities[t.provider]
+      { t.label, cmd: t.cmd }
+
+    if #items == 0
+      log.warn "The LSP server for '#{buffer.title}' supports no goto requests"
+      return
+
+    -- the command runs once the menu has closed, as it may open the command panel
+    run_target = (item) ->
+      timer.asap -> command.run item.cmd
+      true
+
+    editor\show_popup MenuPopup items, run_target
 
 command.register
   name: 'buffer-mode',

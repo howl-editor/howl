@@ -59,8 +59,9 @@ again the next time you show or edit a file for it. How long is controlled by th
   finds none, the project is searched for the word instead. The
   `goto-declaration`, `goto-type-definition` and `goto-implementation` commands
   go to the symbol's declaration, the definition of its type and its
-  implementations, for servers that support them. See [Going to
-  definitions](editing.html#going-to-definitions).
+  implementations, for servers that support them. The `goto` command shows a
+  menu at the cursor of what the server can go to, references included. See
+  [Going to definitions](editing.html#going-to-definitions).
 
 - **References**: The `goto-reference` command, bound to `alt_comma` by
   default, lists the references to the symbol at the cursor and goes to the one
