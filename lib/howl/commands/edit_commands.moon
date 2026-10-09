@@ -176,29 +176,54 @@ command.register
     else
      log.info "No documentation found for '#{ctx.word}'"
 
+-- goes to the language server's locations from method for the symbol at the
+-- cursor, letting you pick one if there are several, or calls fallback without
+-- a language server's answer
+goto_locations = (method, title, fallback) ->
+  editor = app.editor
+  buffer = editor.buffer
+  locations = require('howl.lsp.definition').locations_for buffer, editor.cursor.pos, method
+  -- the server's response might arrive after switching to another buffer
+  return if app.editor.buffer != buffer
+
+  unless locations
+    fallback!
+    return
+
+  loc = if #locations == 1
+    locations[1]
+  else
+    interact.select_location
+      title: "#{title} of '#{editor.current_context.word}'"
+      items: locations
+
+  app\open loc if loc
+
 command.register
   name: 'goto-definition',
   description: 'Go to the definition of the symbol at cursor'
   handler: ->
-    editor = app.editor
-    buffer = editor.buffer
-    locations = require('howl.lsp.definition').locations_for buffer, editor.cursor.pos
-    -- the server's response might arrive after switching to another buffer
-    return if app.editor.buffer != buffer
+    goto_locations 'definition', 'Definitions', -> command.run 'project-file-search'
 
-    -- without a language server's answer, search the project for the word
-    unless locations
-      command.run 'project-file-search'
-      return
+command.register
+  name: 'goto-declaration',
+  description: 'Go to the declaration of the symbol at cursor'
+  handler: ->
+    goto_locations 'declaration', 'Declarations', -> command.run 'goto-definition'
 
-    loc = if #locations == 1
-      locations[1]
-    else
-      interact.select_location
-        title: "Definitions of '#{editor.current_context.word}'"
-        items: locations
+command.register
+  name: 'goto-type-definition',
+  description: 'Go to the definition of the type of the symbol at cursor'
+  handler: ->
+    goto_locations 'typeDefinition', 'Type definitions', ->
+      log.info "No type definition found for '#{app.editor.current_context.word}'"
 
-    app\open loc if loc
+command.register
+  name: 'goto-implementation',
+  description: 'Go to an implementation of the symbol at cursor'
+  handler: ->
+    goto_locations 'implementation', 'Implementations', ->
+      log.info "No implementation found for '#{app.editor.current_context.word}'"
 
 command.register
   name: 'goto-reference',

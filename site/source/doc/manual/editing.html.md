@@ -250,6 +250,19 @@ Without a language server, or when the server finds no definition, the command
 searches the project for the word at the cursor using `project-file-search`
 instead. See [Searching files](files.html#searching-files).
 
+Language servers can also answer a few related questions, each with its own
+command. These have no default bindings, and work the same way as
+`goto-definition`:
+
+- `goto-declaration` goes to the declaration of the symbol, such as a function
+  prototype in a C header. Without one, it goes to the definition instead.
+- `goto-type-definition` goes to the definition of the symbol's type, such as
+  the class of a variable.
+- `goto-implementation` goes to the implementations of the symbol, such as the
+  classes implementing an interface or the overrides of a method.
+
+Not all servers support these.
+
 ## Finding references
 
 The `goto-reference` command, bound to `alt_comma` by default, lists the

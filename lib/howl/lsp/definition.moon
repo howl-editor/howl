@@ -48,17 +48,18 @@ to_locations = (result, root) ->
         table.insert locations, location
   locations
 
--- returns a list of the server's definition locations for pos, or nil if
--- there's no server supporting it or it found none. Must be called from a
--- coroutine.
-locations_for = (buffer, pos) ->
+-- returns a list of the server's locations for pos from method, a request
+-- answered with locations ('definition', 'declaration', 'typeDefinition' or
+-- 'implementation'). Returns nil if there's no server supporting it or it found
+-- none. Must be called from a coroutine.
+locations_for = (buffer, pos, method = 'definition') ->
   state = lsp.attach buffer
   return nil unless state
   client = state.client
-  return nil if client.initialized and not client.capabilities.definitionProvider
+  return nil if client.initialized and not client.capabilities["#{method}Provider"]
 
   lsp.sync buffer
-  result = client\request 'textDocument/definition', {
+  result = client\request "textDocument/#{method}", {
     textDocument: { uri: state.uri },
     position: lsp.position(buffer, pos)
   }

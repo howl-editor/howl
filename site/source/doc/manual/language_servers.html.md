@@ -56,7 +56,10 @@ again the next time you show or edit a file for it. How long is controlled by th
 
 - **Definitions**: The `goto-definition` command, bound to `alt_period` by
   default, goes to the definition of the symbol at the cursor. When the server
-  finds none, the project is searched for the word instead. See [Going to
+  finds none, the project is searched for the word instead. The
+  `goto-declaration`, `goto-type-definition` and `goto-implementation` commands
+  go to the symbol's declaration, the definition of its type and its
+  implementations, for servers that support them. See [Going to
   definitions](editing.html#going-to-definitions).
 
 - **References**: The `goto-reference` command, bound to `alt_comma` by

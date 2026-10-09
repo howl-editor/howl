@@ -68,7 +68,7 @@ describe 'lsp.definition', ->
     it 'returns an empty list for a missing result', ->
       assert.same {}, definition.to_locations nil
 
-  describe 'locations_for(buffer, pos)', ->
+  describe 'locations_for(buffer, pos, method)', ->
     local buffer, client, response, err
 
     before_each ->
@@ -109,6 +109,19 @@ describe 'lsp.definition', ->
     it 'does not request anything when the server has no definitionProvider', ->
       client.capabilities = {}
       assert.is_nil definition.locations_for buffer, 6
+      assert.spy(client.request).was_not_called!
+
+    it 'requests the given method when the server provides it', ->
+      client.capabilities = { typeDefinitionProvider: true }
+      locs = definition.locations_for buffer, 6, 'typeDefinition'
+      assert.spy(client.request).was_called_with client, 'textDocument/typeDefinition', {
+        textDocument: { uri: 'file:///tmp/x.py' },
+        position: { line: 1, character: 1 }
+      }
+      assert.equals File('/tmp/y.py'), locs[1].file
+
+    it 'does not request anything when the server does not provide the given method', ->
+      assert.is_nil definition.locations_for buffer, 6, 'implementation'
       assert.spy(client.request).was_not_called!
 
     it 'returns nil for buffers without a language server', ->

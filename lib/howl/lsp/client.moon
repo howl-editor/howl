@@ -34,6 +34,15 @@ client_capabilities = -> {
     definition: {
       linkSupport: true
     }
+    declaration: {
+      linkSupport: true
+    }
+    typeDefinition: {
+      linkSupport: true
+    }
+    implementation: {
+      linkSupport: true
+    }
     publishDiagnostics: {
       versionSupport: true
     }
