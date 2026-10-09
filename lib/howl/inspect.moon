@@ -9,7 +9,7 @@
 {:min, :max} = math
 append = table.insert
 
-local popup, last_display_position
+local last_display_position
 
 unavailable_warnings = {}
 
@@ -300,10 +300,7 @@ show_popup = (editor, inspections, pos) ->
     .cursor.line = 1
     .base_x = 0
 
-  editor\show_popup popup, {
-    position: pos,
-    keep_alive: true,
-  }
+  editor\show_popup popup, position: pos
 
 display_inspections = ->
   timer.on_idle (config.display_inspections_delay / 1000), display_inspections
