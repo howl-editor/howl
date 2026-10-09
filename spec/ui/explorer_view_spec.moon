@@ -219,6 +219,13 @@ describe 'ExplorerView', ->
         assert.spy(command_line.finish).was_not_called!
         assert.same {'d', 'e', 'f'}, list_widget_items!
 
+      it 'when no item matches, it does nothing', ->
+        explorer_view\on_text_changed 'zzz'
+        keypress 'enter'
+
+        assert.spy(command_line.finish).was_not_called!
+        assert.same {}, list_widget_items!
+
       context 'when <backspace> is pressed', ->
         it 'goes back up one level', ->
           explorer_view\on_text_changed 'two'
@@ -429,6 +436,16 @@ describe 'ExplorerView', ->
       it 'lets you filter options by typing', ->
         explorer_view\on_text_changed 'a'
         assert.same {'opt-a'}, [item[1] for item in *list_widget_items!]
+
+      it 'lets you type text matching no options', ->
+        explorer_view\on_text_changed 'zzz'
+        assert.same {}, list_widget_items!
+
+      it 'does nothing on enter when no option matches', ->
+        explorer_view\on_text_changed 'zzz'
+        keypress 'enter'
+        assert.spy(command_line.finish).was_not_called!
+        assert.spy(explorer.set_value).was_not_called!
 
       it 'selecting an option finishes with the selection set with the new value', ->
         keypress_binding_for 'cursor-up'  -- default is 'b', this selects 'a'

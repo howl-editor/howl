@@ -305,10 +305,13 @@ class ValueItemView
       @explorer_view\preview @item, text
 
   handle_selection_change: (selection) =>
+    -- no option is selected when none match the text
+    return unless selection
     @explorer_view\preview @item, selection.value
 
   handle_enter: (selection) =>
     if @options
+      return unless selection
       -- set the selected option as the new value
       @item\set_value selection.value
 
@@ -413,6 +416,8 @@ class ListItemView
   handle_enter: (selection) =>
     item = get_explorer_for_selection @item, selection
     item or= selection
+    -- nothing is selected when no item matches the text
+    return unless item
 
     if item.display_items or item.get_value
       @explorer_view\enter_level item
