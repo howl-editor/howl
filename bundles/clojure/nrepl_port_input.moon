@@ -3,29 +3,27 @@
 
 import app, Project, interact from howl
 
+-- the port in the .nrepl-port file of the current buffer's project, if any
+project_port = ->
+  file = app.editor and app.editor.buffer.file
+  project = file and Project.for_file file
+  return nil unless project
+  port_file = project.root / '.nrepl-port'
+  port_file.exists and port_file.contents.stripped or nil
+
 interact.register
   name: 'read_nrepl_port'
   description: 'A port (number) for an NRepl instance'
-  handler: ->
-    items = {}
-    file = app.editor.buffer.file
-    if file
-      project = Project.for_file file
-      if project
-        port_file = project.root / '.nrepl-port'
-        if port_file.exists
-          items = { { port_file.contents, tostring(project.root) } }
+  handler: (opts={}) ->
+    text = opts.text
+    text = project_port! if not text or text.is_blank
+    text = interact.read_text
+      prompt: opts.prompt
+      title: 'NRepl port'
+      :text
+      help: opts.help
 
-    selected = interact.select
-      :items
-      allow_new_value: true
-      columns: {
-            { style: 'string' },
-            { style: 'comment' },
-      }
-
-    if selected
-      if selected.selection
-        return tonumber selected.selection[1]
-      elseif selected.text and not selected.text.is_empty
-        return tonumber selected.text
+    return unless text
+    port = tonumber text
+    log.error "Not a port number: '#{text}'" unless port
+    port
