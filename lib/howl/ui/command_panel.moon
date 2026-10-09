@@ -308,7 +308,7 @@ class CommandLine extends PropertyObject
     @parking = dispatch.park 'command_line'
     status, err = pcall -> def\init self, max_height: @window.allocated_height * 0.5, max_width: @window.allocated_width - 20
     unless status
-      log.error 'def.init returned error: ', :err
+      log.error "def.init returned error: #{err}"
     @open!
 
     -- calls @def.on_text_changed

@@ -30,6 +30,10 @@ describe 'CommandPanel', ->
       assert.equal def, args[1]
       assert.same 'CommandLine', typeof(args[2])
 
+    it 'logs the error raised by init', ->
+      run_in_coroutine -> command_panel\run init: -> error 'bad init', 0
+      assert.match log.last_error.message, 'bad init'
+
     context "when no opts.text is set", ->
       it 'invokes on_text_changed on def, passing in ""', ->
         def = {
