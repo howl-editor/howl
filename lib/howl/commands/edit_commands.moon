@@ -280,9 +280,9 @@ command.register
   description: 'Replace selection with output of selection fed into external command'
   input: (opts) ->
     chunk = app.editor.active_chunk
-    {:working_directory, :cmd} = howl.interact.get_external_command!
-    return unless working_directory
-    return chunk, working_directory, cmd
+    result = howl.interact.get_external_command!
+    return unless result
+    return chunk, result.working_directory, result.cmd
 
   handler: (chunk, working_directory, cmd) ->
     process = Process.open_pipe cmd, :working_directory, stdin: chunk.text
