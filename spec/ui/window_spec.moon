@@ -218,6 +218,21 @@ describe 'Window', ->
     it 'returns an empty table if view is not provided and no child is focused', ->
       assert.same {}, win\siblings!
 
+  describe 'get_screenshot(opts)', ->
+    it 'renders the part of the window given by opts.region, at opts.scale', ->
+      -- a window renders nothing until it's shown
+      gobject = win\to_gobject!
+      gobject\show!
+      while gobject.allocated_height <= 0
+        howl.app\pump_mainloop!
+      texture = win\get_screenshot scale: 2, region: { x: 10, y: 5, width: 30, height: 20 }
+      assert.equals 60, texture.width
+      assert.equals 40, texture.height
+
+  describe 'showing_popovers()', ->
+    it 'is empty when no popup is showing', ->
+      assert.same {}, win\showing_popovers!
+
   describe 'column reflowing', ->
     local left, right, bottom
 

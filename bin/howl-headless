@@ -1,0 +1,121 @@
+#! /bin/sh
+#
+# Copyright 2026 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
+#
+# Runs Howl inside a headless sway of its own, so that the window gets an exact size
+# and nothing shows on the desktop. That needs sway and wtype; without them, Howl runs
+# on the current display instead.
+
+. "$(dirname "$0")/_howl_env.sh"
+
+usage() {
+  cat <<'EOF'
+Usage: howl-headless [--size <width>x<height>] [--scale <n>] [--] <howl args>...
+
+Runs Howl with the given arguments in a private headless sway, whose single output
+is the given size in logical pixels (default 1280x720) at the given scale (default
+2). The window fills the output, so it gets exactly that size. Howl's output is
+passed on, and the exit status is Howl's.
+
+Scripts can read the size from HOWL_HEADLESS_SIZE. HOWL_HEADLESS is set when running
+in the headless sway, where `wtype` sends key presses to Howl, as a real keyboard.
+Without sway or wtype, Howl runs on the current display and HOWL_HEADLESS is unset.
+
+  --size <w>x<h>  the size of the output, in logical pixels
+  --scale <n>     the output's scale
+  -h, --help      this help
+
+Example:
+  howl-headless -- --no-profile --run lib/scripts/screen-shooter.moon /tmp/shots
+EOF
+}
+
+SIZE=1280x720
+SCALE=2
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    --size) shift; SIZE=$1 ;;
+    --scale) shift; SCALE=$1 ;;
+    --) shift; break ;;
+    *) break ;;
+  esac
+  shift
+done
+
+WIDTH=${SIZE%x*}
+HEIGHT=${SIZE#*x}
+case "$WIDTH$HEIGHT$SCALE" in
+  ''|*[!0-9]*)
+    echo "howl-headless: invalid --size '$SIZE' or --scale '$SCALE'" >&2
+    exit 1
+    ;;
+esac
+
+if [ $# -eq 0 ]; then
+  echo "howl-headless: no Howl arguments given (try --help)" >&2
+  exit 1
+fi
+
+HOWL_HEADLESS_SIZE=$SIZE
+export HOWL_HEADLESS_SIZE
+
+if ! command -v sway > /dev/null || ! command -v wtype > /dev/null; then
+  echo "howl-headless: sway or wtype not found, running on the current display (the window manager decides the size)" >&2
+  exec "$HOWL" "$@"
+fi
+
+HEADLESS_TMP=$(mktemp -d)
+trap 'rm -rf "$HEADLESS_TMP"' EXIT
+export HOWL HEADLESS_TMP
+export HEADLESS_CWD="$PWD"
+
+# the arguments go through a file, to keep them intact through sway's exec
+: > "$HEADLESS_TMP/args"
+for arg in "$@"; do
+  printf '%s\n' "$arg" >> "$HEADLESS_TMP/args"
+done
+
+# Without a keyboard, sway never activates the window, and Gtk then sends no focus
+# events, which Howl needs to track the current editor. wtype provides a virtual
+# keyboard for as long as it runs, and types nothing.
+#
+# Howl's stdout is sway's, which is ours, so it shows as it's written. Its stderr is
+# kept apart from sway's log and passed on once it's done.
+cat > "$HEADLESS_TMP/run.sh" << 'EOF'
+set --
+while IFS= read -r arg; do
+  set -- "$@" "$arg"
+done < "$HEADLESS_TMP/args"
+
+cd "$HEADLESS_CWD"
+wtype -s 86400000 '' &
+HOWL_HEADLESS=1 GDK_BACKEND=wayland "$HOWL" "$@" 2> "$HEADLESS_TMP/stderr"
+echo $? > "$HEADLESS_TMP/status"
+swaymsg exit > /dev/null
+EOF
+
+cat > "$HEADLESS_TMP/config" << EOF
+output * mode --custom $((WIDTH * SCALE))x$((HEIGHT * SCALE)) scale $SCALE
+default_border none
+default_floating_border none
+gaps inner 0
+gaps outer 0
+xwayland disable
+exec sh "$HEADLESS_TMP/run.sh"
+EOF
+
+WLR_BACKENDS=headless WLR_LIBINPUT_NO_DEVICES=1 sway -c "$HEADLESS_TMP/config" 2> "$HEADLESS_TMP/sway.log"
+
+[ -f "$HEADLESS_TMP/stderr" ] && cat "$HEADLESS_TMP/stderr" >&2
+
+status=$(cat "$HEADLESS_TMP/status" 2> /dev/null)
+if [ -z "$status" ]; then
+  echo "howl-headless: Howl never ran; sway log:" >&2
+  cat "$HEADLESS_TMP/sway.log" >&2
+  exit 1
+fi
+
+exit "$status"

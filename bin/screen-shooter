@@ -1,62 +1,10 @@
 #! /bin/sh
 #
-# Generates the site screenshots. Howl runs inside a headless sway of its own,
-# so that the window gets exactly 1280x720, rendered at 2x, and nothing shows
-# on the desktop. That needs sway and wtype; without them, Howl runs on the
-# current display instead.
+# Generates the site screenshots, at 1280x720 rendered at 2x. Howl runs inside a
+# headless sway of its own (see howl-headless), so that the window gets exactly that
+# size and nothing shows on the desktop.
 
 . "$(dirname "$0")/_howl_env.sh"
 
-script="$ROOT/lib/scripts/screen-shooter.moon"
-
-if ! command -v sway > /dev/null || ! command -v wtype > /dev/null; then
-  echo "sway or wtype not found, running on the current display (the window manager decides the size)" >&2
-  exec "$HOWL" --no-profile --run "$script" "$@"
-fi
-
-SHOOTER_TMP=$(mktemp -d)
-trap 'rm -rf "$SHOOTER_TMP"' EXIT
-export HOWL SHOOTER_TMP
-export SHOOTER_SCRIPT="$script"
-export SHOOTER_CWD="$PWD"
-
-# the arguments go through a file, to keep them intact through sway's exec
-: > "$SHOOTER_TMP/args"
-for arg in "$@"; do
-  printf '%s\n' "$arg" >> "$SHOOTER_TMP/args"
-done
-
-# Without a keyboard, sway never activates the window, and Gtk then sends no
-# focus events, which Howl needs to track the current editor. wtype provides
-# a virtual keyboard for as long as it runs, and types nothing.
-cat > "$SHOOTER_TMP/run.sh" << 'EOF'
-set --
-while IFS= read -r arg; do
-  set -- "$@" "$arg"
-done < "$SHOOTER_TMP/args"
-
-cd "$SHOOTER_CWD"
-wtype -s 86400000 '' &
-GDK_BACKEND=wayland "$HOWL" --no-profile --run "$SHOOTER_SCRIPT" "$@" 2>&1
-echo $? > "$SHOOTER_TMP/status"
-swaymsg exit > /dev/null
-EOF
-
-cat > "$SHOOTER_TMP/config" << EOF
-output * mode --custom 2560x1440 scale 2
-default_border none
-default_floating_border none
-gaps inner 0
-gaps outer 0
-xwayland disable
-exec sh "$SHOOTER_TMP/run.sh"
-EOF
-
-WLR_BACKENDS=headless WLR_LIBINPUT_NO_DEVICES=1 sway -c "$SHOOTER_TMP/config" 2> "$SHOOTER_TMP/sway.log"
-
-status=$(cat "$SHOOTER_TMP/status" 2> /dev/null)
-if [ "$status" != 0 ]; then
-  echo "Screenshots failed; sway log:" >&2
-  cat "$SHOOTER_TMP/sway.log" >&2
-  exit 1
-fi
+exec "$ROOT/bin/howl-headless" --size 1280x720 --scale 2 -- \
+  --no-profile --run "$ROOT/lib/scripts/screen-shooter.moon" "$@"

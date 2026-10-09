@@ -1,0 +1,117 @@
+#! /bin/sh
+#
+# Copyright 2026 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
+#
+# Takes screenshots of a scenario run in a real Howl window, in a headless sway (see
+# howl-headless), for checking how the UI looks.
+
+. "$(dirname "$0")/_howl_env.sh"
+
+usage() {
+  cat <<'EOF'
+Usage: howl-shot [options] (<scenario.moon> | -e <code> | -)
+
+Runs a MoonScript scenario in a Howl window of the given size, once per theme, and
+saves the screenshots it takes as <out-dir>/<theme>/<name>.png. The path of each
+image is printed. With several themes, each shot is also combined into
+<out-dir>/<name>-themes.png, a labelled grid of the themes (needs ImageMagick).
+Exits non-zero if the scenario fails or takes no shot.
+
+  -o, --out <dir>      where to save the images (default /tmp/howl-shots)
+  -t, --theme <names>  a theme, a comma separated list of them, or 'all', matched
+                       case-insensitively on part of the name (default Monokai)
+  --size <w>x<h>       the window size, in logical pixels (default 1280x720)
+  --scale <n>          the rendering scale (default 2; 1 gives smaller images)
+  --profile            load the user profile (settings, bundles and session)
+  -e, --eval <code>    the scenario, as a single statement
+  -                    read the scenario from stdin
+  -h, --help           this help
+
+Scenarios run in a coroutine, with these helpers besides the usual globals:
+
+  open path, at: 'text' | line: n
+      Opens a file, relative to the Howl checkout unless absolute, with the
+      cursor at the start of the text or on the line. Returns buffer, editor.
+  run 'command args'
+      Runs a command in a coroutine of its own, so that interactions don't block.
+  wait seconds
+  wait_for (-> condition), timeout = 5
+      Waits until the function returns a true value, which is returned, and
+      raises an error on timeout. E.g. wait_for -> app.editor.popup
+  keys 'Down', 'Return', 'ctrl+space'
+      Presses keys, as a real keyboard (X keysym names, with modifiers).
+  type_text 'text'
+      Types text, as a real keyboard.
+  shot name, crop: 'window' | 'popup' | 'editor' | 'command_panel' | {x:, y:, width:, height:}, margin: 40
+      Saves a screenshot, including any popup. A crop limits it to that part
+      of the window, plus margin pixels around it (default 40, or 0 for a
+      rectangle).
+
+Example:
+  howl-shot -t all - <<'EOF2'
+  open 'lib/howl/application.moon', at: 'table.sort'
+  run 'show-doc-at-cursor'
+  wait_for -> app.editor.popup
+  shot 'show-doc', crop: 'popup'
+  EOF2
+EOF
+}
+
+OUT=/tmp/howl-shots
+THEMES=
+SIZE=1280x720
+SCALE=2
+PROFILE=--no-profile
+CODE=
+SRC=
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    -o|--out) shift; OUT=$1 ;;
+    -t|--theme) shift; THEMES=$1 ;;
+    --size) shift; SIZE=$1 ;;
+    --scale) shift; SCALE=$1 ;;
+    --profile) PROFILE= ;;
+    -e|--eval)
+      shift
+      [ $# -gt 0 ] || { echo "howl-shot: -e requires an argument" >&2; exit 1; }
+      CODE=$1
+      ;;
+    -) SRC=- ;;
+    -*) echo "howl-shot: unknown option '$1' (try --help)" >&2; exit 1 ;;
+    *) SRC=$1 ;;
+  esac
+  shift
+done
+
+if [ -z "$CODE" ] && [ -z "$SRC" ]; then
+  echo "howl-shot: no scenario given (try --help)" >&2
+  exit 1
+fi
+
+if [ -n "$SRC" ] && [ "$SRC" != - ] && [ -z "$CODE" ]; then
+  exec "$ROOT/bin/howl-headless" --size "$SIZE" --scale "$SCALE" -- \
+    $PROFILE --run "$ROOT/lib/scripts/shot.moon" "$OUT" "$THEMES" "$SRC"
+fi
+
+[ -n "$CODE" ] || CODE=$(cat)
+
+# The .moon extension is required: the loadfile hook in lib/howl/moonscript_support.lua
+# dispatches on it, and a temp file without it would be parsed as Lua.
+TMP=$(mktemp "${TMPDIR:-/tmp}/howl-shot-XXXXXX.moon") || exit 1
+printf '%s\n' "$CODE" > "$TMP"
+
+"$ROOT/bin/howl-headless" --size "$SIZE" --scale "$SCALE" -- \
+  $PROFILE --run "$ROOT/lib/scripts/shot.moon" "$OUT" "$THEMES" "$TMP"
+status=$?
+
+# Keep the file on failure - tracebacks reference it by path.
+if [ $status -eq 0 ]; then
+  rm -f "$TMP"
+else
+  echo "howl-shot: scenario kept at $TMP" >&2
+fi
+
+exit $status

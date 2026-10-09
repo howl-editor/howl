@@ -225,9 +225,14 @@ class Window extends PropertyObject
   show_popup: (popup, opts) =>
     popup\show @win, opts
 
+  -- returns the showing popovers, as `{:popover, :x, :y}` with their position
+  -- relative to the window
+  showing_popovers: => showing_popovers @win, @win\get_native!
+
   -- returns a texture with the window's current rendering, at the surface's
   -- scale unless `opts.scale` is given. `opts.with_overlays` includes the
-  -- showing popups.
+  -- showing popups, and `opts.region` ({:x, :y, :width, :height}, in window
+  -- coordinates) limits it to a part of the window.
   get_screenshot: (opts = {}) =>
     native = @win\get_native!
     width, height = @win.allocated_width, @win.allocated_height
@@ -237,13 +242,15 @@ class Window extends PropertyObject
     snapshot\scale scale, scale
     snapshot\append_widget @win, width, height
     if opts.with_overlays
-      for p in *showing_popovers @win, native
+      for p in *@showing_popovers!
         snapshot\save!
         snapshot\translate p.x, p.y
         snapshot\append_widget p.popover, p.popover.allocated_width, p.popover.allocated_height
         snapshot\restore!
 
-    native\get_renderer!\render_texture snapshot\to_node!, 0, 0, width * scale, height * scale
+    region = opts.region or x: 0, y: 0, :width, :height
+    native\get_renderer!\render_texture snapshot\to_node!,
+      region.x * scale, region.y * scale, region.width * scale, region.height * scale
 
   _view_from_gobject: (gobject) =>
     for v in *@_views
