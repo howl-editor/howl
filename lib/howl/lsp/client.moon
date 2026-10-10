@@ -89,7 +89,7 @@ class Client
     @request_handlers[k] = v for k, v in pairs opts.request_handlers or {}
     @initialized = false
     @dead = false
-    -- set when the client is deliberately stopped, or failed to initialize
+    -- set when the client is deliberately stopped
     @stopping = false
     @failure = nil
     -- the time of the last message sent to the server
@@ -179,10 +179,13 @@ class Client
     @notify '$/cancelRequest', :id
 
   stop: =>
-    return if @dead
+    return if @dead or @stopping
     @stopping = true
     @send_request 'shutdown', nil, ->
       @notify 'exit'
+      -- nothing is sent after exit, and servers may also wait for the end of
+      -- their input
+      @_close_stdin!
     timer.after 2, ->
       @process\send_signal 'TERM' unless @process.exited
 
@@ -208,6 +211,7 @@ class Client
       append @_deferred, msg
 
   _write: (msg) =>
+    return if @_closing_stdin
     data = json_rpc.encode msg
     trace '->', data if trace
     append @_queue, data
@@ -223,6 +227,17 @@ class Client
           break
 
       @_writing = false
+      @_close_stdin! if @_closing_stdin
+
+  -- closes the server's stdin once what's queued has been written, and stops
+  -- anything more from being written
+  _close_stdin: =>
+    @_closing_stdin = true
+    return if @_writing or @_stdin_closed
+    @_stdin_closed = true
+    stdin = @process.stdin
+    -- the server is done with it either way, so a failure doesn't matter
+    dispatch.launch -> pcall stdin.close, stdin
 
   _read: =>
     status, err = pcall @process.pump, @process, @\_on_stdout, @\_on_stderr
@@ -298,6 +313,7 @@ class Client
     return if @dead
     @dead = true
     @initialized = false
+    @_close_stdin!
     pending = @_pending
     @_pending = {}
     @_deferred = {}

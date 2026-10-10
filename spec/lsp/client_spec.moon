@@ -8,7 +8,11 @@ class FakeProcess
     @written = {}
     @signals = {}
     @exited = false
-    @stdin = write: (_, data) -> table.insert @written, data
+    @stdin_closed = false
+    @stdin = {
+      write: (_, data) -> table.insert @written, data
+      close: -> @stdin_closed = true
+    }
 
   pump: (@on_stdout, @on_stderr) =>
     @_exit = dispatch.park 'fake-process-exit'
@@ -81,6 +85,7 @@ describe 'lsp.Client', ->
       assert.is_true client.dead
       assert.same { 'TERM' }, process.signals
       assert.match client.failure, 'utf%-8'
+      assert.is_true process.stdin_closed
 
   describe 'last_used', ->
     before_each ->
@@ -98,12 +103,47 @@ describe 'lsp.Client', ->
   describe 'stop()', ->
     before_each -> initialize!
 
-    it 'sends shutdown followed by exit', ->
+    stop = ->
       client\stop!
       shutdown = process\last_message!
       assert.equals 'shutdown', shutdown.method
       process\emit { jsonrpc: '2.0', id: shutdown.id, result: json_rpc.null }
+
+    it 'sends shutdown followed by exit', ->
+      stop!
       assert.equals 'exit', process\last_message!.method
+
+    it 'closes stdin after sending exit, and sends nothing more', ->
+      stop!
+      assert.is_true process.stdin_closed
+      nr_written = #process.written
+      client\notify 'foo', {}
+      assert.equals nr_written, #process.written
+
+    it 'closes stdin only once what is queued has been written', ->
+      writes = {}
+      process.stdin.write = (_, data) ->
+        table.insert process.written, data
+        handle = dispatch.park 'fake-write'
+        table.insert writes, handle
+        dispatch.wait handle
+
+      client\stop!
+      shutdown = process\last_message!
+      process\emit { jsonrpc: '2.0', id: shutdown.id, result: json_rpc.null }
+      -- the shutdown request is still being written, with exit queued
+      assert.is_false process.stdin_closed
+      dispatch.resume writes[1]
+      assert.equals 'exit', process\last_message!.method
+      assert.is_false process.stdin_closed
+      dispatch.resume writes[2]
+      assert.is_true process.stdin_closed
+
+    it 'does not send shutdown again when already stopping', ->
+      client\stop!
+      client\stop!
+      shutdowns = [m for m in *process\messages! when m.method == 'shutdown']
+      assert.equals 1, #shutdowns
 
     it 'is invoked when the process is stopped', ->
       process.stop_handler!
@@ -212,6 +252,11 @@ describe 'lsp.Client', ->
       assert.equals -32603, msg.error.code
       assert.match msg.error.message, 'oops'
       assert.spy(error_log).was_called!
+
+  it 'closes stdin when the server exits', ->
+    initialize!
+    process\exit!
+    assert.is_true process.stdin_closed
 
   it 'uses the request handlers given in opts', ->
     handler = -> 'ok'
