@@ -281,6 +281,25 @@ Without a language server, or when the server finds no references, the command
 searches the project for the word at the cursor using `project-file-search`
 instead.
 
+## Renaming symbols
+
+The `rename-symbol` command renames the symbol at the cursor wherever it's used,
+in all files of the project, as found by the file's [language
+server](language_servers.html). It has no default binding.
+
+It opens a prompt containing the symbol's current name, with the places to
+rename listed above it. Each place is shown with its line, with the name you've
+typed in place of the current one, and the selected place is previewed in the
+editor. Pressing `enter` renames the symbol to the name you've typed, and
+`escape` cancels.
+
+The changed files are saved, except for files that already had unsaved changes,
+which are changed but left unsaved. Files that aren't open are changed without
+being opened. In files that are open, the rename can be undone as a single step.
+
+Without a language server that supports renaming, or when the symbol at the
+cursor can't be renamed, the command tells you so instead.
+
 ---
 
 *Next*: [Using multiple views](views.html)
