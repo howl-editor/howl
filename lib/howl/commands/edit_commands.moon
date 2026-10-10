@@ -280,8 +280,9 @@ command.register
     nr_files = #result.buffers + #result.written
     files = nr_files == 1 and '1 file' or "#{nr_files} files"
     msg = "Renamed '#{name}' to '#{new_name}' in #{files}"
-    nr_saved = #result.saved + #result.written
-    msg ..= " (#{nr_saved} saved)" if nr_saved > 0
+    nr_unsaved = #result.buffers - #result.saved
+    if nr_unsaved > 0
+      msg ..= " (#{nr_unsaved} with other changes left unsaved)"
     log.info msg
 
 -- the targets offered by `goto`, with the server capability each needs. The

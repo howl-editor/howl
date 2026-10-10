@@ -118,20 +118,18 @@ describe 'lsp.edits', ->
       assert.equals b, result.written[1]
       assert.same {}, result.buffers
 
-    it 'saves open buffers that are not showing and had no other changes', ->
+    it 'saves open buffers that had no other changes', ->
       result = edits.apply_workspace_edit documentChanges: { doc(a, { edit('Ä', 0, 2, 0, 4) }) }
       assert.equals 'åÄö\n', a.contents
       assert.is_false a_buffer.modified
       assert.equals a_buffer, result.saved[1]
 
-    it 'leaves showing buffers unsaved', ->
+    it 'saves showing buffers as well', ->
       a_buffer\add_view_ref!
-      result = edits.apply_workspace_edit documentChanges: { doc(a, { edit('Ä', 0, 2, 0, 4) }) }
+      edits.apply_workspace_edit documentChanges: { doc(a, { edit('Ä', 0, 2, 0, 4) }) }
       a_buffer\remove_view_ref!
-      assert.equals 'åÄö\n', a_buffer.text
-      assert.is_true a_buffer.modified
-      assert.equals 'åäö\n', a.contents
-      assert.same {}, result.saved
+      assert.equals 'åÄö\n', a.contents
+      assert.is_false a_buffer.modified
 
     it 'leaves buffers with other unsaved changes unsaved', ->
       a_buffer\append '!'

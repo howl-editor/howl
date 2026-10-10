@@ -101,8 +101,8 @@ stale_reason = (buffer, version) ->
 
 -- applies edit, a WorkspaceEdit with text edits only, to its files. Files that
 -- aren't open are written without opening them. Open buffers are edited with
--- each one's part as one undo step, and the ones not showing are then saved,
--- unless they had other unsaved changes. Nothing is changed unless all of it
+-- each one's part as one undo step, and then saved unless they had other
+-- unsaved changes. Nothing is changed unless all of it
 -- can be applied, short of a file failing to be written. Returns a table with
 -- the edited open `buffers`, the ones of them `saved` and the `written` files,
 -- or nil and an error.
@@ -125,7 +125,7 @@ apply_workspace_edit = (edit) ->
       return nil, "'#{buffer.title}' is read-only" if buffer.read_only
       reason = stale_reason buffer, doc.version
       return nil, reason if reason
-      doc.save = not buffer.showing and not buffer.modified and file.writeable
+      doc.save = not buffer.modified and file.writeable
     else
       buffer, err = read_file file
       return nil, err unless buffer
