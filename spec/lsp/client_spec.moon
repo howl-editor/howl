@@ -53,6 +53,13 @@ describe 'lsp.Client', ->
       assert.equals 'file:///tmp/proj', msg.params.rootUri
       assert.same { 'utf-8' }, msg.params.capabilities.general.positionEncodings
 
+    it 'advertises applying workspace edits and preparing renames', ->
+      client\start!
+      capabilities = process\messages![1].params.capabilities
+      assert.is_true capabilities.workspace.applyEdit
+      assert.same { documentChanges: true, failureHandling: 'transactional' }, capabilities.workspace.workspaceEdit
+      assert.same { prepareSupport: true }, capabilities.textDocument.rename
+
     it 'sends initialized and stores the server capabilities once the server responds', ->
       initialize { positionEncoding: 'utf-8', completionProvider: {} }
       assert.is_true client.initialized

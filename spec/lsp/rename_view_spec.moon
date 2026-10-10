@@ -67,6 +67,12 @@ describe 'lsp.rename_view', ->
         { 'print(fööx)', { { byte_start_column: 7, byte_end_column: 13 } } }
       }, listed
 
+    it 'replaces a place continuing on later lines up to the end of its first', ->
+      load = -> { loc(1, 14, 14) }
+      local listed
+      read (command_line) -> listed = rows command_line
+      assert.same { { 'åä föö = föö', { { byte_start_column: 14, byte_end_column: 19 } } } }, listed
+
     it 'selects the row of the selected location', ->
       locations = { loc(1, 6, 11), loc(2, 7, 12) }
       load = -> locations, locations[2]
@@ -104,6 +110,12 @@ describe 'lsp.rename_view', ->
         listed = command_line\get_widget('locations').list.items
       assert.equals 'Nothing here', text
       assert.same {}, listed
+
+    it 'shows the error when load fails', ->
+      load = -> error 'server gone', 0
+      local text
+      read (command_line) -> text = notification command_line
+      assert.equals 'server gone', text
 
     it 'returns the entered name on enter', ->
       result = read (command_line) ->
