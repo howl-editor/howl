@@ -49,21 +49,41 @@ client_capabilities = -> {
   }
   workspace: {
     workspaceFolders: true
+    applyEdit: true
+    workspaceEdit: {
+      documentChanges: true
+      failureHandling: 'transactional'
+    }
   }
+}
+
+-- the server requests answered by every client
+default_request_handlers = {
+  'workspace/configuration': (params) ->
+    items = params and params.items or {}
+    list = [json_rpc.null for _ in *items]
+    #list > 0 and list or json_rpc.empty_array!
+
+  'client/registerCapability': -> nil
+  'client/unregisterCapability': -> nil
+  'window/workDoneProgress/create': -> nil
 }
 
 class Client
   -- opts: `cmd`, `root` (a File), and optionally `env` (the server's whole
   -- environment, as for `Process`), `process` (used instead of spawning `cmd`),
   -- `on_initialized` and `on_exit` (called with the client once the server is
-  -- initialized, and when it exits) and `notification_handlers` (a table of
-  -- method -> handler(params))
+  -- initialized, and when it exits), `notification_handlers` (a table of
+  -- method -> handler(params)) and `request_handlers` (a table of method ->
+  -- handler(params), returning the result)
   new: (opts) =>
     @cmd = opts.cmd
     @root = opts.root
     @on_initialized = opts.on_initialized
     @on_exit = opts.on_exit
     @notification_handlers = opts.notification_handlers or {}
+    @request_handlers = { k, v for k, v in pairs default_request_handlers }
+    @request_handlers[k] = v for k, v in pairs opts.request_handlers or {}
     @initialized = false
     @dead = false
     -- set when the client is deliberately stopped, or failed to initialize
@@ -242,18 +262,18 @@ class Client
         entry.callback msg.result
 
   _on_server_request: (msg) =>
-    result = switch msg.method
-      when 'workspace/configuration'
-        items = msg.params and msg.params.items or {}
-        list = [json_rpc.null for _ in *items]
-        #list > 0 and list or json_rpc.empty_array!
-      when 'client/registerCapability', 'client/unregisterCapability', 'window/workDoneProgress/create'
-        json_rpc.null
+    handler = @request_handlers[msg.method]
+    unless handler
+      @_write json_rpc.error_response(msg.id, -32601, "Method not supported: #{msg.method}")
+      return
 
-    if result
+    -- the server is answered even when the handler fails
+    status, result = pcall handler, msg.params
+    if status
       @_write json_rpc.response(msg.id, result)
     else
-      @_write json_rpc.error_response(msg.id, -32601, "Method not supported: #{msg.method}")
+      log.error "LSP (#{@cmd}): error handling '#{msg.method}': #{result}"
+      @_write json_rpc.error_response(msg.id, -32603, tostring(result))
 
   _fail: (reason) =>
     @failure = reason

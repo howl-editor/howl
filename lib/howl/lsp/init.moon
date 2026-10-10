@@ -177,6 +177,8 @@ client_for = (buffer) ->
   }
   client.notification_handlers['textDocument/publishDiagnostics'] = (params) ->
     on_diagnostics client, params
+  client.request_handlers['workspace/applyEdit'] = (params) ->
+    require('howl.lsp.edits').on_apply_edit params
   client.key = key
   client.completion_triggers = {}
   clients[key] = client
@@ -230,6 +232,14 @@ position = (buffer, pos) ->
     line: line.nr - 1,
     character: buffer\byte_offset(pos) - line.byte_start_pos
   }
+
+-- converts a LSP position to a buffer position. A character beyond the end of
+-- its line means the end of the line, and a line beyond the last one the end
+-- of the buffer.
+pos_for = (buffer, lsp_pos) ->
+  line = buffer.lines[lsp_pos.line + 1]
+  return buffer.length + 1 unless line
+  buffer\char_offset line.byte_start_pos + math.min(lsp_pos.character, line.size)
 
 sync_kind = (client) ->
   kind = client.capabilities and client.capabilities.textDocumentSync
@@ -358,6 +368,7 @@ signal.connect 'buffer-saved', (args) ->
   :stop_idle
   :sync
   :position
+  :pos_for
   :on_diagnostics
   :refresh
   clients: -> [c for _, c in pairs clients]

@@ -182,3 +182,32 @@ describe 'lsp.Client', ->
       msg = process\last_message!
       assert.equals 7, msg.id
       assert.equals -32601, msg.error.code
+
+    it 'responds to requests with the result of the registered request handler', ->
+      handler = spy.new -> { applied: true }
+      client.request_handlers['workspace/applyEdit'] = handler
+      process\emit { jsonrpc: '2.0', id: 8, method: 'workspace/applyEdit', params: { edit: {} } }
+      assert.spy(handler).was_called_with { edit: {} }
+      assert.same { jsonrpc: '2.0', id: 8, result: { applied: true } }, process\last_message!
+
+    it 'responds with null when the request handler returns nothing', ->
+      client.request_handlers['foo/bar'] = ->
+      process\emit { jsonrpc: '2.0', id: 9, method: 'foo/bar' }
+      assert.includes process.written[#process.written], '"result":null'
+
+    it 'responds with an error when the request handler fails', ->
+      client.request_handlers['foo/bar'] = -> error 'oops'
+      error_log = spy.on log, 'error'
+      process\emit { jsonrpc: '2.0', id: 10, method: 'foo/bar' }
+      log.error\revert!
+      msg = process\last_message!
+      assert.equals 10, msg.id
+      assert.equals -32603, msg.error.code
+      assert.match msg.error.message, 'oops'
+      assert.spy(error_log).was_called!
+
+  it 'uses the request handlers given in opts', ->
+    handler = -> 'ok'
+    client = Client cmd: 'fake-server', root: File('/tmp/proj'), :process, request_handlers: { 'foo/bar': handler }
+    assert.equals handler, client.request_handlers['foo/bar']
+    assert.is_not_nil client.request_handlers['workspace/configuration']

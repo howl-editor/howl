@@ -18,6 +18,20 @@ describe 'lsp', ->
       assert.same { line: 0, character: 4 }, lsp.position(buffer, 3)
       assert.same { line: 1, character: 3 }, lsp.position(buffer, 7)
 
+  describe 'pos_for(buffer, position)', ->
+    before_each -> buffer.text = 'åäö\nxÅy'
+
+    it 'returns the buffer position for the zero-based line and utf-8 byte column', ->
+      assert.equals 1, lsp.pos_for(buffer, { line: 0, character: 0 })
+      assert.equals 3, lsp.pos_for(buffer, { line: 0, character: 4 })
+      assert.equals 7, lsp.pos_for(buffer, { line: 1, character: 3 })
+
+    it 'returns the end of the line for a character beyond it', ->
+      assert.equals 4, lsp.pos_for(buffer, { line: 0, character: 99 })
+
+    it 'returns the end of the buffer for a line beyond the last one', ->
+      assert.equals 8, lsp.pos_for(buffer, { line: 2, character: 0 })
+
   describe 'command_for(buffer)', ->
     use_servers = (servers) ->
       mode.register name: 'lsp-test', create: -> lsp_servers: servers
