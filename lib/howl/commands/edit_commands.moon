@@ -247,6 +247,43 @@ command.register
 
     app\open loc if loc
 
+command.register
+  name: 'rename-symbol',
+  description: 'Rename the symbol at cursor, using the language server'
+  handler: ->
+    editor = app.editor
+    buffer = editor.buffer
+    pos = editor.cursor.pos
+    rename = require 'howl.lsp.rename'
+    name, err = rename.prepare buffer, pos
+    -- the server's response might arrive after switching to another buffer
+    return if app.editor.buffer != buffer
+    unless name
+      log.warn err
+      return
+
+    new_name = require('howl.lsp.rename_view').read_name
+      title: "Rename '#{name}'"
+      text: name
+      load: -> rename.preview_locations buffer, pos, name
+    return if not new_name or new_name.is_blank or new_name == name
+
+    -- the edits would otherwise move the cursor to the end of the new name
+    {:line, :column} = editor.cursor
+    result, err = rename.rename buffer, pos, new_name
+    unless result
+      log.warn "Could not rename '#{name}': #{err}"
+      return
+
+    editor.cursor\move_to :line, :column if editor.buffer == buffer
+
+    files = #result.buffers == 1 and '1 file' or "#{#result.buffers} files"
+    msg = "Renamed '#{name}' to '#{new_name}' in #{files}"
+    nr_opened = #result.opened
+    if nr_opened > 0
+      msg ..= " (#{nr_opened} not open before, left unsaved)"
+    log.info msg
+
 -- the targets offered by `goto`, with the server capability each needs. The
 -- icons are named after the commands.
 goto_targets = {

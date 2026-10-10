@@ -43,6 +43,9 @@ client_capabilities = -> {
     implementation: {
       linkSupport: true
     }
+    rename: {
+      prepareSupport: true
+    }
     publishDiagnostics: {
       versionSupport: true
     }

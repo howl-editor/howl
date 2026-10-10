@@ -50,7 +50,8 @@ apply_text_edits = (buffer, edits) ->
   apply buffer, ranges
   true
 
--- returns a list of the documents changed by edit, as {:uri, :version, :edits}
+-- returns a list of the documents changed by edit, a WorkspaceEdit, as
+-- {:uri, :version, :edits}, or nil and an error
 documents_of = (edit) ->
   docs = {}
   if edit.documentChanges
@@ -153,4 +154,4 @@ on_apply_edit = (params) ->
   log.warn "LSP: could not apply #{what}: #{err}"
   { applied: false, failureReason: err }
 
-:apply_text_edits, :apply_workspace_edit, :on_apply_edit
+:apply_text_edits, :apply_workspace_edit, :documents_of, :on_apply_edit
