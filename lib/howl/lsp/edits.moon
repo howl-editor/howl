@@ -3,7 +3,7 @@
 
 lsp = require 'howl.lsp'
 uri = require 'howl.lsp.uri'
-{:app, :mode, :signal} = howl
+{:app, :Buffer} = howl
 {:File} = howl.io
 append = table.insert
 
@@ -71,15 +71,19 @@ buffer_for = (file) ->
     return b if b.file == file
   nil
 
--- loads file into a buffer that isn't shown
-load_hidden = (file) ->
-  buffer = app\new_buffer mode.for_file(file)
-  status, err = pcall -> buffer.file = file
-  unless status
-    app\close_buffer buffer, true
-    return nil, err
-
-  signal.emit 'file-opened', :file, :buffer
+-- returns a buffer of its own with the text of file, which isn't open, for
+-- applying edits to it. Returns nil and an error if file can't be edited.
+read_file = (file) ->
+  return nil, "'#{file}' does not exist" unless file.exists
+  return nil, "'#{file}' is not writeable" unless file.writeable
+  status, contents = pcall -> file.contents
+  return nil, "failed to read '#{file}': #{contents}" unless status
+  -- the buffer would clean up invalid text, changing more than the edits do
+  return nil, "'#{file}' is not valid UTF-8" unless contents.is_valid_utf8
+  buffer = Buffer {}
+  buffer.collect_revisions = false
+  buffer.title = file.basename
+  buffer.text = contents
   buffer
 
 -- returns why the server's edits for version of buffer can't be applied, if
@@ -95,55 +99,67 @@ stale_reason = (buffer, version) ->
 
   nil
 
--- applies edit, a WorkspaceEdit with text edits only, to the buffers of its
--- files. Files that aren't open are loaded into buffers that aren't shown, and
--- left unsaved. Nothing is changed unless all of it can be applied, and each
--- buffer's part is one undo step. Returns a table with the changed `buffers`
--- and those of them that were `opened`, or nil and an error.
+-- applies edit, a WorkspaceEdit with text edits only, to its files. Files that
+-- aren't open are written without opening them. Open buffers are edited with
+-- each one's part as one undo step, and the ones not showing are then saved,
+-- unless they had other unsaved changes. Nothing is changed unless all of it
+-- can be applied, short of a file failing to be written. Returns a table with
+-- the edited open `buffers`, the ones of them `saved` and the `written` files,
+-- or nil and an error.
 apply_workspace_edit = (edit) ->
   docs, err = documents_of edit
   return nil, err unless docs
-
-  opened = {}
-  fail = (reason) ->
-    app\close_buffer b, true for b in *opened
-    nil, reason
 
   seen = {}
   for doc in *docs
     continue if #doc.edits == 0
     path = uri.to_path doc.uri
-    return fail "unsupported uri '#{doc.uri}'" unless path
+    return nil, "unsupported uri '#{doc.uri}'" unless path
     file = File path
-    buffer = buffer_for file
-    unless buffer
-      return fail "'#{file}' does not exist" unless file.exists
-      buffer, err = load_hidden file
-      return fail "failed to open '#{file}': #{err}" unless buffer
-      append opened, buffer
-
     -- later edits of a document would be for its text after the earlier ones
-    return fail "several edits of '#{buffer.title}'" if seen[buffer]
-    seen[buffer] = true
-    return fail "'#{buffer.title}' is read-only" if buffer.read_only
-    reason = stale_reason buffer, doc.version
-    return fail reason if reason
+    return nil, "several edits of '#{file.basename}'" if seen[file.path]
+    seen[file.path] = true
+
+    buffer = buffer_for file
+    if buffer
+      return nil, "'#{buffer.title}' is read-only" if buffer.read_only
+      reason = stale_reason buffer, doc.version
+      return nil, reason if reason
+      doc.save = not buffer.showing and not buffer.modified and file.writeable
+    else
+      buffer, err = read_file file
+      return nil, err unless buffer
+      doc.file = file
+
     doc.buffer = buffer
     doc.ranges, err = resolve buffer, doc.edits
-    return fail err unless doc.ranges
+    return nil, err unless doc.ranges
 
-  buffers = {}
+  -- files are written first, as that's what can fail
+  written = {}
   for doc in *docs
-    continue unless doc.buffer
+    continue unless doc.file
     apply doc.buffer, doc.ranges
-    append buffers, doc.buffer
+    status, err = pcall -> doc.file.contents = doc.buffer.text
+    return nil, "failed to write '#{doc.file}': #{err}" unless status
+    append written, doc.file
 
-  -- the server is told about the result right away
-  for buffer in *buffers
-    lsp.attach buffer
+  buffers, saved = {}, {}
+  for doc in *docs
+    continue if doc.file or not doc.buffer
+    {:buffer} = doc
+    apply buffer, doc.ranges
+    append buffers, buffer
+    -- the server is told about the result right away
     lsp.sync buffer
+    if doc.save
+      status, err = pcall -> buffer\save!
+      if status
+        append saved, buffer
+      else
+        log.error "Failed to save '#{buffer.title}': #{err}"
 
-  { :buffers, :opened }
+  { :buffers, :saved, :written }
 
 -- handles the workspace/applyEdit request
 on_apply_edit = (params) ->

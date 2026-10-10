@@ -277,11 +277,11 @@ command.register
 
     editor.cursor\move_to :line, :column if editor.buffer == buffer
 
-    files = #result.buffers == 1 and '1 file' or "#{#result.buffers} files"
+    nr_files = #result.buffers + #result.written
+    files = nr_files == 1 and '1 file' or "#{nr_files} files"
     msg = "Renamed '#{name}' to '#{new_name}' in #{files}"
-    nr_opened = #result.opened
-    if nr_opened > 0
-      msg ..= " (#{nr_opened} not open before, left unsaved)"
+    nr_saved = #result.saved + #result.written
+    msg ..= " (#{nr_saved} saved)" if nr_saved > 0
     log.info msg
 
 -- the targets offered by `goto`, with the server capability each needs. The

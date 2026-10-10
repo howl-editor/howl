@@ -105,37 +105,55 @@ describe 'lsp.edits', ->
       assert.equals 'åÄö\n', a_buffer.text
       assert.equals 'xÅY\n', b_buffer.text
       assert.equals 2, #result.buffers
-      assert.same {}, result.opened
 
     it 'applies the edits in documentChanges', ->
       result = edits.apply_workspace_edit documentChanges: { doc(a, { edit('Ä', 0, 2, 0, 4) }) }
       assert.equals 'åÄö\n', a_buffer.text
       assert.equals a_buffer, result.buffers[1]
 
-    it 'loads files that are not open into buffers that are not shown, and leaves them unsaved', ->
+    it 'writes the edits of files that are not open to them, without opening them', ->
       result = edits.apply_workspace_edit documentChanges: { doc(b, { edit('Y', 0, 3, 0, 4) }) }
-      buffer = buffer_of b
-      assert.equals 'xÅY\n', buffer.text
-      assert.is_true buffer.modified
-      assert.is_false buffer.showing
-      assert.equals 'xÅy\n', b.contents
-      assert.equals buffer, result.opened[1]
+      assert.equals 'xÅY\n', b.contents
+      assert.is_nil buffer_of b
+      assert.equals b, result.written[1]
+      assert.same {}, result.buffers
+
+    it 'saves open buffers that are not showing and had no other changes', ->
+      result = edits.apply_workspace_edit documentChanges: { doc(a, { edit('Ä', 0, 2, 0, 4) }) }
+      assert.equals 'åÄö\n', a.contents
+      assert.is_false a_buffer.modified
+      assert.equals a_buffer, result.saved[1]
+
+    it 'leaves showing buffers unsaved', ->
+      a_buffer\add_view_ref!
+      result = edits.apply_workspace_edit documentChanges: { doc(a, { edit('Ä', 0, 2, 0, 4) }) }
+      a_buffer\remove_view_ref!
+      assert.equals 'åÄö\n', a_buffer.text
+      assert.is_true a_buffer.modified
+      assert.equals 'åäö\n', a.contents
+      assert.same {}, result.saved
+
+    it 'leaves buffers with other unsaved changes unsaved', ->
+      a_buffer\append '!'
+      attach a_buffer
+      edits.apply_workspace_edit documentChanges: { doc(a, { edit('Ä', 0, 2, 0, 4) }) }
+      assert.equals 'åÄö\n!', a_buffer.text
+      assert.is_true a_buffer.modified
+      assert.equals 'åäö\n', a.contents
 
     it 'applies the edits of each buffer as one undo step', ->
       edits.apply_workspace_edit documentChanges: {
         doc a, { edit('A', 0, 0, 0, 2), edit('Ö', 0, 4, 0, 6) }
-        doc b, { edit('Y', 0, 3, 0, 4) }
       }
+      assert.equals 'AäÖ\n', a_buffer.text
       a_buffer\undo!
       assert.equals 'åäö\n', a_buffer.text
-      b_buffer = buffer_of b
-      b_buffer\undo!
-      assert.equals 'xÅy\n', b_buffer.text
 
     it 'skips documents without edits', ->
-      result = edits.apply_workspace_edit documentChanges: { doc(b, {}) }
+      result = edits.apply_workspace_edit documentChanges: { doc(a, {}), doc(b, {}) }
       assert.same {}, result.buffers
-      assert.is_nil buffer_of b
+      assert.same {}, result.written
+      assert.is_false a_buffer.modified
 
     context 'when any part of the edit cannot be applied', ->
       refused = (workspace_edit, pattern) ->
@@ -143,8 +161,7 @@ describe 'lsp.edits', ->
         assert.is_nil result
         assert.match err, pattern
         assert.equals 'åäö\n', a_buffer.text
-        -- buffers loaded for the edit are closed again
-        assert.is_nil buffer_of b
+        assert.equals 'xÅy\n', b.contents
 
       it 'changes nothing for a file that does not exist', ->
         refused {
@@ -188,6 +205,27 @@ describe 'lsp.edits', ->
             { kind: 'create', uri: uri.for_file(dir\join('new.txt')) }
           }
         }, "unsupported operation 'create'"
+
+      it 'changes nothing for a file that is not valid UTF-8', ->
+        bad = dir\join 'bad.txt'
+        bad.contents = 'x\255\n'
+        refused {
+          documentChanges: {
+            doc b, { edit('Y', 0, 3, 0, 4) }
+            doc bad, { edit('y', 0, 0, 0, 1) }
+          }
+        }, 'valid UTF%-8'
+
+      it 'changes nothing for a file that is not writeable', ->
+        locked = dir\join 'locked.txt'
+        locked.contents = 'x\n'
+        os.execute "chmod a-w '#{locked.path}'"
+        refused {
+          documentChanges: {
+            doc b, { edit('Y', 0, 3, 0, 4) }
+            doc locked, { edit('y', 0, 0, 0, 1) }
+          }
+        }, 'not writeable'
 
       it 'changes nothing for uris that are not files', ->
         refused {
@@ -236,7 +274,7 @@ describe 'lsp.edits', ->
         file.contents = 'åäö'
         result = edits.on_apply_edit edit: { changes: { [uri.for_file(file)]: { edit('Ä', 0, 2, 0, 4) } } }
         assert.same { applied: true }, result
-        app\close_buffer b, true for b in *[b for b in *app.buffers when b.file == file]
+        assert.equals 'åÄö', file.contents
 
     it 'returns applied: false with the reason otherwise, and logs it', ->
       warn = spy.on log, 'warn'
