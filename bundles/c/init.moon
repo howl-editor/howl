@@ -6,8 +6,11 @@ mode_reg =
   parent: 'curly_mode'
 
 howl.mode.register mode_reg
+howl.lsp.register_server name: 'clangd', command: 'clangd', modes: 'c'
 
-unload = -> howl.mode.unregister 'c'
+unload = ->
+  howl.mode.unregister 'c'
+  howl.lsp.unregister_server 'clangd'
 
 return {
   info:

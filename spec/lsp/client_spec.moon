@@ -42,7 +42,7 @@ describe 'lsp.Client', ->
 
   before_each ->
     process = FakeProcess!
-    client = Client cmd: 'fake-server', root: File('/tmp/proj'), :process
+    client = Client name: 'fake', cmd: 'fake-server', root: File('/tmp/proj'), :process
 
   initialize = (capabilities = { positionEncoding: 'utf-8' }) ->
     client\start!
@@ -56,6 +56,16 @@ describe 'lsp.Client', ->
       assert.equals 'initialize', msg.method
       assert.equals 'file:///tmp/proj', msg.params.rootUri
       assert.same { 'utf-8' }, msg.params.capabilities.general.positionEncodings
+
+    it 'sends init_options as the initializationOptions, if given', ->
+      client\start!
+      assert.is_nil process\messages![1].params.initializationOptions
+
+      process = FakeProcess!
+      options = { typeCheckingMode: 'mypy', nested: { flag: true } }
+      client = Client name: 'fake', cmd: 'fake-server', init_options: options, root: File('/tmp/proj'), :process
+      client\start!
+      assert.same options, process\messages![1].params.initializationOptions
 
     it 'advertises applying workspace edits and preparing renames', ->
       client\start!
@@ -86,6 +96,12 @@ describe 'lsp.Client', ->
       assert.same { 'TERM' }, process.signals
       assert.match client.failure, 'utf%-8'
       assert.is_true process.stdin_closed
+
+    it 'names the server by its name in log messages', ->
+      warn = spy.on log, 'warn'
+      initialize {}
+      log.warn\revert!
+      assert.match warn.calls[1].vals[1], '^LSP %(fake%): '
 
   describe 'last_used', ->
     before_each ->
@@ -260,6 +276,6 @@ describe 'lsp.Client', ->
 
   it 'uses the request handlers given in opts', ->
     handler = -> 'ok'
-    client = Client cmd: 'fake-server', root: File('/tmp/proj'), :process, request_handlers: { 'foo/bar': handler }
+    client = Client name: 'fake', cmd: 'fake-server', root: File('/tmp/proj'), :process, request_handlers: { 'foo/bar': handler }
     assert.equals handler, client.request_handlers['foo/bar']
     assert.is_not_nil client.request_handlers['workspace/configuration']

@@ -5,6 +5,7 @@ Client = require 'howl.lsp.client'
 uri = require 'howl.lsp.uri'
 diagnostics = require 'howl.lsp.diagnostics'
 inspect = require 'howl.inspect'
+serpent = require 'serpent'
 {:config, :dispatch, :signal, :sys, :timer, :Project} = howl
 
 -- don't restart a server that exited less than this many seconds ago
@@ -21,9 +22,10 @@ IDLE_CHECK_INTERVAL = 60
 
 clients = {}
 exited_at = {}
-executables = {}
 warned = {}
--- commands that failed to initialize, which aren't started again
+-- the registered servers, in order of preference
+servers = {}
+-- the ids of servers that failed to initialize, which aren't started again
 failed = {}
 local idle_check, refresh
 
@@ -34,10 +36,12 @@ config.define
   default: true
 
 config.define
-  name: 'lsp_command'
-  description: 'The command used to start a language server (LSP) for a buffer,
-overriding the servers known by the mode'
-  type_of: 'string'
+  name: 'lsp_server'
+  description: 'The language server (LSP) for a buffer: the name of a registered server, or a server definition'
+  validate: (value) ->
+    type(value) == 'string' or type(value) == 'table' and type(value.name) == 'string'
+  tostring: (value) ->
+    type(value) == 'table' and serpent.line(value, comment: false) or tostring value
 
 config.define
   name: 'lsp_server_idle_stop'
@@ -46,27 +50,26 @@ config.define
   scope: 'global'
   default: 30
 
--- returns the path of cmd's executable, or nil if it's not installed
-executable_for = (cmd) ->
-  name = cmd\match '^%s*(%S+)'
-  if executables[name] == nil
-    executables[name] = sys.find_executable(name) or false
-  executables[name] or nil, name
+executable_of = (command) -> command\match '^%s*(%S+)'
 
--- returns the command to start a server for buffer with, if any. Without a
--- configured `lsp_command` it's the first installed server from the mode's
--- `lsp_servers`.
-command_for = (buffer) ->
-  return nil unless buffer.config.lsp_enabled
-  cmd = buffer.config.lsp_command
-  unless cmd == nil or cmd.is_blank
-    return not failed[cmd] and cmd or nil
+warn_once = (msg) ->
+  return if warned[msg]
+  log.warn msg
+  warned[msg] = true
 
-  servers = buffer.mode and buffer.mode.lsp_servers
-  return nil unless servers
-  for server in *servers
-    return server if not failed[server] and executable_for server
-  nil
+-- returns a server definition with server's fields, and those it leaves out
+-- taken from base. Its `id` is the same for definitions with the same name,
+-- command and init options.
+resolve = (server, base = {}) ->
+  options = server.init_options or base.init_options
+  def = {
+    name: server.name,
+    command: server.command or base.command,
+    init_options: options
+  }
+  def.id = "#{def.name}: #{def.command}"
+  def.id ..= " #{serpent.line options, comment: false}" if options
+  def
 
 -- returns the variables of project's environment if they're known. Otherwise
 -- they're found in the background, and the showing buffers are attached once
@@ -80,6 +83,64 @@ environment_of = (project) ->
     waiting = true
 
   project.environment
+
+serves = (server, mode_name) ->
+  for name in *server.modes
+    return true if name == mode_name
+  false
+
+-- returns the definition of the server to start for buffer, if any. A
+-- configured `lsp_server` names a registered server, or is a definition filled
+-- in from the registered server of the same name. Without it, it's the first
+-- server registered for the buffer's mode that the project's processes find,
+-- once the project's environment is known.
+server_for = (buffer) ->
+  return nil unless buffer.config.lsp_enabled
+  configured = buffer.config.lsp_server
+  configured = name: configured if type(configured) == 'string'
+
+  if configured and not configured.name.is_blank
+    registered = [s for s in *servers when s.name == configured.name]
+    server = resolve configured, registered[1]
+    unless server.command
+      warn_once "LSP: no language server named '#{server.name}' is registered"
+      return nil
+    return not failed[server.id] and server or nil
+
+  return nil unless buffer.file
+  candidates = [s for s in *servers when serves(s, buffer.mode.name)]
+  return nil if #candidates == 0
+  project = Project.for_file buffer.file
+  return nil unless project and environment_of project
+
+  for server in *candidates
+    server = resolve server
+    return server if not failed[server.id] and project\find_executable executable_of(server.command)
+  nil
+
+-- registers a language server: `name`, `command`, `modes` (the name of a mode
+-- it serves, or a list of them) and optionally `init_options`. The servers for
+-- a mode are preferred in the order they're registered, and registering a name
+-- again replaces that server in its place.
+register_server = (server) ->
+  for field in *{ 'name', 'command', 'modes' }
+    error "Missing field `#{field}` for language server", 2 unless server[field]
+
+  server = { k, v for k, v in pairs server }
+  server.modes = { server.modes } if type(server.modes) == 'string'
+  replaced = false
+  for i, s in ipairs servers
+    if s.name == server.name
+      servers[i] = server
+      replaced = true
+      break
+
+  table.insert servers, server unless replaced
+  refresh!
+
+unregister_server = (name) ->
+  servers = [s for s in *servers when s.name != name]
+  refresh!
 
 -- a buffer's `completion_triggers` is shared with its client, and filled in
 -- once the server has told us its trigger characters
@@ -112,7 +173,7 @@ on_diagnostics = (client, params) ->
 on_exit = (client) ->
   clients[client.key] = nil if clients[client.key] == client
   if client.failure
-    failed[client.cmd] = true
+    failed[client.server_id] = true
   elseif not client.stopping
     exited_at[client.key] = sys.time!
 
@@ -144,32 +205,32 @@ client_for = (buffer) ->
 
   file = buffer.file
   return nil unless file
-  cmd = command_for buffer
-  return nil unless cmd
+  server = server_for buffer
+  return nil unless server
 
   -- servers are only started for files within a project
   project = Project.for_file file
   return nil unless project
   root = project.root
-  key = "#{cmd}@#{root.path}"
+  key = "#{server.id}@#{root.path}"
   client = clients[key]
   return client if client
 
   last_exit = exited_at[key]
   return nil if last_exit and sys.time! - last_exit < RESTART_THROTTLE
 
-  -- only explicitly configured commands can be missing here
-  found, executable = executable_for cmd
-  unless found
-    unless warned[executable]
-      log.warn "LSP: '#{executable}' not found, language server not started"
-      warned[executable] = true
-    return nil
-
   return nil unless environment_of project
 
+  -- only explicitly configured servers can be missing here
+  executable = executable_of server.command
+  unless project\find_executable executable
+    warn_once "LSP: '#{executable}' not found for #{root}, language server not started"
+    return nil
+
   client = Client {
-    :cmd,
+    name: server.name,
+    cmd: server.command,
+    init_options: server.init_options,
     :root,
     env: project\process_env!,
     :on_exit,
@@ -180,11 +241,12 @@ client_for = (buffer) ->
   client.request_handlers['workspace/applyEdit'] = (params) ->
     require('howl.lsp.edits').on_apply_edit params
   client.key = key
+  client.server_id = server.id
   client.completion_triggers = {}
   clients[key] = client
   schedule_idle_check!
   client\start!
-  log.info "LSP: started '#{cmd}' for #{root}"
+  log.info "LSP: started '#{server.name}' for #{root}"
   client
 
 attach = (buffer) ->
@@ -309,20 +371,27 @@ record_change = (what, args) ->
   }
 
 -- attaches or detaches the open buffers according to the server they should
--- now use, if any. Hidden buffers attach once they're shown.
+-- now use, if any. Hidden buffers attach once they're shown. Servers left
+-- without buffers this way are stopped.
 refresh = ->
   app = rawget howl, 'app'
   return unless app
+  left = {}
   for buffer in *app.buffers
     state = buffer.data.lsp
-    cmd = command_for buffer
-    if state and state.client.cmd != cmd
+    server = server_for buffer
+    if state and (not server or state.client.server_id != server.id)
+      left[state.client] = true
       detach buffer
       state = nil
-    attach buffer if cmd and not state and buffer.showing
+    attach buffer if server and not state and buffer.showing
+
+  for buffer in *app.buffers
+    left[buffer.data.lsp.client] = nil if buffer.data.lsp
+  client\stop! for client in pairs left
 
 config.watch 'lsp_enabled', refresh
-config.watch 'lsp_command', refresh
+config.watch 'lsp_server', refresh
 
 -- buffers attach when shown rather than when opened, since the restored session
 -- opens buffers that may never be visited. Previews don't signal this.
@@ -363,7 +432,9 @@ signal.connect 'buffer-saved', (args) ->
   :attach
   :detach
   :client_for
-  :command_for
+  :server_for
+  :register_server
+  :unregister_server
   :on_exit
   :stop_idle
   :sync

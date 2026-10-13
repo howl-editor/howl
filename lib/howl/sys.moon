@@ -19,15 +19,18 @@ env = setmetatable {}, {
     pairs env
   }
 
-find_executable = (name) ->
+-- returns the path of the executable `name` found in `path` (a PATH value,
+-- Howl's own by default), or nil
+find_executable = (name, path) ->
   return File(name).exists if File.is_absolute(name)
 
   if is_flatpak
-    stdout, _, p = Process.execute {'which', name}
+    argv = path and {'env', "PATH=#{path}", 'which', name} or {'which', name}
+    stdout, _, p = Process.execute argv
     if p.successful
       return stdout.stripped
   else
-    path = env.PATH
+    path or= env.PATH
 
     for dir in path\gmatch "[^:]+"
       exe = howl.io.File(dir) / name

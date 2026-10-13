@@ -5,7 +5,6 @@ local lexers
 
 {
   comment_syntax: '//'
-  lsp_servers: { 'intelephense --stdio', 'phpactor language-server' }
 
   auto_pairs: {
     '(': ')'

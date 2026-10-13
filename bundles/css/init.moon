@@ -9,8 +9,15 @@ mode_reg =
   parent: 'curly_mode'
 
 howl.mode.register mode_reg
+howl.lsp.register_server {
+  name: 'vscode-css-language-server'
+  command: 'vscode-css-language-server --stdio'
+  modes: 'css'
+}
 
-unload = -> howl.mode.unregister 'css'
+unload = ->
+  howl.mode.unregister 'css'
+  howl.lsp.unregister_server 'vscode-css-language-server'
 
 return {
   info:

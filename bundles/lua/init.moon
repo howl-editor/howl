@@ -9,6 +9,7 @@ mode_reg =
 provide_module 'luacheck'
 
 howl.mode.register mode_reg
+howl.lsp.register_server name: 'lua-language-server', command: 'lua-language-server', modes: 'lua'
 howl.inspection.register {
   name: 'luacheck',
   factory: ->
@@ -23,6 +24,7 @@ config.define {
 
 unload = ->
   howl.mode.unregister 'lua'
+  howl.lsp.unregister_server 'lua-language-server'
   howl.inspection.unregister 'luacheck'
 
 return {

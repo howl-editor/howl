@@ -94,6 +94,7 @@ class Project
     @root = root
     @vc = vc
     @config = config.for_file root
+    @_executables = {}
 
   -- finds the environment variables for the processes run for the project, on
   -- top of Howl's own: those of the providers, and then those in the
@@ -126,6 +127,7 @@ class Project
         log.error "Failed to read #{file}: #{ret}"
 
     @environment = vars
+    @_executables = {}
     waiters = @_env_waiters
     @_env_waiters = nil
     dispatch.resume handle, vars for handle in *waiters
@@ -140,6 +142,19 @@ class Project
     env = {k, v for k, v in pairs sys.env}
     env[k] = v for k, v in pairs vars
     env
+
+  -- returns the path of the executable `name` as the processes run for the
+  -- project find it, using the `PATH` of its environment, or nil. Lookups are
+  -- kept until the environment is found again. Must be called from a coroutine,
+  -- unless the environment is known.
+  find_executable: (name) =>
+    vars = @find_environment!
+    found = @_executables[name]
+    if found == nil
+      found = sys.find_executable(name, vars.PATH) or false
+      @_executables[name] = found
+
+    found or nil
 
   _env_file: =>
     name = @config.project_env_file

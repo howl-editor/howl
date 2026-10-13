@@ -16,7 +16,6 @@
   }
 
   comment_syntax: '//'
-  lsp_servers: { 'gopls' }
 
   completers: { 'in_buffer' }
 

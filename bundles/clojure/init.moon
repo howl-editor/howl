@@ -14,6 +14,7 @@ register_mode = ->
     parent: 'lisp'
 
   mode.register mode_reg
+  howl.lsp.register_server name: 'clojure-lsp', command: 'clojure-lsp', modes: 'clojure'
 
 register_commands = ->
 
@@ -41,6 +42,7 @@ register_commands!
 
 unload = ->
   mode.unregister 'clojure'
+  howl.lsp.unregister_server 'clojure-lsp'
   command.unregister 'nrepl-connect'
   command.unregister 'nrepl-eval'
 

@@ -55,6 +55,7 @@ register_mode = ->
     parent: 'curly_mode'
 
   mode.register mode_reg
+  howl.lsp.register_server name: 'gopls', command: 'gopls', modes: 'go'
 
 register_commands = ->
   command.register
@@ -92,6 +93,7 @@ with config
 
 unload = ->
   mode.unregister 'go'
+  howl.lsp.unregister_server 'gopls'
   command.unregister 'go-fmt'
   inspection.unregister 'staticcheck'
   inspection.unregister 'govet'

@@ -9,8 +9,11 @@ mode_reg =
   parent: 'curly_mode'
 
 howl.mode.register mode_reg
+howl.lsp.register_server name: 'zls', command: 'zls', modes: 'zig'
 
-unload = -> howl.mode.unregister 'zig'
+unload = ->
+  howl.mode.unregister 'zig'
+  howl.lsp.unregister_server 'zls'
 
 return {
   info:

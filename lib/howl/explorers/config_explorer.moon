@@ -85,8 +85,10 @@ class ConfigValue
     current_value = @current_value!
 
     preview_value = (value) ->
-      if type(value) == 'table'
+      if type(value) == 'table' and (value[1] != nil or next(value) == nil)
         StyledText.for_table(value, {{style: 'string'}}) .. markup.howl "<comment>#{#value} items</>"
+      elseif type(value) == 'table'
+        StyledText @to_s(value), 'string'
       elseif value == nil
         markup.howl '<comment>nil</>'
       else

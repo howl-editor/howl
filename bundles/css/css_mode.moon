@@ -11,7 +11,6 @@ class CSSMode
   word_pattern: r'\\b[-_\\w]+\\b'
 
   comment_syntax: { '/*', '*/' }
-  lsp_servers: { 'vscode-css-language-server --stdio' }
 
   auto_pairs: {
     '(': ')'

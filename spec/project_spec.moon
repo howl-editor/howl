@@ -207,6 +207,31 @@ describe 'Project', ->
           assert.equals '1', env.HOWL_PROJECT_VAR
           assert.equals sys.env.PATH, env.PATH
 
+      describe 'find_executable(name)', ->
+        local bin
+
+        before_each ->
+          bin = dir / 'bin'
+          bin\mkdir!
+          (bin / 'howl-project-tool').contents = ''
+
+        it "looks in the PATH of the project's environment", ->
+          provide 'test-a', -> { PATH: "#{bin.path}:#{sys.env.PATH}" }
+          assert.equals (bin / 'howl-project-tool').path, project\find_executable 'howl-project-tool'
+          assert.equals sys.find_executable('sh'), project\find_executable 'sh'
+
+        it "uses Howl's PATH when the environment sets none", ->
+          assert.is_nil project\find_executable 'howl-project-tool'
+          assert.equals sys.find_executable('sh'), project\find_executable 'sh'
+
+        it 'keeps what it found until the environment is found again', ->
+          provide 'test-a', -> { PATH: bin.path }
+          assert.is_nil project\find_executable 'howl-later-tool'
+          (bin / 'howl-later-tool').contents = ''
+          assert.is_nil project\find_executable 'howl-later-tool'
+          project.environment = nil
+          assert.equals (bin / 'howl-later-tool').path, project\find_executable 'howl-later-tool'
+
       context 'when a file is saved', ->
         local value, buffer
 

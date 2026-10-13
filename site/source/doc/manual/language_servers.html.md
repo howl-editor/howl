@@ -27,11 +27,14 @@ project, and is shared by all files of that project. Servers run with the
 [project environment](running_commands.html#the-project-environment), so that a
 Python server finds the packages of the project's virtualenv, for instance.
 
-Each mode lists the servers it knows about in order of preference, and the
-first one that is installed is used. For example, the Python mode knows about
-`zuban`, `ty`, `basedpyright`, `pyright`, `pylsp` and `jedi-language-server`.
-Some other examples are `clangd` for C and C++, `gopls` for Go,
-`rust-analyzer` for Rust and `lua-language-server` for Lua.
+The bundles for the languages register the servers they know about, in order of
+preference, and the first one that is installed is used. For example, the
+servers known for Python are `zuban`, `ty`, `basedpyright`, `pyright`, `pylsp`
+and `jedi-language-server`. Some other examples are `clangd` for C and C++,
+`gopls` for Go, `rust-analyzer` for Rust and `lua-language-server` for Lua. A
+server counts as installed when it's found using the `PATH` of the project
+environment, so a server installed in a project's virtualenv is used for that
+project.
 
 A server that isn't used for a while is stopped automatically, and is started
 again the next time you show or edit a file for it. How long is controlled by the
@@ -82,16 +85,26 @@ again the next time you show or edit a file for it. How long is controlled by th
 
 ## Choosing or disabling servers
 
-To use a different server than the one Howl picks, set the `lsp_command`
-configuration variable to the command used to start it. This takes precedence
-over the servers known by the mode. To not use language servers at all, set
+To use a different server than the one Howl picks, set the `lsp_server`
+configuration variable to the name of a known server. This takes precedence
+over the order of preference. For a server Howl doesn't know about, set
+`lsp_server` to a server definition instead, giving its name and the command
+used to start it. To not use language servers at all, set
 `lsp_enabled` to false. You'll typically want to set these for a particular
 mode, for example in your `~/.howl/init.moon`:
 
 ```moonscript
--- use pyright for Python
+-- use basedpyright for Python
 howl.mode.configure 'python', {
-  lsp_command: 'pyright-langserver --stdio'
+  lsp_server: 'basedpyright'
+}
+
+-- use a server Howl doesn't know about for Ruby
+howl.mode.configure 'ruby', {
+  lsp_server: {
+    name: 'my-ruby-server'
+    command: 'my-ruby-server --stdio'
+  }
 }
 
 -- don't use any language server for Lua
@@ -102,11 +115,34 @@ howl.mode.configure 'lua', {
 
 Both can also be set from within Howl using the `set` command, globally or for
 example for a mode or a project folder only, and take effect immediately for
-open files. See [Configuring Howl](configuration.html) for more on
-configuration.
+open files. The `set` command can only set `lsp_server` to a name. See
+[Configuring Howl](configuration.html) for more on configuration.
 
 Howl talks to servers using the `utf-8` position encoding, and servers that
 don't support it are not used.
+
+## Server options
+
+Many servers accept options when they're started, called initialization
+options. These are the server's own, so see its documentation for what they
+are. They're given as `init_options` in a server definition. A definition with
+the name of a known server only needs what it changes, and takes the rest from
+the known server's definition. For example, to run zuban in its mypy
+compatible mode, which doesn't check functions without type annotations:
+
+```moonscript
+howl.mode.configure 'python', {
+  lsp_server: {
+    name: 'zuban'
+    init_options: { typeCheckingMode: 'mypy' }
+  }
+}
+```
+
+The `init_options` given replace those of the known server's definition, if
+any, rather than being merged with them. Changing a server's options takes effect
+immediately for open files: a server is started with the new options, and the
+one used until then is stopped unless other files still use it.
 
 ## Seeing and stopping running servers
 
@@ -122,29 +158,38 @@ process list.
 ## Troubleshooting
 
 Howl notes in the log when it starts a server, or if a configured server isn't
-installed. The log can be viewed using the `open-journal` command. A server
+installed or known. The log can be viewed using the `open-journal` command. A server
 that fails to start properly is not started again for the rest of the session.
 To see all messages sent between Howl and its servers, start Howl with the
 `HOWL_LSP_TRACE` environment variable set to `1`, which prints them on the
 standard output.
 
-## For mode authors
+## For bundle authors
 
-A mode lists its known servers in the `lsp_servers` field, as commands in order
-of preference:
+A bundle registers the servers for its modes when it's loaded, and unregisters
+them when it's unloaded. A server has a `name`, the `command` used to start it,
+the `modes` it serves (a mode name, or a list of them) and optionally
+`init_options`. The servers for a mode are preferred in the order they're
+registered, and registering a name again replaces that server in its place:
 
 ```moonscript
-{
-  lsp_servers: { 'ruby-lsp', 'solargraph stdio' }
+lsp_servers = {
+  { name: 'ruby-lsp', command: 'ruby-lsp', modes: 'ruby' },
+  { name: 'solargraph', command: 'solargraph stdio', modes: 'ruby' }
 }
+howl.lsp.register_server s for s in *lsp_servers
+
+unload = ->
+  howl.lsp.unregister_server s.name for s in *lsp_servers
 ```
 
-A mode that inherits from another mode inherits its servers as well, and can
-opt out by specifying an empty list. Completions from the server are provided
-by the `lsp` completer, which is part of the default mode's `completers`. A
-mode that specifies its own `completers` needs to include `lsp` there to get
-them. Modes should not set `lsp_command` in their default configuration, as
-that would take precedence over a user's own setting.
+Users pick a server by its name, so use the name the server is known by, which
+isn't always the name of its executable. A server is only used for the modes
+it's registered for, and not for modes inheriting from them. Completions from
+the server are provided by the `lsp` completer, which is part of the default
+mode's `completers`. A mode that specifies its own `completers` needs to include
+`lsp` there to get them. Modes should not set `lsp_server` in their default
+configuration, as that would take precedence over a user's own setting.
 
 A bundle can add to the project environment by registering a provider, whose
 handler returns the variables to set for a project, or nil. It can run

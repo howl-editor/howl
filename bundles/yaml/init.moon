@@ -7,8 +7,15 @@ mode_reg =
   create: -> bundle_load('yaml_mode')!
 
 howl.mode.register mode_reg
+howl.lsp.register_server {
+  name: 'yaml-language-server'
+  command: 'yaml-language-server --stdio'
+  modes: 'yaml'
+}
 
-unload = -> howl.mode.unregister 'yaml'
+unload = ->
+  howl.mode.unregister 'yaml'
+  howl.lsp.unregister_server 'yaml-language-server'
 
 return {
   info:

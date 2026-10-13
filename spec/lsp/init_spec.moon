@@ -32,50 +32,185 @@ describe 'lsp', ->
     it 'returns the end of the buffer for a line beyond the last one', ->
       assert.equals 8, lsp.pos_for(buffer, { line: 2, character: 0 })
 
-  describe 'command_for(buffer)', ->
-    use_servers = (servers) ->
-      mode.register name: 'lsp-test', create: -> lsp_servers: servers
+  describe 'server_for(buffer)', ->
+    local dir, project
+    servers = {
+      { name: 'howl-other', command: 'true --other', modes: 'lsp-other' },
+      { name: 'howl-venv', command: 'howl-lsp-venv-server', modes: 'lsp-test' },
+      { name: 'howl-missing', command: 'howl-no-such-server --stdio', modes: 'lsp-test' },
+      { name: 'howl-true', command: 'true', init_options: { a: 1 }, modes: { 'lsp-other', 'lsp-test' } },
+      { name: 'howl-false', command: 'false', modes: 'lsp-test' }
+    }
+
+    fields = (server) -> { server.name, server.command, server.init_options }
+
+    fails = (server) ->
+      lsp.on_exit { server_id: server.id, key: "#{server.id}@/x", failure: 'bad' }
+
+    before_each ->
+      mode.register name: 'lsp-test', create: -> {}
+      dir = File.tmpdir!
+      Project.add_root dir
+      buffer.file = dir / 'x.test'
       buffer.mode = mode.by_name 'lsp-test'
+      project = Project.for_file buffer.file
+      lsp.register_server s for s in *servers
 
-    before_each -> use_servers { 'howl-no-such-server --stdio', 'true', 'false' }
-    after_each -> mode.unregister 'lsp-test'
+    after_each ->
+      lsp.unregister_server s.name for s in *servers
+      mode.unregister 'lsp-test'
+      Project.remove_root dir
+      Project.open[dir] = nil
+      dir\delete_all!
 
-    it "returns the first installed server of the mode's lsp_servers", ->
-      assert.equals 'true', lsp.command_for buffer
+    it "returns the first registered server for the buffer's mode that is installed", ->
+      assert.same { 'howl-true', 'true', { a: 1 } }, fields lsp.server_for(buffer)
 
-    it 'returns nil when none of the servers are installed', ->
-      use_servers { 'howl-no-such-server' }
-      assert.is_nil lsp.command_for buffer
+    it 'returns nil when none of the servers for the mode are installed', ->
+      lsp.unregister_server 'howl-true'
+      lsp.unregister_server 'howl-false'
+      assert.is_nil lsp.server_for buffer
 
-    it 'returns nil when the mode has no lsp_servers', ->
+    it 'returns nil when no servers are registered for the mode', ->
       buffer.mode = mode.by_name 'default'
-      assert.is_nil lsp.command_for buffer
+      assert.is_nil lsp.server_for buffer
 
-    it 'returns a configured lsp_command even when not installed', ->
-      buffer.config.lsp_command = 'howl-no-such-server --stdio'
-      assert.equals 'howl-no-such-server --stdio', lsp.command_for buffer
+    it 'returns nil for a buffer without a file, or with a file outside of any project', ->
+      other = Buffer mode.by_name('lsp-test')
+      assert.is_nil lsp.server_for other
+      with_tmpdir (outside) ->
+        other.file = outside / 'x.test'
+        assert.is_nil lsp.server_for other
 
-    it "uses the mode's servers when lsp_command is blank", ->
-      buffer.config.lsp_command = ''
-      assert.equals 'true', lsp.command_for buffer
+    it "looks for the servers' executables with the project's PATH", ->
+      bin = dir / 'bin'
+      bin\mkdir!
+      (bin / 'howl-lsp-venv-server').contents = ''
+      assert.is_nil howl.sys.find_executable 'howl-lsp-venv-server'
+      project.environment = PATH: "#{bin.path}:#{howl.sys.env.PATH}"
+      assert.equals 'howl-venv', lsp.server_for(buffer).name
 
-    it 'returns nil when lsp_enabled is false, even with a configured lsp_command', ->
+    it "returns nil while the project's environment is being found", ->
+      handle = dispatch.park 'lsp-server-env-test'
+      Project.register_environment_provider name: 'lsp-test', handler: ->
+        dispatch.wait handle
+        {}
+
+      status, err = pcall ->
+        assert.is_nil lsp.server_for buffer
+        dispatch.resume handle
+        assert.equals 'howl-true', lsp.server_for(buffer).name
+
+      Project.unregister_environment_provider 'lsp-test'
+      error err unless status
+
+    it 'returns nil when lsp_enabled is false, even with a configured lsp_server', ->
       buffer.config.lsp_enabled = false
-      assert.is_nil lsp.command_for buffer
-      buffer.config.lsp_command = 'true'
-      assert.is_nil lsp.command_for buffer
+      assert.is_nil lsp.server_for buffer
+      buffer.config.lsp_server = 'howl-true'
+      assert.is_nil lsp.server_for buffer
 
     it 'skips servers that failed to initialize', ->
-      use_servers { 'true --failing', 'false' }
-      lsp.on_exit { cmd: 'true --failing', key: 'true --failing@/x', failure: 'bad' }
-      assert.equals 'false', lsp.command_for buffer
+      -- failures are remembered for the session, so this one is the test's own
+      lsp.register_server name: 'howl-true', command: 'true --failing', modes: 'lsp-test'
+      fails lsp.server_for(buffer)
+      assert.equals 'howl-false', lsp.server_for(buffer).name
+
+    it 'does not skip a failed server once its init options change', ->
+      buffer.config.lsp_server = name: 'howl-true', init_options: { failing: true }
+      fails lsp.server_for(buffer)
+      assert.is_nil lsp.server_for buffer
+      buffer.config.lsp_server = name: 'howl-true', init_options: { failing: false }
+      assert.is_not_nil lsp.server_for buffer
+
+    it 'gives the same id to equal definitions, and another to different ones', ->
+      id_of = (server) ->
+        buffer.config.lsp_server = server
+        lsp.server_for(buffer).id
+
+      id = id_of name: 'x', command: 'x', init_options: { a: 1, b: { 2, 3 } }
+      assert.equals id, id_of name: 'x', command: 'x', init_options: { b: { 2, 3 }, a: 1 }
+      assert.not_equals id, id_of name: 'x', command: 'x', init_options: { a: 1, b: { 3, 2 } }
+      assert.not_equals id, id_of name: 'x', command: 'x'
+      assert.not_equals id, id_of name: 'x', command: 'x --other', init_options: { a: 1, b: { 2, 3 } }
+      assert.not_equals id, id_of name: 'y', command: 'x', init_options: { a: 1, b: { 2, 3 } }
+
+    context 'with a configured lsp_server', ->
+      it 'returns the registered server of that name, even when not installed or for another mode', ->
+        buffer.config.lsp_server = 'howl-missing'
+        assert.same { 'howl-missing', 'howl-no-such-server --stdio' }, fields lsp.server_for(buffer)
+        buffer.config.lsp_server = 'howl-other'
+        assert.same { 'howl-other', 'true --other' }, fields lsp.server_for(buffer)
+
+      it 'returns nil and warns once for a name that is not registered', ->
+        buffer.config.lsp_server = 'howl-unknown-server'
+        warn = spy.on log, 'warn'
+        status, err = pcall ->
+          assert.is_nil lsp.server_for buffer
+          assert.is_nil lsp.server_for buffer
+        log.warn\revert!
+        error err unless status
+        assert.spy(warn).was_called(1)
+        assert.includes warn.calls[1].vals[1], "'howl-unknown-server'"
+
+      it 'fills in a definition from the registered server of the same name', ->
+        buffer.config.lsp_server = name: 'howl-true', init_options: { b: 2 }
+        assert.same { 'howl-true', 'true', { b: 2 } }, fields lsp.server_for(buffer)
+
+        buffer.config.lsp_server = name: 'howl-true', command: 'true --changed'
+        assert.same { 'howl-true', 'true --changed', { a: 1 } }, fields lsp.server_for(buffer)
+
+      it 'returns a definition for a server that is not registered as is', ->
+        buffer.config.lsp_server = name: 'other', command: 'howl-other-server', init_options: { c: 3 }
+        assert.same { 'other', 'howl-other-server', { c: 3 } }, fields lsp.server_for(buffer)
+
+      it 'returns nil for a definition with no command of its own or from the registry', ->
+        buffer.config.lsp_server = name: 'howl-no-command', init_options: { c: 3 }
+        warn = spy.on log, 'warn'
+        status, err = pcall -> assert.is_nil lsp.server_for buffer
+        log.warn\revert!
+        error err unless status
+        assert.spy(warn).was_called(1)
+
+      it "uses the mode's servers when lsp_server is blank", ->
+        buffer.config.lsp_server = ''
+        assert.equals 'howl-true', lsp.server_for(buffer).name
+
+      it 'can only be a name or a definition with a name', ->
+        assert.raises 'lsp_server', -> buffer.config.lsp_server = { command: 'true' }
+        assert.raises 'lsp_server', -> buffer.config.lsp_server = 1
+
+  describe 'register_server(server)', ->
+    it 'requires a name, a command and modes', ->
+      assert.raises 'name', -> lsp.register_server command: 'x', modes: 'm'
+      assert.raises 'command', -> lsp.register_server name: 'x', modes: 'm'
+      assert.raises 'modes', -> lsp.register_server name: 'x', command: 'x'
+
+    it 'replaces a server registered with the same name, keeping its place', ->
+      mode.register name: 'lsp-test', create: -> {}
+      buffer.mode = mode.by_name 'lsp-test'
+      with_tmpdir (dir) ->
+        Project.add_root dir
+        buffer.file = dir / 'x.test'
+        lsp.register_server name: 'howl-first', command: 'true', modes: 'lsp-test'
+        lsp.register_server name: 'howl-second', command: 'true --second', modes: 'lsp-test'
+        status, err = pcall ->
+          lsp.register_server name: 'howl-first', command: 'true --replaced', modes: 'lsp-test'
+          assert.equals 'true --replaced', lsp.server_for(buffer).command
+
+        lsp.unregister_server 'howl-first'
+        lsp.unregister_server 'howl-second'
+        Project.remove_root dir
+        Project.open[dir] = nil
+        mode.unregister 'lsp-test'
+        error err unless status
 
   describe 'client_for(buffer)', ->
-    it 'returns nil when no lsp_command is set', ->
+    it 'returns nil when there is no server for the buffer', ->
       assert.is_nil lsp.client_for buffer
 
     it 'returns nil when the buffer has no file', ->
-      buffer.config.lsp_command = 'true'
+      buffer.config.lsp_server = name: 'true', command: 'true'
       assert.is_nil lsp.client_for buffer
 
     it 'returns nil for a file outside of any project', ->
@@ -83,7 +218,7 @@ describe 'lsp', ->
         file = dir / 'x.py'
         file.contents = ''
         buffer.file = file
-        buffer.config.lsp_command = 'true'
+        buffer.config.lsp_server = name: 'true', command: 'true'
         assert.is_nil lsp.client_for buffer
 
     it 'returns the client of an attached buffer', ->
@@ -96,7 +231,7 @@ describe 'lsp', ->
         file = dir / 'x.py'
         file.contents = ''
         buffer.file = file
-        buffer.config.lsp_command = 'true --lsp-env-test'
+        buffer.config.lsp_server = name: 'env-test', command: 'true --lsp-env-test'
         handle = dispatch.park 'lsp-env-test'
         Project.register_environment_provider name: 'lsp-test', handler: ->
           dispatch.wait handle
@@ -104,7 +239,7 @@ describe 'lsp', ->
 
         status, err = pcall ->
           assert.is_nil lsp.client_for buffer
-          assert.is_nil lsp._clients["true --lsp-env-test@#{dir.path}"]
+          assert.is_nil lsp._clients["#{lsp.server_for(buffer).id}@#{dir.path}"]
           -- the buffer isn't showing, so it isn't attached once it's found
           dispatch.resume handle
           assert.same { A: '1' }, Project.for_file(file).environment
@@ -144,11 +279,15 @@ describe 'lsp', ->
 
   describe 'configuration changes', ->
     local app_buffer
+    server = name: 'howl-lsp-test', command: 'howl-lsp-test'
 
     before_each ->
       app_buffer = howl.app\new_buffer!
-      client.cmd = 'howl-lsp-test'
-      app_buffer.config.lsp_command = 'howl-lsp-test'
+      -- not empty, so that another new buffer doesn't replace it
+      app_buffer.text = 'x'
+      app_buffer.config.lsp_server = server
+      client.server_id = lsp.server_for(app_buffer).id
+      client.stop = spy.new ->
       app_buffer.data.lsp = state
 
     after_each ->
@@ -158,17 +297,47 @@ describe 'lsp', ->
     it 'keeps buffers attached to a server they should still use', ->
       lsp.refresh!
       assert.equals state, app_buffer.data.lsp
+      assert.spy(client.stop).was_not_called!
 
-    it 'detaches buffers when lsp_enabled is set to false', ->
+    it 'detaches buffers when lsp_enabled is set to false, stopping the server', ->
       app_buffer.config.lsp_enabled = false
       assert.is_nil app_buffer.data.lsp
+      assert.spy(client.stop).was_called(1)
 
-    it 'detaches buffers when lsp_command changes to another server', ->
-      app_buffer.config.lsp_command = 'howl-lsp-other'
+    it 'detaches buffers when lsp_server changes to another server, stopping the old one', ->
+      app_buffer.config.lsp_server = name: 'howl-lsp-other', command: 'howl-lsp-other'
       assert.is_nil app_buffer.data.lsp
+      assert.spy(client.stop).was_called(1)
+
+    it 'detaches buffers when the init options change, stopping the old server', ->
+      app_buffer.config.lsp_server = name: 'howl-lsp-test', command: 'howl-lsp-test', init_options: { a: 1 }
+      assert.is_nil app_buffer.data.lsp
+      assert.spy(client.stop).was_called(1)
+
+    it 'detaches buffers from a server that is unregistered, stopping it', ->
+      lsp.register_server name: 'howl-lsp-test', command: 'howl-lsp-test', modes: 'lsp-none'
+      app_buffer.config.lsp_server = 'howl-lsp-test'
+      assert.equals state, app_buffer.data.lsp
+      lsp.unregister_server 'howl-lsp-test'
+      assert.is_nil app_buffer.data.lsp
+      assert.spy(client.stop).was_called(1)
+
+    it 'does not stop a server that another buffer still uses', ->
+      other = howl.app\new_buffer!
+      other.config.lsp_server = server
+      other.data.lsp = { :client, uri: 'file:///tmp/y.py', version: 1, dirty: false, changes: {}, full: false }
+      status, err = pcall ->
+        app_buffer.config.lsp_server = name: 'howl-lsp-test', command: 'howl-lsp-test', init_options: { a: 1 }
+        assert.is_nil app_buffer.data.lsp
+        assert.equals client, other.data.lsp.client
+        assert.spy(client.stop).was_not_called!
+
+      other.data.lsp = nil
+      howl.app\close_buffer other, true
+      error err unless status
 
   describe 'attaching', ->
-    local dir, app_buffer, running
+    local dir, app_buffer, running, key
 
     before_each ->
       dir = File.tmpdir!
@@ -177,15 +346,17 @@ describe 'lsp', ->
       file.contents = 'x = 1\n'
       app_buffer = howl.app\new_buffer!
       app_buffer.file = file
-      app_buffer.config.lsp_command = 'howl-lsp-test'
+      app_buffer.config.lsp_server = name: 'howl-lsp-test', command: 'howl-lsp-test'
       -- a running client for the buffer, so that attaching starts no process
-      running = cmd: 'howl-lsp-test', notify: spy.new(->), completion_triggers: {}
-      lsp._clients["howl-lsp-test@#{dir.path}"] = running
+      server_id = lsp.server_for(app_buffer).id
+      running = :server_id, notify: spy.new(->), completion_triggers: {}
+      key = "#{server_id}@#{dir.path}"
+      lsp._clients[key] = running
 
     after_each ->
       lsp.detach app_buffer
       howl.app\close_buffer app_buffer, true
-      lsp._clients["howl-lsp-test@#{dir.path}"] = nil
+      lsp._clients[key] = nil
       Project.remove_root dir
       Project.open[dir] = nil
       dir\delete_all!

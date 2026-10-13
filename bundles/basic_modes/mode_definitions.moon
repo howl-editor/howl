@@ -33,7 +33,6 @@ common_auto_pairs = {
     extensions: { 'bash', 'bashrc', 'bash_profile', 'configure', 'csh', 'sh', 'zsh' }
     shebangs: {'[/ ]sh$', '[/ ]bash$' }
     comment_syntax: '#'
-    lsp_servers: { 'bash-language-server start' }
     auto_pairs: common_auto_pairs
 
   batch:
@@ -54,7 +53,6 @@ common_auto_pairs = {
   caml:
     extensions: { 'caml', 'ml', 'mli', 'mll', 'mly' }
     comment_syntax: { '(*', '*)' }
-    lsp_servers: { 'ocamllsp' }
     auto_pairs: {
       '"': '"'
       '(': ')'
@@ -170,7 +168,6 @@ common_auto_pairs = {
   haskell:
     extensions: 'hs'
     comment_syntax: '--'
-    lsp_servers: { 'haskell-language-server-wrapper --lsp' }
     auto_pairs: common_auto_pairs
 
   ini:
@@ -189,7 +186,6 @@ common_auto_pairs = {
   java:
     extensions: { 'java', 'bsh' }
     comment_syntax: '//'
-    lsp_servers: { 'jdtls' }
     auto_pairs: common_auto_pairs
     parent: 'curly_mode'
 
@@ -207,7 +203,6 @@ common_auto_pairs = {
 
   json:
     extensions: 'json'
-    lsp_servers: { 'vscode-json-language-server --stdio' }
     auto_pairs: {
       '(': ')'
       '[': ']'

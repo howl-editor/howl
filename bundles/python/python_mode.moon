@@ -7,14 +7,6 @@
   default_config:
     edge_column: 88
   comment_syntax: '#'
-  lsp_servers: {
-    'zuban server',
-    'ty server',
-    'basedpyright-langserver --stdio',
-    'pyright-langserver --stdio',
-    'pylsp',
-    'jedi-language-server'
-  }
   word_pattern: r'\\b[\\pL_][\\pL\\pN_]+\\b'
 
   indentation: {

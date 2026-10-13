@@ -5,7 +5,6 @@
   lexer: bundle_load('dart_lexer')
 
   comment_syntax: '//'
-  lsp_servers: { 'dart language-server' }
 
   auto_pairs: {
     '(': ')'

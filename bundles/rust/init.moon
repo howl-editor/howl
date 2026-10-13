@@ -9,8 +9,11 @@ mode_reg =
   parent: 'curly_mode'
 
 howl.mode.register mode_reg
+howl.lsp.register_server name: 'rust-analyzer', command: 'rust-analyzer', modes: 'rust'
 
-unload = -> howl.mode.unregister 'rust'
+unload = ->
+  howl.mode.unregister 'rust'
+  howl.lsp.unregister_server 'rust-analyzer'
 
 return {
   info:

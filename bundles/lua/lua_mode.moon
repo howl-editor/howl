@@ -8,7 +8,6 @@ class LuaMode
     inspectors_on_idle: { 'luacheck' }
 
   comment_syntax: '--'
-  lsp_servers: { 'lua-language-server' }
 
   auto_pairs: {
     '(': ')'

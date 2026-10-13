@@ -36,6 +36,18 @@ end
 
 ## Functions
 
+### find_executable (name, path)
+
+Returns the full path of the executable `name`, searching the directories of
+`path`, a value in the format of the `PATH` environment variable. `path` is
+optional, and defaults to Howl's own `PATH`. Returns nil if the executable isn't
+found. For an absolute `name`, it instead returns whether that file exists.
+
+```lua
+print(howl.sys.find_executable('sh')) -- => "/usr/bin/sh"
+print(howl.sys.find_executable('sh', '/opt/tools/bin')) -- => nil
+```
+
 ### time
 
 Returns the current system time as seconds since the [POSIX

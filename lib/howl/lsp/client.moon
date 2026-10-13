@@ -73,14 +73,17 @@ default_request_handlers = {
 }
 
 class Client
-  -- opts: `cmd`, `root` (a File), and optionally `env` (the server's whole
-  -- environment, as for `Process`), `process` (used instead of spawning `cmd`),
-  -- `on_initialized` and `on_exit` (called with the client once the server is
-  -- initialized, and when it exits), `notification_handlers` (a table of
-  -- method -> handler(params)) and `request_handlers` (a table of method ->
-  -- handler(params), returning the result)
+  -- opts: `name` (the server's name, used in messages), `cmd`, `root` (a File),
+  -- and optionally `init_options` (sent as the `initializationOptions`), `env`
+  -- (the server's whole environment, as for `Process`), `process` (used instead
+  -- of spawning `cmd`), `on_initialized` and `on_exit` (called with the client
+  -- once the server is initialized, and when it exits), `notification_handlers`
+  -- (a table of method -> handler(params)) and `request_handlers` (a table of
+  -- method -> handler(params), returning the result)
   new: (opts) =>
+    @name = opts.name
     @cmd = opts.cmd
+    @init_options = opts.init_options
     @root = opts.root
     @on_initialized = opts.on_initialized
     @on_exit = opts.on_exit
@@ -112,7 +115,7 @@ class Client
       read_stderr: true,
       write_stdin: true,
       long_lived: true,
-      title: "LSP: #{@cmd}"
+      title: "LSP: #{@name}"
     }
     -- stopping from the process list shuts the server down cleanly
     @process.stop_handler = -> @stop!
@@ -129,6 +132,7 @@ class Client
       rootUri: root_uri,
       workspaceFolders: { { uri: root_uri, name: @root.basename } }
       capabilities: client_capabilities!
+      initializationOptions: @init_options
     }
 
     @_send_request 'initialize', params, (result, err) ->
@@ -223,7 +227,7 @@ class Client
         @_queue = {}
         status, err = pcall @process.stdin.write, @process.stdin, chunk
         unless status
-          log.error "LSP (#{@cmd}): failed to write to server: #{err}"
+          log.error "LSP (#{@name}): failed to write to server: #{err}"
           break
 
       @_writing = false
@@ -248,13 +252,13 @@ class Client
     trace '<-', data if trace
     status, messages = pcall @_decoder.feed, @_decoder, data
     unless status
-      log.error "LSP (#{@cmd}): #{messages}"
+      log.error "LSP (#{@name}): #{messages}"
       @_decoder = json_rpc.Decoder!
       return
 
     for msg in *messages
       status, err = pcall @_on_message, @, msg
-      log.error "LSP (#{@cmd}): error handling message: #{err}" unless status
+      log.error "LSP (#{@name}): error handling message: #{err}" unless status
 
   _on_stderr: (data) =>
     return unless data
@@ -290,21 +294,21 @@ class Client
     if status
       @_write json_rpc.response(msg.id, result)
     else
-      log.error "LSP (#{@cmd}): error handling '#{msg.method}': #{result}"
+      log.error "LSP (#{@name}): error handling '#{msg.method}': #{result}"
       @_write json_rpc.error_response(msg.id, -32603, tostring(result))
 
   _fail: (reason) =>
     @failure = reason
-    log.warn "LSP (#{@cmd}): #{reason}"
+    log.warn "LSP (#{@name}): #{reason}"
     @_shut_down!
     @process\send_signal 'TERM' unless @process.exited
 
   _on_exited: (err) =>
     unless @dead or @stopping
       msg = err or @process.exit_status_string or 'exited'
-      log.warn "LSP (#{@cmd}): server exited (#{msg})"
+      log.warn "LSP (#{@name}): server exited (#{msg})"
       for i = math.max(1, #@stderr - 4), #@stderr
-        log.warn "LSP (#{@cmd}): #{@stderr[i]}"
+        log.warn "LSP (#{@name}): #{@stderr[i]}"
 
     @_shut_down!
     @.on_exit(@) if @on_exit

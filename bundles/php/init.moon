@@ -8,9 +8,17 @@ mode_reg =
   create: -> bundle_load('php_mode')
   parent: 'curly_mode'
 
-howl.mode.register mode_reg
+lsp_servers = {
+  { name: 'intelephense', command: 'intelephense --stdio', modes: 'php' },
+  { name: 'phpactor', command: 'phpactor language-server', modes: 'php' }
+}
 
-unload = -> howl.mode.unregister 'php'
+howl.mode.register mode_reg
+howl.lsp.register_server s for s in *lsp_servers
+
+unload = ->
+  howl.mode.unregister 'php'
+  howl.lsp.unregister_server s.name for s in *lsp_servers
 
 return {
   info:

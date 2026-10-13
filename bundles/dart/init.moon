@@ -5,8 +5,11 @@ mode_reg =
   parent: 'curly_mode'
 
 howl.mode.register mode_reg
+howl.lsp.register_server name: 'dart', command: 'dart language-server', modes: 'dart'
 
-unload = -> howl.mode.unregister 'dart'
+unload = ->
+  howl.mode.unregister 'dart'
+  howl.lsp.unregister_server 'dart'
 
 return {
   info:

@@ -7,6 +7,7 @@ mode_reg =
   create: bundle_load('nim_mode')
 
 howl.mode.register mode_reg
+howl.lsp.register_server name: 'nimlangserver', command: 'nimlangserver', modes: 'nim'
 
 howl.command.register
   name: 'nim-run'
@@ -31,6 +32,7 @@ howl.command.register
 
 unload = ->
   howl.mode.unregister 'nim'
+  howl.lsp.unregister_server 'nimlangserver'
   howl.command.unregister 'nim-run'
 
 howl.config.define

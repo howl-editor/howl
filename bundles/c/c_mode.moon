@@ -14,7 +14,6 @@ next_relevant_line = (line) ->
   lexer: bundle_load('c_lexer')
 
   comment_syntax: { '/*', '*/' }
-  lsp_servers: { 'clangd' }
 
   auto_pairs: {
     '(': ')'
