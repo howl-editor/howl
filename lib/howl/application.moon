@@ -555,7 +555,10 @@ class Application extends PropertyObject
           buffer.mode = default_mode
 
   _restore_session: (window, restore_buffers) =>
-    session = @settings\load_system 'session'
+    status, session = pcall @settings.load_system, @settings, 'session'
+    unless status
+      log.error "Failed to load the session: #{session}"
+      return
 
     if session and session.version == 1
       if restore_buffers
@@ -688,6 +691,9 @@ signal.register 'file-opened',
   parameters:
     buffer: 'The buffer that the file was opened into'
     file: 'The file that was opened'
+
+-- finding the project of an opened file loads the project's configuration
+signal.connect 'file-opened', (args) -> howl.Project.for_file args.file
 
 signal.register 'buffer-closed',
   description: 'Signaled right after a buffer was closed',

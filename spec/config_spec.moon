@@ -1,4 +1,6 @@
 import app, config from howl
+{:File} = howl.io
+{:json} = howl.util
 
 describe 'config', ->
   before_each ->
@@ -569,6 +571,242 @@ describe 'config', ->
         config.save_config dir
         config.load_config true, dir
         assert.same 'value1-global', config.get 'name1', 'buffer/123'
+
+    it 'saves the global values as JSON in system/config.json, by mode and other layers', ->
+      config.define_layer 'mode:test'
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1'
+        config.set 'name1', 'value2', '', 'mode:test'
+        config.set 'name2', 'value3', '', 'layer1'
+        config.save_config dir
+        assert.same {
+          config: {name1: 'value1'}
+          modes: {test: {name1: 'value2'}}
+          layers: {layer1: {name2: 'value3'}}
+        }, json.decode((dir / 'system/config.json').contents)
+
+        config.reset!
+        config.load_config true, dir
+        assert.same 'value1', config.get 'name1'
+        assert.same 'value2', config.get 'name1', '', 'mode:test'
+        assert.same 'value3', config.get 'name2', '', 'layer1'
+
+    it 'loads the system/config.lua of older versions, removing it when saving', ->
+      with_tmpdir (dir) ->
+        (dir / 'system')\mkdir!
+        legacy = dir / 'system/config.lua'
+        legacy.contents = 'return { [""] = { name1 = { default = "old", layer1 = "old-layer" } } }'
+        config.load_config true, dir
+        assert.same 'old', config.get 'name1'
+        assert.same 'old-layer', config.get 'name1', '', 'layer1'
+
+        config.save_config dir
+        assert.is_false legacy.exists
+        config.load_config true, dir
+        assert.same 'old', config.get 'name1'
+
+    it 'logs an error for a malformed system/config.json, and refuses to save over it', ->
+      with_tmpdir (dir) ->
+        (dir / 'system')\mkdir!
+        file = dir / 'system/config.json'
+        file.contents = '{"config": '
+        config.load_config true, dir
+        assert.includes log.last_error.message, 'Failed to load the configuration'
+        assert.includes log.last_error.message, 'parse error'
+
+        config.set 'name1', 'value1'
+        assert.raises 'failed to load', -> config.save_config dir
+        assert.equal '{"config": ', file.contents
+
+  context 'scopes saved to their own files', ->
+    local dir, file
+    scope = 'file/project'
+
+    write = (data) ->
+      file.parent\mkdir_p! unless file.parent.exists
+      file.contents = type(data) == 'string' and data or json.encode(data)
+
+    read = -> json.decode file.contents
+    save = -> with_tmpdir (sys_dir) -> config.save_config sys_dir
+
+    before_each ->
+      config.define name: 'name1', description: 'description'
+      config.define name: 'name2', description: 'description'
+      config.define name: 'num', description: 'description', type_of: 'number'
+      config.define name: 'choice', description: 'description', options: {'a', 'b'}
+      config.define name: 'global_only', description: 'description', scope: 'global'
+      config.define_layer 'mode:test'
+      dir = File.tmpdir!
+      file = dir / '.howl/config.json'
+
+    after_each -> dir\delete_all!
+
+    describe 'load_scope(scope, file)', ->
+      it 'sets the values in file for the scope, and its mode layers', ->
+        write config: {name1: 'project'}, modes: {test: {name1: 'project-mode'}}
+        config.load_scope scope, file
+        assert.equal 'project', config.get 'name1', scope
+        assert.equal 'project-mode', config.get 'name1', scope, 'mode:test'
+        assert.is_nil config.get 'name1'
+
+      it 'does nothing when file does not exist', ->
+        config.load_scope scope, file
+        assert.is_nil config.get 'name1', scope
+
+      it 'keeps values already set for the scope', ->
+        config.set 'name1', 'set', scope
+        write config: {name1: 'file', name2: 'file'}
+        config.load_scope scope, file
+        assert.equal 'set', config.get 'name1', scope
+        assert.equal 'file', config.get 'name2', scope
+
+      it 'converts the values of defined variables, skipping invalid ones and logging an error', ->
+        write config: {num: '3', choice: 'c', name1: 'ok'}
+        config.load_scope scope, file
+        assert.equal 3, config.get 'num', scope
+        assert.is_nil config.get 'choice', scope
+        assert.equal 'ok', config.get 'name1', scope
+        assert.equal "#{file}: Illegal option 'c' for 'choice'", log.last_error.message
+
+      it 'skips variables that can only be set globally, logging an error', ->
+        write config: {global_only: 'x'}
+        config.load_scope scope, file
+        assert.is_nil config.get 'global_only', scope
+        assert.includes log.last_error.message, "'global_only' can only be set globally"
+
+      it 'keeps values for variables and modes not defined yet', ->
+        write config: {load_scope_later_var: 'x'}, modes: {load_scope_later: {name1: 'y'}}
+        config.load_scope scope, file
+        config.define name: 'load_scope_later_var', description: 'description'
+        config.define_layer 'mode:load_scope_later'
+        assert.equal 'x', config.get 'load_scope_later_var', scope
+        assert.equal 'y', config.get 'name1', scope, 'mode:load_scope_later'
+
+      it 'does nothing for a scope already loaded, so its unsaved changes are still saved', ->
+        write config: {name1: 'file'}
+        config.load_scope scope, file
+        config.set 'name1', 'changed', scope
+        config.load_scope scope, file
+        save!
+        assert.same {config: {name1: 'changed'}}, read!
+
+      it 'notifies watchers of the loaded values, as local ones', ->
+        handler = spy.new ->
+        config.watch 'name2', handler
+        write config: {name2: 'file'}
+        config.load_scope scope, file
+        assert.spy(handler).was_called_with 'name2', 'file', true
+
+      it 'logs an error for a malformed file, setting nothing', ->
+        write '{"config": {"name1": "x"}'
+        config.load_scope scope, file
+        assert.includes log.last_error.message, "Failed to load #{file}: parse error"
+        assert.is_nil config.get 'name1', scope
+
+      it 'logs an error for a file that does not hold configuration', ->
+        write modes: {test: 'x'}
+        config.load_scope scope, file
+        assert.equal "Failed to load #{file}: `modes.test` is not an object", log.last_error.message
+
+        write {1, 2}
+        config.load_scope scope, file
+        assert.equal "Failed to load #{file}: The configuration is not an object", log.last_error.message
+
+    describe 'reload_scope(scope, file)', ->
+      it 'replaces the values for the scope with those in file, notifying watchers of changes', ->
+        write config: {name1: 'a', name2: 'b'}
+        config.load_scope scope, file
+        config.set 'name2', 'set', scope, 'mode:test'
+        handler = spy.new ->
+        config.watch 'name1', handler
+        config.watch 'name2', handler
+
+        write config: {name2: 'c'}
+        config.reload_scope scope, file
+        assert.is_nil config.get 'name1', scope
+        assert.equal 'c', config.get 'name2', scope
+        assert.equal 'c', config.get 'name2', scope, 'mode:test'
+        assert.spy(handler).was_called_with 'name1', nil, true
+        assert.spy(handler).was_called_with 'name2', 'c', true
+        assert.spy(handler).was_called_with 'name2', nil, true
+
+      it 'keeps the values when file is malformed, but no longer saves them there', ->
+        write config: {name1: 'a'}
+        config.load_scope scope, file
+        write '{'
+        config.reload_scope scope, file
+        assert.includes log.last_error.message, "Failed to load #{file}"
+        assert.equal 'a', config.get 'name1', scope
+
+        config.set 'name1', 'b', scope
+        save!
+        assert.equal '{', file.contents
+
+    describe 'save_config()', ->
+      it 'saves the values for the scope to its file, creating the directory', ->
+        config.load_scope scope, file
+        config.set 'name1', 'project', scope
+        config.set 'name1', 'project-mode', scope, 'mode:test'
+        save!
+        assert.same {config: {name1: 'project'}, modes: {test: {name1: 'project-mode'}}}, read!
+        assert.equal '\n', file.contents\sub(-1)
+
+      it 'does not create the file when the scope has no values', ->
+        config.load_scope scope, file
+        save!
+        assert.is_false file.exists
+
+      it 'leaves the file alone while its values are unchanged', ->
+        write '{"config": {"name1": "x"}}'
+        config.load_scope scope, file
+        save!
+        assert.equal '{"config": {"name1": "x"}}', file.contents
+
+        config.set 'name2', 'y', scope
+        save!
+        assert.same {config: {name1: 'x', name2: 'y'}}, read!
+
+      it 'writes the file when its values are all removed', ->
+        write config: {name1: 'x'}
+        config.load_scope scope, file
+        config.set 'name1', nil, scope
+        save!
+        assert.same {}, read!
+
+      it 'saves only persist_config when that is false for the scope', ->
+        config.load_scope scope, file
+        config.set 'name1', 'x', scope
+        config.set 'persist_config', false, scope
+        save!
+        assert.same {config: {persist_config: false}}, read!
+
+      it 'does not save the scope after a malformed file failed to load', ->
+        write '{'
+        config.load_scope scope, file
+        config.set 'name1', 'x', scope
+        save!
+        assert.equal '{', file.contents
+
+      it 'does not save scopes that were not loaded', ->
+        config.set 'name1', 'x', scope
+        save!
+        assert.is_false file.exists
+
+      it 'saves the other files and the global configuration when one fails, raising an error', ->
+        other = dir / 'other/.howl/config.json'
+        config.load_scope 'file/other', other
+        config.load_scope scope, file
+        config.set 'name1', (-> 'not JSON'), 'file/other'
+        config.set 'name1', 'y', scope
+        config.set 'name1', 'global'
+        with_tmpdir (sys_dir) ->
+          status, err = pcall config.save_config, sys_dir
+          assert.is_false status
+          assert.includes err, "Failed to save #{other}: Cannot encode a function"
+          assert.same {config: {name1: 'global'}}, json.decode((sys_dir / 'system/config.json').contents)
+
+        assert.same {config: {name1: 'y'}}, read!
+        assert.is_false other.exists
 
   context 'for_file', ->
     before_each ->

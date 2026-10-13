@@ -1,5 +1,6 @@
 {:Buffer, :config, :dispatch, :Project, :sys, :VC} = howl
 {:File} = howl.io
+{:json} = howl.util
 
 describe 'Project', ->
   before_each ->
@@ -36,7 +37,7 @@ describe 'Project', ->
         assert.is_nil Project.for_file file
 
     context 'when there is VC found for the file', ->
-      vc = name: 'p-vc', root: 'foo_root', paths: -> {}, files: -> {}
+      vc = name: 'p-vc', root: File('/no/such/foo_root'), paths: -> {}, files: -> {}
       before_each -> VC.register 'pvc', find: -> vc
       after_each -> VC.unregister 'pvc'
 
@@ -85,10 +86,44 @@ describe 'Project', ->
           assert.equal p2, p
 
   describe 'for a given project instance', ->
+    describe 'configuration', ->
+      local dir
+
+      before_each ->
+        config.define name: 'project_spec_var', description: 'test'
+        dir = File.tmpdir!
+
+      after_each -> dir\delete_all!
+
+      it "loads the project's values from .howl/config.json in the root", ->
+        (dir / '.howl')\mkdir!
+        (dir / '.howl/config.json').contents = '{"config": {"project_spec_var": "project"}}'
+        project = Project dir
+        assert.equal dir / '.howl/config.json', project.config_file
+        assert.equal 'project', project.config.project_spec_var
+        assert.equal 'project', config.for_file(dir / 'sub/file.txt').project_spec_var
+
+      it 'saves the values set for the project there with config.save_config()', ->
+        config.reset!
+        project = Project dir
+        project.config.project_spec_var = 'saved'
+        with_tmpdir (sys_dir) -> config.save_config sys_dir
+        assert.same {config: {project_spec_var: 'saved'}}, json.decode(project.config_file.contents)
+
+      it 'loads the file again when it is saved from a buffer', ->
+        (dir / '.howl')\mkdir!
+        project = Project dir
+        Project.open[dir] = project
+        buffer = Buffer {}
+        buffer.file = project.config_file
+        buffer.text = '{"config": {"project_spec_var": "edited"}}'
+        buffer\save!
+        assert.equal 'edited', project.config.project_spec_var
+
     describe 'paths()', ->
       it 'delegates to .vc.paths() if it is available', ->
         vc = paths: -> {'path'}
-        assert.same vc.paths!, Project('root', vc)\paths!
+        assert.same vc.paths!, Project(File('/no/such/root'), vc)\paths!
 
       it 'falls back to a FS scan, skipping directories, backup files and hidden exts', ->
         orig_exts = config.hidden_file_extensions
@@ -112,7 +147,7 @@ describe 'Project', ->
     describe 'files()', ->
       it 'delegates to .vc.files() if it is available', ->
         vc = files: -> 'files'
-        assert.equal vc.files!, Project('root', vc)\files!
+        assert.equal vc.files!, Project(File('/no/such/root'), vc)\files!
 
       it 'falls back to a FS scan, skipping directories and backup files', ->
         with_tmpdir (dir) ->

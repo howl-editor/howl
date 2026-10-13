@@ -94,7 +94,9 @@ class Project
     @root = root
     @vc = vc
     @config = config.for_file root
+    @config_file = root\join '.howl', 'config.json'
     @_executables = {}
+    config.load_scope @config.scope, @config_file
 
   -- finds the environment variables for the processes run for the project, on
   -- top of Howl's own: those of the providers, and then those in the
@@ -207,10 +209,14 @@ class Project
 
         @root\find_paths exclude_directories: true, :filter
 
--- saving a file that a project's environment depends on finds it again
+-- saving a project's configuration file loads it again, and saving a file that
+-- a project's environment depends on finds the environment again
 signal.connect 'buffer-saved', (args) ->
   file = args.buffer.file
   return unless file
+  for _, project in pairs Project.open
+    config.reload_scope project.config.scope, file if file == project.config_file
+
   projects = [p for _, p in pairs Project.open when p.environment and p\_depends_on file]
   for project in *projects
     old = project.environment

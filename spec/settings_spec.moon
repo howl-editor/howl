@@ -120,17 +120,36 @@ describe 'Settings', ->
       assert.equal "sub", _G.__loaded_sub
 
   describe 'load_system(name)', ->
-   it 'returns the loaded contents of a file named system/<name>.lua', ->
-      sysdir = tmpdir / 'system'
-      sysdir\join('foo.lua').contents = 'return { a = "bar" }'
-      assert.same {a: 'bar'}, settings\load_system 'foo'
+    it 'returns the decoded contents of the JSON file system/<name>.json', ->
+      (tmpdir / 'system/foo.json').contents = '{"a": "bår", "list": [1, 2]}'
+      assert.same {a: 'bår', list: {1, 2}}, settings\load_system 'foo'
 
-   it 'returns nil if the the file does not exist', ->
+    it 'returns the loaded contents of a file named system/<name>.lua if there is no JSON', ->
+      sysdir = tmpdir / 'system'
+      sysdir\join('foo.lua').contents = 'return { a = "lua" }'
+      assert.same {a: 'lua'}, settings\load_system 'foo'
+
+      sysdir\join('foo.json').contents = '{"a": "json"}'
+      assert.same {a: 'json'}, settings\load_system 'foo'
+
+    it 'returns nil if the the file does not exist', ->
       assert.is_nil settings\load_system 'no_such_file'
 
+    it 'raises an error naming the file if the JSON is malformed', ->
+      file = tmpdir / 'system/foo.json'
+      file.contents = '{"a": }'
+      status, err = pcall settings.load_system, settings, 'foo'
+      assert.is_false status
+      assert.includes err, "#{file}: parse error"
+
   describe 'save_system(name, table)', ->
-    it 'saves the table to a loadeable file system/<name>.lua', ->
-      settings\save_system 'saved', a: 'bar'
-      file = tmpdir / 'system/saved.lua'
-      assert.is_true file.exists
-      assert.same {a: 'bar'}, loadfile(file)!
+    it 'saves the table as JSON to system/<name>.json', ->
+      settings\save_system 'saved', a: 'bår', b: {1, 2}
+      assert.equal '{\n  "a": "bår",\n  "b": [\n    1,\n    2\n  ]\n}\n', (tmpdir / 'system/saved.json').contents
+      assert.same {a: 'bår', b: {1, 2}}, settings\load_system 'saved'
+
+    it 'removes any system/<name>.lua', ->
+      legacy = tmpdir / 'system/saved.lua'
+      legacy.contents = 'return { a = "lua" }'
+      settings\save_system 'saved', a: 'json'
+      assert.is_false legacy.exists

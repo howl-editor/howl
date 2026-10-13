@@ -147,6 +147,13 @@ mode layer for the current mode. This command looks something like `set
 indent@global[mode:moonscript]=2` (assuming the current mode is *moonscript*).
 This applies indent=2 to all buffers that are in moonscript mode.
 
+* *For current project*: When the current buffer's file belongs to a
+[project](files.html#opening-a-file-within-a-project), `set indent@project=4`
+applies to all files under the project root, and `set
+indent@project[mode:moonscript]=2` to all files in moonscript mode under it.
+Values set for a project can be saved in the project itself, as described in
+[Project configuration](#project-configuration).
+
 Once you type the full command, pressing `enter` makes it effective and pressing
 `escape` cancels, making no changes. You can also press `backspace` to go back
 and change the selected scope, or the originally selected variable.
@@ -215,26 +222,64 @@ A few notes on the above example:
 
 Howl does not automatically save any configuration variables updated via the
 command line or the API. One way to save the modified configuration is to run
-the `save-config` command. This saves the modified variables in
-`~/.howl/system/config.lua` from where they are automatically reloaded on
-startup. To automatically save all modified variables every time you close Howl,
-you can use the `save_config_on_exit` configuration variable. If set to true,
-any changes made to the config using `set` will automatically be saved on exit.
-A simple way to enable automatic persistence is to add the following line to
-your `init.moon`:
+the `save-config` command. This saves the modified global variables in
+`~/.howl/system/config.json`, from where they are automatically reloaded on
+startup, and the variables set for projects in the projects themselves (see
+[Project configuration](#project-configuration) below). To automatically save
+all modified variables every time you close Howl, you can use the
+`save_config_on_exit` configuration variable. If set to true, any changes made
+to the config using `set` will automatically be saved on exit. A simple way to
+enable automatic persistence is to add the following line to your `init.moon`:
 
 ```moon
 config.save_config_on_exit = true
 ```
 
-*Note*: The `save_config_on_exit` configuration and `save-config` command only
-save the settings for global scope. Any file or buffer level configuration is
-not currently saved.
+The configuration is saved as JSON, with the values for each mode kept apart
+from the others. Here `indent` is 2, except in Python files, where it's 4:
+
+```json
+{
+  "config": {
+    "indent": 2
+  },
+  "modes": {
+    "python": {
+      "indent": 4
+    }
+  }
+}
+```
+
+*Note*: Configuration set for specific files, folders or buffers is not saved.
 
 Another way to persist your settings is to manually update the `init.moon` file
 as described in the [previous section](#setting-variables-upon-startup). Any
 variables set via `init.moon` override the variables automatically loaded from
-`config.lua`.
+`config.json`, and from the configuration of projects.
+
+Older versions of Howl saved the configuration as `config.lua`. That is still
+loaded until the configuration is saved, which replaces it with `config.json`.
+
+### Project configuration
+
+Values set for a [project](files.html#opening-a-file-within-a-project), using
+the `project` and `project[mode:...]` scopes of `set`, are saved in the project
+root, as `.howl/config.json`. The format is the same as above: the values under
+`config` apply to all files in the project, and those under `modes` to the
+files in that mode. The file is loaded when a file in the project is first
+opened. Since it holds no code, it can be shared with others working on the
+project by committing it with the rest of the project.
+
+The file is only written when the project's values have changed, and can also
+be edited by hand. Saving it from Howl loads it again, so the changes apply
+right away. Values that are not valid for their variables are skipped, and
+reported as errors. A file that fails to load is also reported as an error, and
+is never overwritten when the configuration is saved.
+
+*Note*: Some configuration variables hold commands that Howl runs, such as
+`project_build_command`. Have a look at the configuration of a project you get
+from someone else before running such commands for it.
 
 ## Key bindings
 

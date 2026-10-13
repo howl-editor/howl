@@ -1,6 +1,7 @@
 {:File} = howl.io
-{:Application, :Buffer, :config, :mode} = howl
+{:Application, :Buffer, :Project, :Settings, :config, :mode} = howl
 {:Editor, :highlight} = howl.ui
+{:json} = howl.util
 
 describe 'Application', ->
   local root_dir, application
@@ -95,6 +96,19 @@ describe 'Application', ->
           File.with_tmpfile (file) ->
             application\open :file, editor
           assert.spy(handler).was_called!
+
+      it "loads the configuration of the file's project", ->
+        config.define name: 'app_spec_project_var', description: 'test'
+        with_tmpdir (dir) ->
+          (dir / '.howl')\mkdir!
+          (dir / '.howl/config.json').contents = '{"config": {"app_spec_project_var": "project"}}'
+          Project.add_root dir
+          file = dir / 'file.txt'
+          file.contents = 'x'
+          buffer = application\open :file, editor
+          Project.remove_root dir
+          Project.open[dir] = nil
+          assert.equal 'project', buffer.config.app_spec_project_var
 
     context 'when location.buffer is given', ->
 
@@ -210,6 +224,69 @@ describe 'Application', ->
         application\close_buffer buffer1
         application\close_buffer buffer2
         assert.same {file2.path}, [f.file.path for f in *application.recently_closed]
+
+  describe 'sessions', ->
+    editor = Editor Buffer {}
+    local session_file
+
+    before_each ->
+      application.settings = Settings root_dir
+      application.window = maximized: true, fullscreen: false
+      session_file = root_dir / 'system/session.json'
+
+    restore = ->
+      restored = Application root_dir, spec: true
+      restored.settings = Settings root_dir
+      window = {}
+      restored\_restore_session window, true
+      restored, window
+
+    it 'save_session() saves the open files, recently closed files and window state as JSON', ->
+      with_tmpdir (dir) ->
+        a, b = dir / 'å.txt', dir / 'b.txt'
+        a.contents = 'a'
+        b.contents = 'b'
+        buffer = application\open_file a, editor
+        application\close_buffer application\open_file(b, editor)
+        buffer.last_shown = 123
+        buffer.properties.position = line: 1, column: 2
+        application\save_session!
+
+        session = json.decode session_file.contents
+        assert.equal 1, session.version
+        assert.same {{file: a.path, last_shown: 123, properties: {position: {line: 1, column: 2}}}}, session.buffers
+        assert.same {b.path}, [f.file for f in *session.recently_closed]
+        assert.same {maximized: true, fullscreen: false}, session.window
+
+    it 'the saved session is restored', ->
+      with_tmpdir (dir) ->
+        a, b = dir / 'å.txt', dir / 'b.txt'
+        a.contents = 'a'
+        b.contents = 'b'
+        buffer = application\open_file a, editor
+        application\close_buffer application\open_file(b, editor)
+        buffer.properties.position = line: 1, column: 2
+        application\save_session!
+
+        restored, window = restore!
+        assert.same {a.path}, [buf.file.path for buf in *restored.buffers]
+        assert.same {line: 1, column: 2}, restored.buffers[1].properties.position
+        assert.same {b.path}, [f.file.path for f in *restored.recently_closed]
+        assert.is_true window.maximized
+
+    it 'a session saved as Lua by older versions is restored', ->
+      with_tmpdir (dir) ->
+        a = dir / 'a.txt'
+        a.contents = 'a'
+        (root_dir / 'system/session.lua').contents = "return { version = 1, buffers = { { file = '#{a.path}' } } }"
+        restored = restore!
+        assert.same {a.path}, [buf.file.path for buf in *restored.buffers]
+
+    it 'a malformed session is logged as an error', ->
+      session_file.contents = '{"version": 1'
+      restored = restore!
+      assert.same {}, restored.buffers
+      assert.includes log.last_error.message, 'Failed to load the session'
 
   describe 'synchronize()', ->
     context "when a buffer's file has changed on disk", ->

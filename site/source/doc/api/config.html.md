@@ -27,8 +27,7 @@ Some common scopes are:
 - **Global scope**
 
   The global scope is represented as the empty string `''` and the value is used
-  if no specific value is found at any nested scope. The `set` command always
-  sets variables at the global scope.
+  if no specific value is found at any nested scope.
 
 - **File path scope**
 
@@ -37,7 +36,10 @@ Some common scopes are:
   `'file/home/user/folder'`, and the value applies to all files at or below the
   specified path.
 
-  This value overrides any value set by a parent scope.
+  This value overrides any value set by a parent scope. A project's
+  configuration is set at the file path scope of the project root, and is saved
+  in the root's `.howl/config.json` (see [Project
+  configuration](../manual/configuration.html#project-configuration)).
 
 - **Unsaved file scope (buffer scope)**
 

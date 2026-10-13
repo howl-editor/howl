@@ -1,7 +1,5 @@
-serpent = require 'serpent'
-
 {:File} = howl.io
-{:SandboxedLoader} = howl.util
+{:SandboxedLoader, :json} = howl.util
 {:sys} = howl
 
 default_dir = ->
@@ -66,12 +64,22 @@ class Settings
         loader -> user_load 'init'
         break
 
+  -- saves t as JSON, replacing what an older Howl saved as Lua
   save_system: (name, t) =>
-    file = @sysdir\join(name .. '.lua')
-    options = indent: '  ', fatal: true
-    file.contents = serpent.dump t, options
+    file = @sysdir\join(name .. '.json')
+    file.contents = json.encode(t) .. '\n'
+    legacy = @sysdir\join(name .. '.lua')
+    legacy\delete! if legacy.exists
 
+  -- returns the value saved as name, or nil if there is none. Until it's
+  -- saved as JSON, what an older Howl saved as Lua is loaded.
   load_system: (name) =>
+    file = @sysdir\join(name .. '.json')
+    if file.exists
+      status, ret = pcall json.decode, file.contents
+      error "#{file}: #{ret}", 0 unless status
+      return ret
+
     file = @sysdir\join(name .. '.lua')
     return nil unless file.exists
     (assert loadfile(file))!

@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:Settings} = howl
+{:json} = howl.util
 append = table.insert
 
 -- Holds configuration values in a nested table structure.
@@ -29,9 +30,14 @@ defs = {}
 -- map of variable name to list of watching functions
 watchers = {}
 
--- A list of scopes for which configuration is saved to the filesystem.
--- Currently only values set for global scope (empty string) values are saved.
-saved_scopes = {''}
+-- The global scope is saved as `system/config.json` in the settings
+-- directory. Other scopes are saved only once loaded with load_scope, such as
+-- those of projects. This maps such a scope to its `file`, and the JSON it
+-- `saved` or loaded, so that unchanged files aren't rewritten.
+scope_files = {}
+
+-- Set when the global configuration failed to load, to not overwrite it
+global_load_failed = false
 
 predefined_types =
   boolean: {
@@ -166,33 +172,180 @@ define
   default: false
   scope: 'global'
 
+-- Saved configuration has the values of a scope, as
+-- `{config: {name: value}, modes: {mode_name: {name: value}}}` for the default
+-- layer and the mode layers, plus `layers: {layer: {name: value}}` for any
+-- other layers. `to_data` converts the values of a scope to this, and
+-- `from_data` back again.
+to_data = (values) ->
+  data = {}
+  section = (key, sub) ->
+    data[key] or= {}
+    return data[key] unless sub
+    data[key][sub] or= {}
+    data[key][sub]
+
+  for name, layers in pairs values
+    for layer, value in pairs layers
+      mode_name = layer\match '^mode:(.+)$'
+      vars = if layer == 'default'
+        section 'config'
+      elseif mode_name
+        section 'modes', mode_name
+      else
+        section 'layers', layer
+      vars[name] = value
+
+  data
+
+from_data = (data) ->
+  object = (v, what) ->
+    error "#{what} is not an object", 0 unless type(v) == 'table'
+    for k in pairs v
+      error "#{what} is not an object", 0 unless type(k) == 'string'
+    v
+
+  values = {}
+  add = (vars, layer, what) ->
+    for name, value in pairs object(vars, what)
+      values[name] or= {}
+      values[name][layer] = value
+
+  object data, 'The configuration'
+  add data.config, 'default', '`config`' if data.config != nil
+  if data.modes != nil
+    for mode_name, vars in pairs object(data.modes, '`modes`')
+      add vars, "mode:#{mode_name}", "`modes.#{mode_name}`"
+  if data.layers != nil
+    for layer, vars in pairs object(data.layers, '`layers`')
+      add vars, layer, "`layers.#{layer}`"
+
+  values
+
+read_config = (dir) ->
+  data = Settings(dir)\load_system 'config'
+  return {} unless data
+  -- before JSON the saved configuration was the scopes table itself
+  return data if type(data) == 'table' and data[''] != nil
+  {'': from_data data}
+
 load_config = (force=false, dir=nil) ->
   -- Load the configuration from the filesystem.
   return if scopes and not force
-  settings = Settings dir
-  scopes = settings\load_system('config') or {}
+  scope_files = {}
+  status, ret = pcall read_config, dir
+  scopes = status and ret or {}
+  global_load_failed = not status
+  log.error "Failed to load the configuration: #{ret}" unless status
 
 local get
 
+-- the values of scope to save: all of them, unless persist_config is false
+persisted = (scope) ->
+  values = scopes[scope] or {}
+  return values if get 'persist_config', scope
+  {persist_config: values.persist_config}
+
+save_scope = (scope, scope_file) ->
+  {:file} = scope_file
+  data = to_data persisted(scope)
+  text = json.encode data
+  return if text == scope_file.saved
+  return if not next(data) and not file.exists
+  file.parent\mkdir_p! unless file.parent.exists
+  file.contents = text .. '\n'
+  scope_file.saved = text
+
 save_config = (dir=nil) ->
-  -- Save the current configuration to the filesystem.
+  -- Save the current configuration to the filesystem: the global scope, and
+  -- the scopes loaded with load_scope to their files. Raises an error
+  -- listing whatever failed, after saving the rest.
   return unless scopes
-  settings = Settings dir
-  scopes_copy = {}
-  for scope in *saved_scopes
-    values = scopes[scope]
-    continue unless values
-    persisted_values = nil
-    if get 'persist_config', scope
-      persisted_values = values
-    else
-      persisted_values = {'persist_config': values['persist_config']}
+  errors = {}
+  for scope, scope_file in pairs scope_files
+    status, err = pcall save_scope, scope, scope_file
+    append errors, "Failed to save #{scope_file.file}: #{err}" unless status
 
-    empty = not next persisted_values
-    if persisted_values and not empty
-      scopes_copy[scope] = persisted_values
+  if global_load_failed
+    append errors, 'Not saving the global configuration, since it failed to load'
+  else
+    status, err = pcall -> Settings(dir)\save_system 'config', to_data(persisted '')
+    append errors, "Failed to save the global configuration: #{err}" unless status
 
-  settings\save_system('config', scopes_copy)
+  error table.concat(errors, '\n'), 2 if #errors > 0
+
+-- the values of the configuration file, by name and layer, or nil and an
+-- error message if it failed to load
+read_scope_file = (file) ->
+  return {} unless file.exists
+  status, ret = pcall -> from_data json.decode(file.contents)
+  return nil, ret unless status
+  ret
+
+-- sets the values for scope that aren't already set, converted and validated
+-- if their variables are defined, and has save_config save the scope to file
+apply_scope_values = (scope, file, values) ->
+  scopes[scope] or= {}
+  target = scopes[scope]
+  applied = {}
+  for name, layers in pairs values
+    def = defs[name]
+    for layer, value in pairs layers
+      continue if target[name] and target[name][layer] != nil
+      if def
+        if def.scope == 'global'
+          log.error "#{file}: '#{name}' can only be set globally"
+          continue
+
+        status, err = pcall ->
+          value = convert def, value
+          validate def, value
+        unless status
+          log.error "#{file}: #{tostring(err)\gsub('^[^:]*:%d+: ', '')}"
+          continue
+
+      target[name] or= {}
+      target[name][layer] = value
+      append applied, {:name, :value}
+
+  scope_files[scope] = :file, saved: json.encode(to_data persisted(scope))
+  applied
+
+load_scope = (scope, file) ->
+  -- Load the values for `scope` from the JSON configuration `file`, keeping
+  -- any values already set for the scope, and have save_config save the
+  -- scope's values there. A file that fails to load is never saved, and a
+  -- scope already loaded is left as is.
+  load_config! unless scopes
+  return if scope_files[scope]
+  values, err = read_scope_file file
+  unless values
+    log.error "Failed to load #{file}: #{err}"
+    return
+
+  for v in *apply_scope_values scope, file, values
+    broadcast v.name, v.value, true
+
+reload_scope = (scope, file) ->
+  -- Replace the values for `scope` with those in `file`, loaded as for
+  -- load_scope. If the file fails to load the values are kept, but are no
+  -- longer saved there.
+  load_config! unless scopes
+  values, err = read_scope_file file
+  unless values
+    scope_files[scope] = nil
+    log.error "Failed to load #{file}: #{err}"
+    return
+
+  old = scopes[scope] or {}
+  scopes[scope] = {}
+  for v in *apply_scope_values scope, file, values
+    broadcast v.name, v.value, true
+
+  new = scopes[scope]
+  for name, layers in pairs old
+    for layer in pairs layers
+      broadcast name, nil, true unless new[name] and new[name][layer] != nil
 
 broadcast_config = ->
   -- broadcasts all values stores in scopes - useful after load_config
@@ -300,6 +453,8 @@ get = (name, scope='', layer='default') ->
 reset = ->
   -- Clear all configuration values and layer defaults
   scopes = {}
+  scope_files = {}
+  global_load_failed = false
   for _, layer_def in pairs layer_defs
     layer_def.defaults = {}
 
@@ -363,6 +518,8 @@ config = {
   :definitions
   :load_config
   :save_config
+  :load_scope
+  :reload_scope
   :broadcast_config
   :define
   :define_layer
