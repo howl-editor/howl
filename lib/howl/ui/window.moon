@@ -4,7 +4,7 @@
 ffi = require 'ffi'
 Gtk = require 'ljglibs.gtk'
 {:PropertyObject} = howl.util.moon
-{:Activity, :CommandPanel, :Status, :theme} = howl.ui
+{:Activity, :CommandPanel, :Status} = howl.ui
 {:signal} = howl
 
 append = table.insert
@@ -43,6 +43,10 @@ placements = {
   below: 'POS_BOTTOM'
 }
 
+-- between the views, and between them and the bars below. Themes set the space
+-- around them in CSS, as the margin of `window .container`.
+spacing = 4
+
 class Window extends PropertyObject
   new: (properties = {}) =>
     @_handlers = {}
@@ -52,6 +56,8 @@ class Window extends PropertyObject
     @grid = Gtk.Grid
       column_homogeneous: true
       row_homogeneous: true
+      row_spacing: spacing
+      column_spacing: spacing
       valign: Gtk.ALIGN_FILL
       vexpand: true
 
@@ -60,7 +66,7 @@ class Window extends PropertyObject
     @activity = Activity!
 
     @widgets = Gtk.Box Gtk.ORIENTATION_VERTICAL
-    @box = Gtk.Box Gtk.ORIENTATION_VERTICAL
+    @box = Gtk.Box Gtk.ORIENTATION_VERTICAL, spacing
     @box\append @grid
     @box\append @command_panel\to_gobject!
     @box\append @widgets
@@ -81,10 +87,7 @@ class Window extends PropertyObject
 
     @win.child = @box
 
-    @_theme_changed = self\_on_theme_changed
-    signal.connect 'theme-changed', @_theme_changed
     @data = {}
-    @_on_theme_changed theme: theme.current
     super @win
 
   @property views: get: =>
@@ -326,31 +329,12 @@ class Window extends PropertyObject
 
     @grid\attach_next_to gobject, sibling, Gtk[where], 1, 1
 
-  _on_theme_changed: (opts) =>
-    def = {}
-    outer_padding = 5
-    inner_padding = 4
-    if opts.theme and opts.theme.window
-      with opts.theme.window
-        def = .background or def
-        outer_padding = .outer_padding or outer_padding
-        inner_padding = .inner_padding or inner_padding
-
-    @box.margin = outer_padding
-    @box.spacing = inner_padding
-    with @grid
-      .row_spacing = inner_padding
-      .column_spacing = inner_padding
-
-    @win\queue_draw!
-
   _on_destroy: =>
     for view in *@_views
       if view and view.release
         view\release!
 
     @_views = {}
-    signal.disconnect 'theme-changed', @_theme_changed
 
   _on_focus_in: =>
     howl.app.window = self
