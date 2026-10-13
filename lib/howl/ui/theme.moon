@@ -297,6 +297,96 @@ extract_css_custom = (css) ->
 
   values, css
 
+-- splits <s> where <sep> (a pattern matching one character) occurs outside of parentheses,
+-- e.g. the layers of a background, whose gradients have commas of their own
+split_outside_parens = (s, sep) ->
+  parts, depth, start = {}, 0, 1
+  add = (part) ->
+    part = trim part
+    parts[#parts + 1] = part if #part > 0
+
+  for i = 1, #s
+    c = s\sub i, i
+    if c == '('
+      depth += 1
+    elseif c == ')'
+      depth -= 1
+    elseif depth == 0 and c\match sep
+      add s\sub(start, i - 1)
+      start = i + 1
+
+  add s\sub(start)
+  parts
+
+css_color_functions = {name, true for name in *{
+  'alpha', 'shade', 'mix', 'lighter', 'darker', 'color-mix',
+  'rgb', 'rgba', 'hsl', 'hsla', 'hwb', 'oklab', 'oklch', 'color'
+}}
+
+is_css_color = (token) ->
+  return true if token\match('^@') or token == 'transparent' or token\lower! == 'currentcolor'
+  fn = token\match '^([%w-]+)%('
+  return true if fn and css_color_functions[fn]
+  RGBA!\parse token
+
+is_css_image = (token) ->
+  token\match('^url%(') or token\match('^[%w-]*gradient%(') or
+    token\match('^cross%-fade%(') or token\match('^image%(') or token\match('^%-gtk%-')
+
+-- Returns the value of a background declaration with each image and color replaced by
+-- on_image and on_color, or nil for properties that paint nothing (background-size etc.)
+map_background = (prop, value, on_image, on_color) ->
+  map_layers = (map_layer) ->
+    table.concat [map_layer(layer) for layer in *split_outside_parens(value, ',')], ', '
+
+  switch prop
+    when 'background-color'
+      on_color value
+    when 'background-image'
+      map_layers (layer) -> layer == 'none' and layer or on_image layer
+    when 'background'
+      map_layers (layer) ->
+        tokens = for token in *split_outside_parens(layer, '%s')
+          if is_css_image(token) then on_image token
+          elseif is_css_color(token) then on_color token
+          else token
+        table.concat tokens, ' '
+
+background_declaration = '([{;]%s*)(background[%w-]*)(%s*:%s*)([^;}]+)'
+
+-- Gtk's own window background would otherwise show through a theme's faded window
+transparent_window_css = 'window { background-color: transparent; }\n'
+
+-- Fades every background color and image in <css> to <opacity>. A rule painting several
+-- layers, such as a color under an image, fades each so that together they're at
+-- <opacity>, as they would be one layer at it if opaque.
+fade_backgrounds = (css, opacity) ->
+  return css if opacity >= 1
+  css = css\gsub '%b{}', (body) ->
+    layers = 0
+    count = (paint) ->
+      layers += 1 unless paint == 'transparent'
+      paint
+
+    for _, prop, _, value in body\gmatch background_declaration
+      map_background prop, trim(value), count, count
+
+    layer_opacity = 1 - (1 - opacity) ^ (1 / math.max(layers, 1))
+    fade_color = (color) -> "alpha(#{color}, #{'%g'\format layer_opacity})"
+    fade_image = (image) -> "cross-fade(#{'%g'\format layer_opacity * 100}% #{image})"
+    body\gsub background_declaration, (lead, prop, sep, value) ->
+      faded = map_background prop, trim(value), fade_image, fade_color
+      faded and lead .. prop .. sep .. faded .. value\match('%s*$')
+
+  transparent_window_css .. css
+
+-- The current line flair spans the whole editor, so it fades along with the backgrounds
+fade_current_line = (flairs, opacity) ->
+  def = flairs.current_line
+  return unless opacity < 1 and def and def.background
+  rgba = RGBA def.background
+  def.background = to_hex rgba, rgba.alpha * opacity
+
 apply_aullar_options = (theme) ->
   -- nil resets it to the default
   aullar_config.gutter_color = theme.custom.gutter_color
@@ -313,12 +403,14 @@ apply_theme = ->
   theme.styles, content = extract_css_styles content
   theme.flairs, content = extract_css_flairs content
   theme.custom, content = extract_css_custom content
+  theme.css = fade_backgrounds content, config.theme_opacity
+  fade_current_line theme.flairs, config.theme_opacity
   base_values =
     font_size: config.font_size
     font: "#{config.font},monospace"
 
   base = interpolate base_css, base_values
-  css = base .. content
+  css = base .. theme.css
   loading_css = css
   css_provider\load_from_data css
   loading_css = nil
@@ -370,6 +462,14 @@ with config
     type_of: 'number'
     scope: 'global'
 
+  .define
+    name: 'theme_opacity'
+    description: "The opacity of the theme's backgrounds, from 0 (letting the desktop show through) to 1 (opaque)"
+    default: 1
+    type_of: 'number'
+    validate: (value) -> type(value) == 'number' and value >= 0 and value <= 1
+    scope: 'global'
+
 config.watch 'theme', (_, name) ->
   set_theme name
 
@@ -377,6 +477,9 @@ config.watch 'font', (name, value) ->
   apply_theme! if current_theme
 
 config.watch 'font_size', (name, value) ->
+  apply_theme! if current_theme
+
+config.watch 'theme_opacity', (name, value) ->
   apply_theme! if current_theme
 
 signal.register 'theme-changed',

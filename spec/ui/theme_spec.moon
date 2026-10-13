@@ -337,6 +337,70 @@ describe 'theme', ->
         '
       ).styles.foo.color
 
+  context 'theme_opacity', ->
+    -- returns the resulting CSS and flairs, resetting the opacity while the file exists
+    load_css = (css, opacity) ->
+      File.with_tmpfile (file) ->
+        file.contents = css
+        theme.register 'opacity', file
+        config.theme = 'opacity'
+        config.theme_opacity = opacity
+        result = css: theme.current.css, flairs: theme.current.flairs
+        config.theme_opacity = nil
+        result
+
+    it 'fades background colors', ->
+      assert.includes load_css('.foo { background-color: red; }', 0.5).css,
+        'background-color: alpha(red, 0.5);'
+
+    it 'fades each layer of background images, leaving none alone', ->
+      css = load_css('.foo { background-image: linear-gradient(red, blue), none; }', 0.5).css
+      assert.includes css, 'background-image: cross-fade(50% linear-gradient(red, blue)), none;'
+
+    it 'fades the colors and images of the background shorthand, leaving the rest alone', ->
+      css = load_css('.foo { background: linear-gradient(red, blue) no-repeat, #ff0000 center; }', 0.75).css
+      assert.includes css, 'background: cross-fade(50% linear-gradient(red, blue)) no-repeat, alpha(#ff0000, 0.5) center;'
+
+    it "fades the layers of a rule so that they're at the opacity together", ->
+      css = load_css('.foo { background-color: red; background-image: linear-gradient(red, blue); }', 0.75).css
+      assert.includes css, 'background-color: alpha(red, 0.5);'
+      assert.includes css, 'background-image: cross-fade(50% linear-gradient(red, blue));'
+
+    it "doesn't count a transparent color as a layer", ->
+      css = load_css('.foo { background-color: transparent; background-image: linear-gradient(red, blue); }', 0.5).css
+      assert.includes css, 'background-image: cross-fade(50% linear-gradient(red, blue));'
+
+    it 'leaves other background properties alone', ->
+      assert.includes load_css('.foo { background-size: cover; }', 0.5).css,
+        'background-size: cover;'
+
+    it "makes Gtk's own window background transparent, for themes not setting one", ->
+      assert.includes load_css('', 0.5).css, 'window { background-color: transparent; }'
+      assert.not_includes load_css('', 1).css, 'window'
+
+    it 'fades the current line flair', ->
+      flairs = load_css('flair.current-line { shape: rectangle; background-color: red; }', 0.5).flairs
+      assert.equal '#ff000080', flairs.current_line.background
+
+    it 'leaves the theme as is at 1', ->
+      t = load_css '.foo { background-color: red; } flair.current-line { shape: rectangle; background-color: red; }', 1
+      assert.includes t.css, 'background-color: red;'
+      assert.equal 'red', t.flairs.current_line.background
+
+    it 're-applies the current theme when changed', ->
+      File.with_tmpfile (file) ->
+        file.contents = '.foo { background-color: red; }'
+        theme.register 'opacity', file
+        config.theme = 'opacity'
+        config.theme_opacity = 0.5
+        assert.includes theme.current.css, 'alpha(red, 0.5)'
+        config.theme_opacity = nil
+        assert.includes theme.current.css, 'background-color: red;'
+
+    it 'only accepts values from 0 to 1', ->
+      assert.has_error -> config.theme_opacity = 1.5
+      assert.has_error -> config.theme_opacity = -0.5
+
 
   -- describe 'life cycle management', ->
     -- it 'automatically applies a theme upon registration if that theme is already set as current', ->

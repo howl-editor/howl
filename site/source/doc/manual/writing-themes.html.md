@@ -167,6 +167,22 @@ size come from the `font` and `font_size` configuration variables, so themes
 shouldn't set them for the window. Howl draws the line numbers in the gutter
 itself, using the `color` of the `.gutter` rule.
 
+### Transparency
+
+Backgrounds may be transparent, all the way down to the desktop: with a
+transparent `window` background and translucent `.content-box` backgrounds, the
+desktop shows through the window. This needs a compositor, which Wayland always
+has; on X11 without one, the transparent parts are black. Text colors must
+stay opaque. The bundled Dracula Glass theme is written this way, with a clear
+window, tinted editors and a background of its own for status messages.
+
+Any theme can also be made translucent with the `theme_opacity` configuration
+variable, from 0 to 1. It fades every background color and image in the theme's
+CSS, along with the `current-line` flair, so a theme needn't do anything for it.
+A rule painting several layers, such as a color under an image, has each faded
+so that together they're at `theme_opacity`. Text, borders and the other flairs
+keep their colors.
+
 ## Text styles
 
 A style rule sets the look of one kind of text, such as comments, keywords or
