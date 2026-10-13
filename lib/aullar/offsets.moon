@@ -77,6 +77,11 @@ gb_char_offset = (gb, start_offset, end_offset) ->
     while p[idx] != 0 and band(p[idx], 0xc0) == 0x80 -- continuation byte
       idx = idx + 1
 
+    if idx == gb.gap_start -- the gap fell inside this sequence: resume after it
+      idx = gb.gap_end
+      while p[idx] != 0 and band(p[idx], 0xc0) == 0x80
+        idx = idx + 1
+
     c_offset += 1
 
   c_offset
@@ -95,12 +100,18 @@ gb_byte_offset = (gb, start_offset, char_offset) ->
     while p[idx] != 0 and band(p[idx], 0xc0) == 0x80 -- continuation byte
       idx += 1
 
+    if idx == gb.gap_start -- the gap fell inside this sequence: resume after it
+      idx = gb.gap_end
+      while p[idx] != 0 and band(p[idx], 0xc0) == 0x80
+        idx += 1
+
   delta = idx >= gb.gap_end and gb.gap_size or 0
   (idx - start_offset) - delta
 
 Offsets = {
 
   char_offset: (gb, byte_offset) =>
+    byte_offset = gb.size if byte_offset > gb.size -- clamp to the end of the buffer
     m = mapping_for_byte @mappings, byte_offset
 
     -- should we create a new mapping, closer this offset?
@@ -118,7 +129,7 @@ Offsets = {
     tonumber m.c_offset + gb_char_offset(gb, m.b_offset, byte_offset)
 
   byte_offset: (gb, char_offset) =>
-    m = mapping_for_char(@mappings, char_offset), char_offset
+    m = mapping_for_char @mappings, char_offset
 
     -- should we create a new mapping, closer this offset?
     if char_offset - m.c_offset > MIN_SPAN_CHARS

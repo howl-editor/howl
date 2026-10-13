@@ -95,7 +95,6 @@ describe 'offsets', ->
         c_offset = offsets\char_offset gb, b_offset
         glib_c_offset = glib_char_offset gb.array, b_offset
         assert.equal glib_c_offset, c_offset
-        assert.equal glib_c_offset, c_offset
 
     it 'returns the correct result for a changing buffer as compared to glib', ->
       replacement = '<insΣΓt>'
@@ -208,6 +207,9 @@ describe 'offsets', ->
       assert.equal 3, offsets\char_offset gb, 6
       assert.equal 6, offsets\byte_offset gb, 3
 
+    it 'clamps a byte offset past the end of the buffer', ->
+      assert.equal 3, offsets\char_offset gb, gb.size + 2000
+
   describe 'edge cases', ->
     local gb
 
@@ -230,3 +232,32 @@ describe 'offsets', ->
     it 'handles large buffer', ->
       assert.equal 30000, offsets\char_offset gb, 60000
       assert.equal 60000, offsets\byte_offset gb, 30000
+
+  describe 'gap inside a code point', ->
+    test_data = 'äåö€𝄞' -- 2, 2, 2, 3 and 4 byte sequences
+
+    it 'char_offset matches glib for the gap at any byte position', ->
+      ref = gap_b test_data
+      gb = gap_b test_data
+      for gap_pos = 0, ref.size
+        gb\move_gap_to gap_pos
+        for b = 0, ref.size
+          assert.equal glib_char_offset(ref.array, b), offsets\char_offset gb, b
+
+    it 'byte_offset matches glib for the gap at any byte position', ->
+      ref = gap_b test_data
+      gb = gap_b test_data
+      nr_chars = tonumber C.g_utf8_strlen(ref.array, ref.size)
+      for gap_pos = 0, ref.size
+        gb\move_gap_to gap_pos
+        for c = 0, nr_chars
+          assert.equal glib_byte_offset(ref.array, c), offsets\byte_offset gb, c
+
+    it 'keeps mappings correct when the gap falls inside a sequence', ->
+      text = string.rep('äåö', 1000)
+      ref = gap_b text
+      gb = gap_b text
+      gb\move_gap_to 1 -- inside the first 'ä'
+      assert.equal 2995, offsets\char_offset gb, 5990
+      assert.equal glib_char_offset(ref.array, 5990), offsets\char_offset gb, 5990
+      assert.equal 5990, offsets\byte_offset gb, 2995
