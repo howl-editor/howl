@@ -122,7 +122,7 @@ class Window extends PropertyObject
     @get_view focused
 
   @property fullscreen:
-    get: => @win.window and @win.window.state.FULLSCREEN
+    get: => @win.fullscreened
 
     set: (state) =>
       if state and not @fullscreen
@@ -131,7 +131,7 @@ class Window extends PropertyObject
         @win\unfullscreen!
 
   @property maximized:
-    get: => @win.window and @win.window.state.MAXIMIZED
+    get: => @win.maximized
 
     set: (state) =>
       if state and not @maximized

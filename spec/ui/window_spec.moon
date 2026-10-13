@@ -177,6 +177,23 @@ describe 'Window', ->
       e2\grab_focus!
       assert.same { x: 2, y: 1, width: 1, height: 1, gobject: e2 }, win.current_view
 
+  -- the window isn't shown, so Gtk applies the requested state at once
+  describe '.fullscreen', ->
+    it 'is whether the window is fullscreen, and can be assigned to change it', ->
+      assert.is_false win.fullscreen
+      win.fullscreen = true
+      assert.is_true win.fullscreen
+      win.fullscreen = false
+      assert.is_false win.fullscreen
+
+  describe '.maximized', ->
+    it 'is whether the window is maximized, and can be assigned to change it', ->
+      assert.is_false win.maximized
+      win.maximized = true
+      assert.is_true win.maximized
+      win.maximized = false
+      assert.is_false win.maximized
+
   describe 'siblings(view, wraparound)', ->
     context 'when wraparound is false', ->
        it 'returns a table of siblings for the specified view when present', ->
