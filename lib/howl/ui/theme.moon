@@ -464,7 +464,7 @@ with config
 
   .define
     name: 'theme_opacity'
-    description: "The opacity of the theme's backgrounds, from 0 (letting the desktop show through) to 1 (opaque)"
+    description: "The opacity of the theme's backgrounds, a fraction such as 0.8, where 0 lets the desktop show through fully and 1 is opaque"
     default: 1
     type_of: 'number'
     validate: (value) -> type(value) == 'number' and value >= 0 and value <= 1

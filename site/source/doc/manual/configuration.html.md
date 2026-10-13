@@ -281,6 +281,38 @@ is never overwritten when the configuration is saved.
 `project_build_command`. Have a look at the configuration of a project you get
 from someone else before running such commands for it.
 
+## Themes
+
+Howl's colors, fonts and backgrounds come from its theme. To change it, run
+`set`, select `theme` and pick one of the themes listed, as described in
+[Overview](#overview) above. The new theme applies right away. To set it from
+your init file instead:
+
+```moon
+howl.config.theme = 'Tomorrow Night Blue'
+```
+
+To make a theme of your own, see [Writing themes](writing-themes.html).
+
+### Transparency
+
+Howl can let your desktop show through its window. The `theme_opacity` variable
+sets how opaque the theme's backgrounds are, as a fraction: `1`, the default, is
+fully opaque, `0.8` lets some of the desktop through, and `0` leaves only the
+text over the desktop. The text itself always stays opaque. Here's the Tomorrow
+Night Blue theme as is, and with `theme_opacity` at `0.5`:
+
+![Tomorrow Night Blue theme](/images/doc/theme-opacity-1.jpg)
+
+![Tomorrow Night Blue theme at 0.5 opacity](/images/doc/theme-opacity-0.5.jpg)
+
+To try it, run `set theme_opacity@global=0.8` and press `enter`. This works for
+any theme. The Dracula Glass theme is made for transparency, with a clear window
+around tinted editors, and `theme_opacity` fades it further.
+
+Transparency needs a compositor, which Wayland desktops always have. On X11
+without one, the see-through parts are shown as black.
+
 ## Key bindings
 
 Key bindings map keyboard presses to different actions within Howl. The

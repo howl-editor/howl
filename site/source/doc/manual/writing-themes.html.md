@@ -177,11 +177,12 @@ stay opaque. The bundled Dracula Glass theme is written this way, with a clear
 window, tinted editors and a background of its own for status messages.
 
 Any theme can also be made translucent with the `theme_opacity` configuration
-variable, from 0 to 1. It fades every background color and image in the theme's
-CSS, along with the `current-line` flair, so a theme needn't do anything for it.
-A rule painting several layers, such as a color under an image, has each faded
-so that together they're at `theme_opacity`. Text, borders and the other flairs
-keep their colors.
+variable. It's a fraction, such as `0.8`, where `1` (the default) is opaque and
+`0` lets the desktop show through fully. It fades every background color and
+image in the theme's CSS, along with the `current-line` flair, so a theme
+needn't do anything for it. A rule painting several layers, such as a color
+under an image, has each faded so that together they're at `theme_opacity`.
+Text, borders and the other flairs keep their colors.
 
 ## Text styles
 
