@@ -1151,6 +1151,27 @@ describe 'Buffer', ->
           }
         }
 
+    describe 'on_markers_changed', ->
+      it 'is fired with the range of all added or removed markers, whatever their order', ->
+        b = Buffer '123456789'
+        l = on_markers_changed: spy.new -> nil
+        b\add_listener l
+        b.markers\add {
+          { name: 'm', start_offset: 6, end_offset: 8 },
+          { name: 'm', start_offset: 2, end_offset: 3 },
+        }
+        assert.spy(l.on_markers_changed).was_called_with l, match.is_ref(b), {
+          start_offset: 2,
+          end_offset: 8
+        }
+
+        b.markers\add { { name: 'n', start_offset: 1, end_offset: 9 } }
+        b.markers\remove!
+        assert.spy(l.on_markers_changed).was_called_with l, match.is_ref(b), {
+          start_offset: 1,
+          end_offset: 9
+        }
+
     it 'fires on_styled notifications for styling changes outside of lexing', ->
       b = Buffer '12\n45'
       l = on_styled: spy.new -> nil

@@ -681,8 +681,11 @@ Buffer = {
     @notify('styled', @_get_styled_notification(start_offset, end_offset))
 
   _on_markers_changed: (_, markers) =>
-    start_offset = markers[1].start_offset
-    end_offset = markers[#markers].end_offset
+    -- markers may be added in any order, and a marker can span later ones
+    start_offset, end_offset = markers[1].start_offset, markers[1].end_offset
+    for m in *markers
+      start_offset = min start_offset, m.start_offset
+      end_offset = max end_offset, m.end_offset
 
     if @_change_sink
       @_change_sink\add_markers_change start_offset, end_offset
