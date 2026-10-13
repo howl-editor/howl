@@ -148,7 +148,7 @@ are the selectors for Howl's parts of the window:
 
 | Selector | What it is |
 |---|---|
-| `window` | The main window. `.main-window` is set on it as well |
+| `window` | The main window. `.main-window` is set on it as well, and Gtk sets `.maximized` or `.fullscreen` in those states, e.g. to square the corners of a window with a `border-radius` |
 | `window .container` | The area holding the views |
 | `.content-box` | The box around an editor, the command line and the activity box. `.content-box-editor`, `.content-box-command_line` and `.content-box-activity` target one of them |
 | `.content-box .header`, `.content-box .footer` | The indicator bars above and below an editor, and above the command line and activity box |

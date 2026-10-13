@@ -19,6 +19,8 @@
 
   --border-flair: #808080;
   --border-radius: 15px;
+  /* the editors' radius plus their 3px inset, so the window corners are concentric */
+  --window-radius: 18px;
 }
 
 
@@ -26,6 +28,12 @@
 
 window {
   background-image: theme-url('footer_lodyas.png');
+  border-radius: var(--window-radius);
+}
+
+window.maximized,
+window.fullscreen {
+  border-radius: 0;
 }
 
 window .container {
@@ -36,6 +44,8 @@ window .status {
   font-weight: bold;
   font-style: italic;
   color: grey;
+  /* clear of the rounded corner */
+  padding: 0 8px;
 }
 
 window .status.info { color: var(--lightblue); }
