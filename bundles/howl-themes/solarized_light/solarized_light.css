@@ -188,6 +188,18 @@ flair.brace-highlight-secondary {
   height: text;
 }
 
+flair.occurrence-highlight {
+  shape: rounded-rectangle;
+  background-color: alpha(var(--cyan), 0.3);
+  height: text;
+}
+
+flair.occurrence-highlight-write {
+  shape: rounded-rectangle;
+  background-color: alpha(var(--yellow), 0.35);
+  height: text;
+}
+
 flair.list-selection {
   shape: rectangle;
   border-color: alpha(var(--blue), 0.5);

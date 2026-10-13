@@ -355,6 +355,8 @@ These are the flairs Howl uses:
 | `replace-strikeout` | Text about to be replaced, when previewing a replacement |
 | `brace-highlight` | The brace at the cursor, and its matching brace |
 | `brace-highlight-secondary` | The brace just before the cursor, and its matching brace |
+| `occurrence-highlight` | Where the symbol at the cursor occurs in the file, as found by a language server |
+| `occurrence-highlight-write` | The same, where the symbol is assigned to |
 | `list-selection` | The selected item in lists |
 | `list-highlight` | The characters matching what you typed, in lists |
 | `list-visited` | Items already visited in list buffers, such as search results |

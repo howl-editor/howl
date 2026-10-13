@@ -8,8 +8,8 @@ title: Language servers
 
 Howl can use language servers, programs implementing the [Language Server
 Protocol](https://microsoft.github.io/language-server-protocol/) (LSP), to
-provide completions, inspections, documentation, definitions, references and
-renaming for a language. There's nothing to set up
+provide completions, inspections, documentation, definitions, references,
+highlights and renaming for a language. There's nothing to set up
 in Howl itself: if a language server for the language you're editing is
 installed, Howl starts it as needed. The language server itself needs to be
 installed separately, typically via your system's package manager or the
@@ -68,6 +68,13 @@ again the next time you show or edit a file for it. How long is controlled by th
   default, lists the references to the symbol at the cursor and goes to the one
   you pick. When the server finds none, the project is searched for the word
   instead. See [Finding references](editing.html#finding-references).
+
+- **Highlights**: When the cursor rests on a symbol that occurs elsewhere in
+  the file, the server's list of its occurrences is highlighted, with the places
+  assigning to it highlighted differently. The highlights go away when you move the
+  cursor off them or edit the file. How long the cursor must rest first is set
+  by `lsp_occurrences_highlight_delay`, in milliseconds (1000 by default). To
+  turn this off, set `lsp_occurrences_highlighted` to false.
 
 - **Renaming**: The `rename-symbol` command renames the symbol at the cursor
   wherever it's used, previewing the new name in each place as you type it. See
