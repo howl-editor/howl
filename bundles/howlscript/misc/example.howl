@@ -9,9 +9,11 @@ ffi.cdef([[
 -- literals
 n, hex, big, f = 42, 0xff, 10ULL, 3.14e-2
 s1, s2 = 'single \'quoted\'', "double #{n + 1} interpolated"
+
 long = [==[
   a long ]] string
 ]==]
+
 special = {true, false, nil}
 
 -- tables, keys and keywords as keys
@@ -22,10 +24,12 @@ t.end = t.then
 x = 1 + 2 * 3 - 4 / 5 % 6 ^ 7
 y = not (x != 1) and x ~= 2 or #t >= 3
 z = 'a' .. 'b'
+
 x += 1
 x -= 2
 x ..= ''
 x or= 3
+
 x++
 t[1]--
 x -- a comment, not a decrement
@@ -33,19 +37,23 @@ x -- a comment, not a decrement
 -- functions and calls
 add = (a, b = 2, ...) -> a + b
 greet = -> print('hi')
+
 method = (@name, {:width, :height}) =>
   @@count += 1
   @width = width
+
 print('a', 'b')
 obj:method(1, 2)
 r'\\s+':match(s1)
 P'x' + S'abc'
 foo(1, opt: 2, :name)
+
 foo(
   key: 'value'
   handler: (x) ->
     x + 1
 )
+
 describe 'calls without parentheses', ->
   VC.register 'git', find: find_git
   assert.equal 'x', obj:name()
@@ -59,19 +67,26 @@ else
 
 unless done then retry()
 print(x) if x
+
 for i = 1, 10, 2 do print(i)
+
 for k, v in pairs(t)
   continue if k == 'skip'
   break unless v
+
 for item in *items[2,]
   print(item)
+
 while busy() do wait()
+
 label = switch x
   when 1, 2 then 'small'
   else 'large'
+
 with Window()
   .title = 'example'
   :show()
+
 squares = [i * i for i in *list when i > 0]
 lookup = {k, true for k in *keys}
 
@@ -79,10 +94,13 @@ lookup = {k, true for k in *keys}
 class Inventory extends PropertyObject
   @count: 0
   helper = -> 'private'
+
   new: (@size) =>
     super()
+
   add: (name) =>
     super:add(name)
+
   @property(weight: {get: => #@items})
 
 export class Exported
