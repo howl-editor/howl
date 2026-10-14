@@ -967,18 +967,6 @@ function Compiler:stmt_Export(s)
   end
 end
 
-function Compiler:stmt_Import(s)
-  local entries = {}
-  for i, n in ipairs(s.names) do
-    entries[i] = { k = 'named', key = n.v, target = { k = 'Name', v = n.v, line = n.line, col = n.col } }
-  end
-  self:destructure({
-    targets = { { k = 'Pattern', entries = entries } },
-    values = { s.from },
-    line = s.line,
-  })
-end
-
 function Compiler:stmt_If(s) self:lower_if(s, DISCARD) end
 function Compiler:stmt_Switch(s) self:lower_switch(s, DISCARD) end
 function Compiler:stmt_With(s) self:lower_with(s, DISCARD) end

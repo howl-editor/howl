@@ -67,6 +67,10 @@ describe 'Howlscript lexer', ->
   it 'lexes ordinary names as identifier', ->
     assert.same { 'hi', '_var', 'take2' }, result "hi _var take2", 'identifier'
 
+  it 'lexes import and from as identifiers, as Howlscript has no import', ->
+    assert.same { 'import', 'from' }, result "import from", 'identifier'
+    assert.same {}, result "import from", 'keyword'
+
   it 'handles operators', ->
     assert.same { '+', ',', '!=', '~=', '{', '(', ')', '/', '}', ',', 'or=', '->', '=>' },
       result '1+2, != ~= {(a)/x}, or= -> =>', 'operator'

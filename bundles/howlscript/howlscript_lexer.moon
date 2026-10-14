@@ -12,8 +12,8 @@ howl.util.lpeg_lexer ->
   -- a word that's the start of another comes after it, as with elseif and else
   keyword = c 'keyword', -after_access * word {
     'and', 'break', 'class', 'continue', 'do', 'elseif', 'else', 'export', 'extends',
-    'for', 'from', 'if', 'import', 'in', 'local', 'not', 'or', 'return', 'super',
-    'switch', 'then', 'unless', 'when', 'while', 'with'
+    'for', 'if', 'in', 'local', 'not', 'or', 'return', 'super', 'switch', 'then',
+    'unless', 'when', 'while', 'with'
   }
 
   -- Lua keywords that Howlscript doesn't use can't be variable names, but they can

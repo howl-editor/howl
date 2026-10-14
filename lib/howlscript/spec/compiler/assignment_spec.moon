@@ -163,25 +163,13 @@ describe 'assignment', ->
       assert.is_function env.f
       assert.is_nil rawget env, 'inner'
 
-  describe 'import', ->
-    it 'declares locals from the fields of a table', ->
-      assert.equals 'a,b', run [[
-        import concat, insert from table
-        t = {}
-        insert(t, 'a')
-        insert(t, 'b')
-        concat(t, ',')
-      ]]
-
-    it 'evaluates the source once', ->
-      assert.same {1, 'x', 'y'}, {run [[
-        calls = 0
-        src = ->
-          calls += 1
-          {a: 'x', b: 'y'}
-        import a, b from src()
-        calls, a, b
-      ]]}
+  it 'treats import as an ordinary name', ->
+    assert.equals 1, run [[
+      import = 1
+      import
+    ]]
+    -- MoonScript's import is a call without parentheses here, with b from t nested
+    assert.match compile_error('import a, b from t'), 'a call in the arguments of a call without parentheses'
 
   it 'rejects Lua keywords as names', ->
     assert.match compile_error('end = 1'), "'end' is a Lua keyword"

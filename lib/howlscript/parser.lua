@@ -24,7 +24,7 @@
 -- Statements (If, Switch, With, Do, For, ForIn and While can also be values):
 --   Assign{targets, values}, Update{target, op, value}, ExprStmt{exprs}
 --   Return{values}, Break, Continue
---   Local{names, values}, Export{names, values} / {all} / {class}, Import{names, from}
+--   Local{names, values}, Export{names, values} / {all} / {class}
 --   If{conds, bodies, else_body, unless, decorator}
 --   Switch{subject, clauses = {{values, body, line}}, else_body}
 --   With{target, body}, Do{body}, While{cond, body}
@@ -346,8 +346,6 @@ function Parser:statement()
       stmt = self:do_()
     elseif v == 'class' then
       stmt = self:class()
-    elseif v == 'import' then
-      stmt = self:import()
     elseif v == 'export' then
       stmt = self:export()
     elseif v == 'local' then
@@ -684,17 +682,6 @@ function Parser:names(what)
     names[#names + 1] = n
   until not self:accept_op(',')
   return names
-end
-
-function Parser:import()
-  local t = self:advance()
-  local names = self:names('import')
-  local f = self.t
-  if f.t ~= 'name' or f.v ~= 'from' then
-    self:error("expected 'from' near " .. describe(f), f)
-  end
-  self:advance()
-  return node('Import', t, { names = names, from = self:expr() })
 end
 
 function Parser:export()

@@ -34,7 +34,7 @@ local byte, sub, find, match, gsub, gmatch = string.byte, string.sub, string.fin
 
 local keywords = {}
 for kw in ([[
-  and break class continue do else elseif export false for if import in local
+  and break class continue do else elseif export false for if in local
   nil not or return switch then true unless when while with
 ]]):gmatch('%a+') do
   keywords[kw] = true

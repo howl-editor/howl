@@ -3,8 +3,8 @@
 Howlscript is the successor to MoonScript for Howl. It keeps what works in
 MoonScript, like indentation, implicit returns, classes, comprehensions and
 `with`. It drops what doesn't: `\` method calls, calls without parentheses inside
-expressions, tables without braces, `!`, assignment as a value, function stubs and
-`using`.
+expressions, tables without braces, `!`, assignment as a value, function stubs,
+`import` and `using`.
 
 Howlscript compiles to Lua for LuaJIT. Its classes have MoonScript's layout, so the
 two languages can extend each other's classes during a migration. The compiler in
@@ -44,6 +44,7 @@ count++
 | `x += 1` | `x++` and `x--` also work, as statements. |
 | `if x = f()` | Assignment is not an expression, so this is an error. |
 | `obj\method` (a function stub) | An error: write `(...) -> obj:method(...)`. Stubs hide references and keep objects alive. |
+| `import a, b from t` | `{:a, :b} = t`. Destructuring shows how the names get into scope, so there's no `import`, and `import` is an ordinary name. |
 | `(x using y) ->`, shadowing | `using` is gone. A parameter or loop variable may not shadow a visible local (see [Scope](#scope)). |
 | multi-line arguments by indentation | Arguments are inside parentheses, where line breaks are free. Without parentheses they end with the line. |
 | `MyClass.__base` filled first | A class body runs top to bottom (see [Classes](#classes)). |
@@ -131,7 +132,6 @@ More forms:
 - `export x, y` makes later assignments to those names global, in nested scopes too.
   `export x = 1` assigns right away. `export *` makes every new name in its own scope
   global, and `export class Foo` exports a class.
-- `import concat, insert from table` declares locals from a table's fields.
 - Destructuring takes values apart by position or key, into new or existing
   targets, nested, mixed with other targets, and in `for` loops and parameters:
 

@@ -1,7 +1,6 @@
 -- Howlscript syntax examples, for the lexer
 ffi = require('ffi')
 {:concat, insert: append} = table
-import File, Process from howl.io
 
 ffi.cdef([[
   int strlen(const char *s);
