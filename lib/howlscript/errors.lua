@@ -11,8 +11,10 @@ CompileError.__tostring = function(e)
   return string.format('%d:%d: %s', e.line, e.col, e.message)
 end
 
-local function raise(message, line, col)
-  error(setmetatable({ message = message, line = line, col = col }, CompileError), 0)
+-- `col` is a byte column, and `len`, if known, the length in bytes of what the
+-- error is about.
+local function raise(message, line, col, len)
+  error(setmetatable({ message = message, line = line, col = col, len = len }, CompileError), 0)
 end
 
 local function is_compile_error(v)

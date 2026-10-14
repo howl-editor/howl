@@ -10,6 +10,19 @@ describe 'howlscript', ->
       assert.is_nil lua
       assert.equals "dir/file.howl:1:6: unexpected end of input\n  x = (\n       ^", err
 
+    it 'returns the error as a table too, with its byte column and length', ->
+      _, _, err = howlscript.to_lua "x = 'å' foo"
+      -- the å takes two bytes
+      assert.same {line: 1, col: 10, len: 3, message: 'function calls need parentheses, as in f(x, y)'}, err
+
+      _, _, err = howlscript.to_lua 'buffer = 1\nf = (buffer) -> 1'
+      assert.same {2, 6, 6}, {err.line, err.col, err.len}
+      assert.match err.message, "parameter 'buffer' shadows"
+
+    it 'leaves out the length when the error is not about a token of known size', ->
+      _, _, err = howlscript.to_lua 'x = "abc'
+      assert.same {line: 1, col: 5, message: 'unterminated string'}, err
+
     it 'names the source <howlscript> without a chunk name', ->
       _, err = howlscript.to_lua 'f!'
       assert.match err, '^<howlscript>:1:2:'

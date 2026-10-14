@@ -16,9 +16,11 @@ local function read_file(path)
   return source
 end
 
--- Compiles Howlscript source to Lua. Returns the Lua code, or nil and an error
--- message. `opts.chunkname` names the source in error messages, as Lua chunk names
--- do ('@path' or '=name').
+-- Compiles Howlscript source to Lua. Returns the Lua code, or nil, an error message
+-- and the error as a table: { line, col, len, message }, where `col` is a byte
+-- column and `len`, if known, the length in bytes of what the error is about.
+-- `opts.chunkname` names the source in error messages, as Lua chunk names do
+-- ('@path' or '=name').
 local function to_lua(source, opts)
   opts = opts or {}
   local ok, result = xpcall(function()
@@ -30,7 +32,8 @@ local function to_lua(source, opts)
 
   if ok then return result end
   if errors.is_compile_error(result) then
-    return nil, errors.format(result, source, opts.chunkname)
+    local err = { line = result.line, col = result.col, len = result.len, message = result.message }
+    return nil, errors.format(result, source, opts.chunkname), err
   end
   error('howlscript: internal compiler error: ' .. tostring(result), 0)
 end

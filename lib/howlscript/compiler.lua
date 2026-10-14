@@ -143,8 +143,8 @@ local function new(source)
   }, Compiler)
 end
 
-function Compiler:error(message, n)
-  raise(message, n.line or 1, n.col or 1)
+function Compiler:error(message, n, len)
+  raise(message, n.line or 1, n.col or 1, len)
 end
 
 function Compiler:tmp(what)
@@ -162,7 +162,7 @@ end
 
 function Compiler:check_name(name, n)
   if lua_only[name] then
-    self:error(format("'%s' is a Lua keyword and can't be used as a variable name", name), n)
+    self:error(format("'%s' is a Lua keyword and can't be used as a variable name", name), n, #name)
   end
 end
 
@@ -180,7 +180,7 @@ function Compiler:bind(name, n, what)
     if decl then
       self:error(format(
         "%s '%s' shadows the local declared on line %d; rename one of them",
-        what, name, decl.line), n)
+        what, name, decl.line), n, #name)
     end
   end
   self.scope:declare(name, n.line)

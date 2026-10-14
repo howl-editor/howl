@@ -122,7 +122,7 @@ end
 
 function Parser:error(message, tok)
   tok = tok or self.t
-  raise(message, tok.line, tok.col)
+  raise(message, tok.line, tok.col, tok.v and #tok.v or nil)
 end
 
 function Parser:accept_op(v)

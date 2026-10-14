@@ -322,7 +322,8 @@ one).
 
 ```lua
 local howlscript = require('howlscript')
-local lua, err = howlscript.to_lua(source, { chunkname = '@file.howl' })
+-- on failure: nil, the formatted message, and { line, col, len, message }
+local lua, err, details = howlscript.to_lua(source, { chunkname = '@file.howl' })
 local f, err = howlscript.loadstring(source, '=name', env)
 local f, err = howlscript.loadfile('path/file.howl', env)
 howlscript.dofile('path/file.howl', ...)
@@ -337,12 +338,19 @@ runtime errors and tracebacks point at the right `.howl` line without any line
 mapping.
 
 **Compile errors** are reported as `file:line:col: message`, followed by the source
-line and a caret. The column counts characters.
+line and a caret. The column counts characters. `to_lua` also returns the error as a
+table, where `col` is a byte column and `len`, when known, the length in bytes of
+the token the error is about.
+
+**In the editor,** the `howlscript` bundle (`bundles/howlscript`) gives `.howl` files
+a mode with highlighting and indentation. Its inspector marks compile errors as you
+type. `howlscript-print` shows the Lua for the buffer or selection, and
+`howlscript-eval` runs the current line or selection.
 
 **Generated names** start with `__hs`, a prefix reserved for the compiler.
 
 ## Not yet supported
 
 Howl itself doesn't load `.howl` files yet: there's no `require` searcher,
-`bundle_load`, `--compile` or user init support. There's also no linter and no
-editor mode, and the existing MoonScript code hasn't been converted.
+`bundle_load`, `--compile` or user init support. There's also no linter beyond the
+compile errors, and the existing MoonScript code hasn't been converted.
