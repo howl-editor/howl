@@ -48,7 +48,8 @@ foo(
     x + 1
 )
 describe 'calls without parentheses', ->
-  assert.equal 'x', obj:name(), key: 1
+  VC.register 'git', find: find_git
+  assert.equal 'x', obj:name()
 
 -- control flow
 if x > 0
