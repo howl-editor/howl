@@ -53,9 +53,10 @@ describe 'Howlscript lexer', ->
   it 'handles double quoted strings', ->
     assert.same { '"', 'str"' }, result ' "str" ', 'string'
 
-  it 'handles long strings, with levels', ->
+  it 'handles long strings, which have no levels', ->
     assert.same { '[[\nfoo\n]]' }, result ' [[\nfoo\n]] ', 'string'
-    assert.same { '[==[ a ]] b ]==]' }, result '[==[ a ]] b ]==] x', 'string'
+    assert.same { '[[ a ]]' }, result '[[ a ]] b ]]', 'string'
+    assert.same { '[==[' }, result '[==[ a ]==]', 'error'
 
   it 'handles backslash escapes in strings', ->
     assert.same { "'str\\''", '"', 'str\\""' }, result [['str\'' x "str\""]], 'string'

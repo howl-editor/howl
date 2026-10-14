@@ -10,9 +10,9 @@ ffi.cdef([[
 n, hex, big, f = 42, 0xff, 10ULL, 3.14e-2
 s1, s2 = 'single \'quoted\'', "double #{n + 1} interpolated"
 
-long = [==[
-  a long ]] string
-]==]
+long = [[
+  a long string, kept as is: 'quotes', "#{n}" and \n
+]]
 
 special = {true, false, nil}
 

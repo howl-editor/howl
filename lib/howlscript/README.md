@@ -49,8 +49,8 @@ count++
 | multi-line arguments by indentation | Arguments are inside parentheses, where line breaks are free. Without parentheses they end with the line. |
 | `MyClass.__base` filled first | A class body runs top to bottom (see [Classes](#classes)). |
 
-`local *`, `local ^`, `export ^`, class expressions and anonymous classes are not
-supported; Howl doesn't use them.
+`local *`, `local ^`, `export ^`, class expressions, anonymous classes and long
+string levels (`[==[ ]==]`) are not supported; Howl doesn't use them.
 
 ## Layout
 
@@ -99,8 +99,9 @@ the `if` starts. A tab counts as four spaces. Comments start with `--`.
   - `'single'` and `"double"`, with Lua's escapes.
   - Double quoted strings interpolate: `"#{a} + #{b}"` becomes
     `tostring(a) .. " + " .. tostring(b)`.
-  - Quoted strings can span lines. `[[long]]` and `[==[long]==]` strings work as in
-    Lua.
+  - Quoted strings can span lines.
+  - `[[long]]` strings work as in Lua, but have no levels (`[==[long]==]`), so text
+    that contains `]]` goes in a quoted string.
 - **Tables:** `{1, 2, name: 'x', [key]: v, 'a b': true, :name}`. `:name` is short for
   `name: name`. Entries are separated by commas, line breaks or both.
 - **Keywords as keys:** any keyword works as a key (`{end: 1, return: 2}`) and as a

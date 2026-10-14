@@ -39,12 +39,12 @@ describe 'strings', ->
         two'
     ]]
 
-  it 'support long strings', ->
-    assert.equals 'a\n]] b', run [===[
-      [==[
-      a
-      ]] b]==]
-    ]===]
+  it 'support long strings, raw and without the line break after [[', ->
+    assert.equals 'a\\n #{b}\n"c" \'d\'', run [==[
+      [[
+      a\n #{b}
+      "c" 'd']]
+    ]==]
 
   it 'handle multibyte text', ->
     assert.equals 'åäö: ö', run [[

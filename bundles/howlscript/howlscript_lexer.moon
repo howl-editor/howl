@@ -37,8 +37,10 @@ howl.util.lpeg_lexer ->
     S'+-*/%^#=<>:,.(){}[]'
   }
 
-  -- MoonScript's \ and ! calls and Lua's semicolons aren't Howlscript
+  -- MoonScript's \ and ! calls, Lua's semicolons and long string levels aren't
+  -- Howlscript
   illegal = c 'error', S'\\!;'
+  long_string_level = c 'error', P'[' * P'='^1 * '['
 
   identifier = c 'identifier', ident
   member = c 'member', (P'@@' + '@' + 'self.') * ident^0
@@ -52,9 +54,7 @@ howl.util.lpeg_lexer ->
 
   sq_string = span("'", "'", '\\')
   dq_string = span('"', '"', P'\\')
-  long_string_start = P'[' * Cg(P('=')^0, 'lvl') * '['
-  long_string_end = ']' * match_back('lvl') * ']'
-  long_string = long_string_start * scan_to(long_string_end)^-1
+  long_string = span('[[', ']]')
 
   -- a key needs a space after its colon, as `a:b` calls a method. The short form
   -- `:name` can't follow a value, and isn't followed by a call, which makes it a
@@ -96,8 +96,9 @@ howl.util.lpeg_lexer ->
   P {
     'all'
     all: any {
-      number, key, V'string', decrement, comment, operator, illegal, special, type_def,
-      keyword, member, type_name, lua_keyword, V'fdecl', cdef, identifier
+      number, key, V'string', decrement, comment, long_string_level, operator, illegal,
+      special, type_def, keyword, member, type_name, lua_keyword, V'fdecl', cdef,
+      identifier
     }
     string: any {
       c 'string', any { sq_string, long_string }

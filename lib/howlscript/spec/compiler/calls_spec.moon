@@ -13,7 +13,7 @@ describe 'calls', ->
     ]]}
 
   it 'do not make a call of a long string touching a name', ->
-    assert.match compile_error('id[==[x]==]'), 'a long string touching a name is not a call'
+    assert.match compile_error('id[[x]]'), 'a long string touching a name is not a call'
 
   it 'do not make a call of a string after a keyword', ->
     assert.equals 'x', run "return'x'"

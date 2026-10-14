@@ -194,11 +194,10 @@ function Lexer:quoted_string(q)
   return parts, sline, sline_start, spos
 end
 
-function Lexer:long_string(level)
+function Lexer:long_string()
   local src = self.src
   local spos, sline, sline_start = self.pos, self.line, self.line_start
-  local close = ']' .. string.rep('=', level) .. ']'
-  local _, stop = find(src, close, spos, true)
+  local _, stop = find(src, ']]', spos, true)
   if not stop then
     self:error('unterminated long string', spos)
   end
@@ -302,9 +301,10 @@ function Lexer:run(in_interpolation)
       local tok = self:add('string', nil, spos, sline, sline_start)
       tok.q = q
       tok.parts = parts
-    elseif b == byte('[') and match(src, '^%[=*%[', pos) then
-      local eqs = match(src, '^%[(=*)%[', pos)
-      self:long_string(#eqs)
+    elseif b == byte('[') and byte(src, pos + 1) == byte('[') then
+      self:long_string()
+    elseif b == byte('[') and match(src, '^%[=+%[', pos) then
+      self:error("long strings have no levels in Howlscript; use [[...]], or a quoted string for text containing ']]'", pos)
     else
       local three, two, one = sub(src, pos, pos + 2), sub(src, pos, pos + 1), sub(src, pos, pos)
       local op = ops3[three] and three or ops2[two] and two or ops1[one] and one

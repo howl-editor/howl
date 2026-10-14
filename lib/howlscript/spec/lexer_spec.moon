@@ -78,9 +78,12 @@ describe 'howlscript.lexer', ->
       assert.is_false toks[4].first
 
     it 'keeps long strings, with their brackets', ->
-      t = token '[==[ a ]] b ]==]'
+      t = token '[[ a ] \\n ]]'
       assert.equals '[', t.q
-      assert.same {'[==[ a ]] b ]==]'}, t.parts
+      assert.same {'[[ a ] \\n ]]'}, t.parts
+
+    it 'ends a long string at the first ]]', ->
+      assert.same {{'string'}, {'name', 'b'}, {'op', ']'}, {'op', ']'}}, lex '[[ a ]] b ]]'
 
     it 'counts lines in long strings', ->
       toks = lexer.lex "[[a\nb\nc]] x"
@@ -88,6 +91,7 @@ describe 'howlscript.lexer', ->
 
     it 'reports unterminated strings and interpolations', ->
       assert.equals 5, lex_error('x = "abc').col
+      assert.match lex_error('x = [[abc]').message, 'unterminated long string'
       err = lex_error '"a #{x'
       assert.match err.message, 'unterminated string interpolation'
       assert.equals 4, err.col
@@ -131,6 +135,12 @@ describe 'howlscript.lexer', ->
 
     it 'rejects ! with a hint to call with ()', ->
       assert.match lex_error('f!').message, "call with '%(%)'"
+
+    it 'rejects long string levels with a hint to use [[ ]] or a quoted string', ->
+      err = lex_error 'x = [==[ a ]==]'
+      assert.equals 5, err.col
+      assert.match err.message, 'long strings have no levels'
+      assert.match err.message, 'quoted string'
 
     it 'rejects names reserved for the compiler', ->
       assert.match lex_error('__hs_x = 1').message, 'reserved'
