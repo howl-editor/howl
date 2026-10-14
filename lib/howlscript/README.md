@@ -11,7 +11,7 @@ two languages can extend each other's classes during a migration. The compiler i
 this directory is plain Lua, with a hand-written lexer and a recursive-descent
 parser. Howlscript files use the extension `.howl`.
 
-```
+```howl
 {:File} = howl.io
 
 class Note extends PropertyObject
@@ -57,7 +57,7 @@ A block is a run of lines indented deeper than the line that opens it. A stateme
 ends at the end of its line, unless the line ends with a binary operator, `,` or
 `=`. The continuation line must then be indented deeper than the statement:
 
-```
+```howl
 total = price +
   shipping
 ```
@@ -73,7 +73,7 @@ A block can open inside brackets. Its lines must be indented deeper than the lin
 where the enclosing statement or bracket entry starts. The block ends at the first
 line indented less, or at a closing bracket:
 
-```
+```howl
 signal.connect('buffer-saved', (args) ->
   log.info(args.buffer.title)
 )
@@ -114,7 +114,7 @@ The first assignment to a name declares a local. Later assignments, including
 assignments inside functions, update it. A name becomes visible after the statement
 that declares it, not in its own right-hand side.
 
-```
+```howl
 a, b = 1, 2
 a += 10              -- also -=, *=, /=, %=, ..=, or=, and=
 a++                  -- ++ and -- are statements, not expressions
@@ -135,7 +135,7 @@ More forms:
 - Destructuring takes values apart by position or key, into new or existing
   targets, nested, mixed with other targets, and in `for` loops and parameters:
 
-```
+```howl
 {:concat, insert: append} = table
 {numbers: {first, second}} = config
 num, {:message} = result()
@@ -148,7 +148,7 @@ for {left, right} in *pairs_list
 A function parameter (including destructured and `@x` ones), a `for` variable or a
 comprehension variable may not shadow a local that's visible where it's declared:
 
-```
+```howl
 buffer = app.editor.buffer
 f = (buffer) -> buffer.text    -- error: parameter 'buffer' shadows the local declared on line 1
 ```
@@ -158,7 +158,7 @@ explicit `local x` may still shadow.
 
 ## Functions
 
-```
+```howl
 add = (a, b = 1) -> a + b
 greet = -> print('hi')
 log = (fmt, ...) -> print(fmt:format(...))
@@ -177,7 +177,7 @@ render = ({:width, :height} = {width: 1, height: 1}) -> width * height
 
 ## Calls
 
-```
+```howl
 print('a', 'b')
 obj:method(1)          -- `:` touches both sides
 r'\\s+':match(text)    -- a string touching a name is a one-argument call
@@ -189,7 +189,7 @@ obj:end()              -- method names can be keywords
 Trailing `key: value`, `:name` and `[expr]: value` arguments make up one table,
 passed as the last argument. Inside parentheses they can sit on separate lines:
 
-```
+```howl
 command.register(
   name: 'open'
   description: 'Opens a file'
@@ -212,7 +212,7 @@ A call that is a statement of its own can leave out its parentheses. Its argumen
 named ones included, run to the end of the line, or on to a deeper indented line
 after a trailing `,`:
 
-```
+```howl
 describe 'Buffer', ->
   it 'inserts text', ->
     buffer:insert 'x', 1
@@ -224,7 +224,7 @@ Only one call per line can do this. Calls in its arguments need their parenthese
 and so do calls inside brackets and calls whose value is used. A block opened on the
 following lines starts afresh, as in `describe` above.
 
-```
+```howl
 assert.equal 1, f(x)                -- not f x
 it 'works', -> assert.is_true(ok)   -- not assert.is_true ok
 foo(a, -> bar(b))                   -- not bar b
@@ -237,7 +237,7 @@ return f(a)                         -- not f a
 
 ## Control flow
 
-```
+```howl
 if x > 0
   print('positive')
 elseif x == 0
@@ -274,7 +274,7 @@ while busy() do wait()
 - **Blocks as values:** `if`, `switch`, `with` (its target), `do`, loops and
   comprehensions are values:
 
-```
+```howl
 label = if count == 1 then 'item' else 'items'
 doubled = for x in *list
   continue if x < 0
@@ -300,7 +300,7 @@ used in such a block, since they would act on that function.
 
 ## Classes
 
-```
+```howl
 class Inventory
   new: (@size) =>
     @items = {}

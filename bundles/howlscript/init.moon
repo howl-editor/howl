@@ -7,6 +7,7 @@ commands = bundle_load 'howlscript_commands'
 
 mode_reg =
   name: 'howlscript'
+  aliases: 'howl'
   extensions: 'howl'
   create: -> bundle_load('howlscript_mode')!
 

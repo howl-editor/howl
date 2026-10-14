@@ -26,6 +26,9 @@ describe 'howlscript-mode', ->
   it 'handles .howl files', ->
     assert.equal mode.for_file(File 'test.howl'), m
 
+  it 'can be found as howl, as in markdown code blocks', ->
+    assert.equal m, mode.by_name 'howl'
+
   it 'inspects the buffer with the howlscript inspector when idle', ->
     assert.same { 'howlscript' }, buffer.config.inspectors_on_idle
 
