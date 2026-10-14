@@ -40,9 +40,9 @@ describe 'howlscript commands', ->
       assert.equals 2, result[1]
 
     it 'reports compile errors', ->
-      ok, err = commands.eval 'print 1'
+      ok, err = commands.eval 'x = f 1'
       assert.is_false ok
-      assert.match err, '^howlscript%-eval:1:7: function calls need parentheses'
+      assert.match err, '^howlscript%-eval:1:7: only a call that is a statement of its own'
 
     it 'reports runtime errors', ->
       ok, err = commands.eval 'x = nil\nx.y'
@@ -58,6 +58,6 @@ describe 'howlscript commands', ->
       assert.is_false buf.modified
 
     it 'returns a buffer with the error when the code does not compile', ->
-      buf = commands.to_lua_buffer 'print 1', 'Title'
-      assert.match buf.text, '^Title:1:7: function calls need parentheses'
+      buf = commands.to_lua_buffer 'x = f 1', 'Title'
+      assert.match buf.text, '^Title:1:7: only a call that is a statement of its own'
       assert.equals 'Title', buf.title

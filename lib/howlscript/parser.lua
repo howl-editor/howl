@@ -37,9 +37,15 @@
 -- with entries like a Table's, holding a `target` instead of `v`.
 --
 -- Whether a line break ends an expression depends on the innermost context on
--- `self.ctx`: in a 'block' or a 'header' (the head of an if, for, ...) it ends the
--- statement, in 'call' arguments and 'table's it separates entries, and in a 'group'
--- (parentheses), an 'index' or a 'compr'ehension it's just whitespace.
+-- `self.ctx`: in a 'block', a 'header' (the head of an if, for, ...) or the 'bare'
+-- arguments of a call without parentheses it ends the statement, in 'call'
+-- arguments and 'table's it separates entries, and in a 'group' (parentheses), an
+-- 'index' or a 'compr'ehension it's just whitespace.
+--
+-- A call can leave out its parentheses only when it's a statement directly in a
+-- block, and only one level deep: calls in its arguments, and calls inside
+-- brackets, need them. `bare_at` is the index of the token where such a call can
+-- start.
 
 -- The JIT only slows code this recursive and branchy down: it keeps recording
 -- traces that abort, which made compiling several times slower.
@@ -172,15 +178,8 @@ function Parser:unexpected(t)
     self:error("no space is allowed before the '[' of an index, as in t[k]", t)
   elseif is_op(t, ':') and t.sa and prev and is_name_like(prev) then
     self:error("tables need braces, as in {key: value}; only a call's arguments can leave them out", t)
-  elseif prev and not t.first then
-    local ends_value = prev.t == 'name' or prev.t == 'number' or prev.t == 'string'
-      or (prev.t == 'op' and (prev.v == ')' or prev.v == ']' or prev.v == '}'))
-    local starts_value = t.t == 'name' or t.t == 'number' or t.t == 'string'
-      or (t.t == 'op' and (t.v == '{' or t.v == '@' or t.v == '@@' or t.v == '->' or t.v == '=>'))
-      or (t.t == 'keyword' and (t.v == 'nil' or t.v == 'true' or t.v == 'false' or t.v == 'not'))
-    if ends_value and starts_value then
-      self:error('function calls need parentheses, as in f(x, y)', t)
-    end
+  elseif t.t == 'string' and t.q == '[' and not t.sb and prev and is_name_like(prev) then
+    self:error('a long string touching a name is not a call; write f([[x]]), or f [[x]] as a statement', t)
   end
   self:error('unexpected ' .. describe(t), t)
 end
@@ -206,7 +205,7 @@ end
 function Parser:in_bracket()
   for i = #self.ctx, 1, -1 do
     local k = self.ctx[i].kind
-    if k ~= 'block' and k ~= 'header' then return true end
+    if k ~= 'block' and k ~= 'header' and k ~= 'bare' then return true end
   end
   return false
 end
@@ -237,7 +236,7 @@ function Parser:continuation()
       self:error('unexpected end of input')
     end
     local k = self:kind()
-    if (k == 'block' or k == 'header') and t.indent <= self.ref then
+    if (k == 'block' or k == 'header' or k == 'bare') and t.indent <= self.ref then
       self:error('a continuation line must be indented deeper than the line it continues', t)
     end
   end
@@ -381,7 +380,7 @@ function Parser:decorators(stmt)
       unless = t.v == 'unless',
       decorator = true,
     })
-  elseif is_kw(t, 'for') and self:kind() == 'block' then
+  elseif is_kw(t, 'for') and (self:kind() == 'block' or self:kind() == 'bare') then
     local head = self:for_head()
     local body = stmt
     local w = self.t
@@ -408,6 +407,7 @@ end
 
 function Parser:simple_statement()
   local t = self.t
+  self.bare_at = self:kind() == 'block' and self.i or nil
   local exprs = self:expr_list()
   local nt = self.t
 
@@ -803,6 +803,7 @@ function Parser:primary()
   local t = self.t
   local tt, v = t.t, t.v
   local e, name_end
+  local at_start = self.i == self.bare_at
 
   if tt == 'name' then
     self:advance()
@@ -858,7 +859,7 @@ function Parser:primary()
     elseif v == '.' then
       e, name_end = self:with_field()
     elseif v == ':' then
-      e = self:with_call()
+      e = self:with_call(at_start)
     else
       self:unexpected(t)
     end
@@ -866,7 +867,7 @@ function Parser:primary()
     self:error('unexpected ' .. describe(t), t)
   end
 
-  return self:postfix(e, name_end)
+  return self:postfix(e, name_end, at_start)
 end
 
 function Parser:self_ref()
@@ -879,14 +880,17 @@ function Parser:self_ref()
   return node(t.v == '@' and 'Self' or 'ClassRef', t), false
 end
 
--- the arguments of a method call: `(...)` or a single touching string
-function Parser:method_args(name, colon)
+-- the arguments of a method call: `(...)`, a single touching string or, when
+-- `at_start` of a statement, arguments without parentheses
+function Parser:method_args(name, colon, at_start)
   local t = self.t
   if is_op(t, '(') and not t.sb then
     return self:call_args()
   elseif t.t == 'string' and not t.sb and t.q ~= '[' then
     self:advance()
     return { self:string(t) }
+  elseif self:bare_call(at_start) then
+    return self:bare_args()
   end
   self:error(string.format(
     "method reference without a call; wrap it in a function, as in (...) -> obj:%s(...), or add a space after ':' for a key",
@@ -895,11 +899,17 @@ end
 
 -- `.field`, `[index]`, `(call)`, `:method(call)` and `'string call'`, which all have
 -- to touch what they apply to. `name_end` is set when the expression so far ends
--- with a name, which a touching string literal makes a call.
-function Parser:postfix(e, name_end)
+-- with a name, which a touching string literal makes a call. When the expression
+-- starts a statement (`at_start`), arguments without parentheses can end it.
+function Parser:postfix(e, name_end, at_start)
   while true do
     local t = self.t
-    if t.sb then break end
+    if t.sb then
+      if (name_end or e.k == 'Super') and self:bare_call(at_start) then
+        return node('Call', e, { fn = e, args = self:bare_args() })
+      end
+      break
+    end
 
     if is_op(t, '.') then
       self:advance()
@@ -921,7 +931,9 @@ function Parser:postfix(e, name_end)
       if t.sa or not is_name_like(n) or n.sb then break end
       self:advance()
       self:advance()
-      e = node('MethodCall', e, { obj = e, name = n.v, args = self:method_args(n.v, t) })
+      local bare = self.t.sb
+      e = node('MethodCall', e, { obj = e, name = n.v, args = self:method_args(n.v, t, at_start) })
+      if bare then return e end
       name_end = false
     elseif t.t == 'string' and name_end and t.q ~= '[' then
       self:advance()
@@ -1061,6 +1073,26 @@ function Parser:separator(closer)
   self:unexpected(t)
 end
 
+-- Parses an argument of a call into `args`, or into the table `named` collecting the
+-- trailing named ones, which it returns.
+function Parser:argument(args, named)
+  local t = self.t
+  local saved_ref = self.ref
+  self.ref = t.indent
+  local kind = self:entry_kind()
+  if kind == 'pos' then
+    if named then
+      self:error('positional arguments must come before the named ones', t)
+    end
+    args[#args + 1] = self:expr()
+  else
+    named = named or node('Table', t, { entries = {}, implicit = true })
+    named.entries[#named.entries + 1] = self:entry(kind)
+  end
+  self.ref = saved_ref
+  return named
+end
+
 function Parser:call_args()
   local open = self:advance()
   self:push('call')
@@ -1071,23 +1103,73 @@ function Parser:call_args()
     if t.t == 'eof' then
       self:error(string.format("unclosed '(' from line %d", open.line), t)
     end
-    local saved_ref = self.ref
-    self.ref = t.indent
-    local kind = self:entry_kind()
-    if kind == 'pos' then
-      if named then
-        self:error('positional arguments must come before the named ones', t)
-      end
-      args[#args + 1] = self:expr()
-    else
-      named = named or node('Table', t, { entries = {}, implicit = true })
-      named.entries[#named.entries + 1] = self:entry(kind)
-    end
-    self.ref = saved_ref
+    named = self:argument(args, named)
     if not self:separator(')') then break end
   end
 
   self:expect_closer(')', open)
+  self:pop()
+  if named then args[#args + 1] = named end
+  return args
+end
+
+-- Whether the current token can start the arguments of a call without parentheses:
+-- it's on the same line after a space, and starts a value that can't continue the
+-- expression before it. So `f -1` stays a subtraction and `f (x)` and `f [x]` stay
+-- errors, while `f (x) -> x` passes a function.
+function Parser:starts_bare_args()
+  local t = self.t
+  if t.first or not t.sb then return false end
+  local tt, v = t.t, t.v
+  if tt == 'name' or tt == 'number' or tt == 'string' then return true end
+  if tt == 'keyword' then
+    return v == 'not' or v == 'nil' or v == 'true' or v == 'false'
+  end
+  if tt ~= 'op' then return false end
+  if v == '{' or v == '@' or v == '@@' or v == '->' or v == '=>' or v == '...' or v == '#' then
+    return true
+  end
+  if v == ':' or v == '.' then -- :name (short for name: name), or .field of a with
+    local n = self:peek(1)
+    return not t.sa and is_name_like(n) and not n.sb
+  end
+  if v == '(' then
+    local close = self:matching(self.i)
+    local after = close and self.toks[close + 1]
+    return after ~= nil and (is_op(after, '->') or is_op(after, '=>'))
+  end
+  return false
+end
+
+-- Whether arguments without parentheses start at the current token. They're
+-- allowed when the call starts a statement directly in a block (`at_start`), and an
+-- error anywhere else but in a block header, where the token more likely starts the
+-- body after a missing 'then' or 'do'; that's left to the header to report.
+function Parser:bare_call(at_start)
+  if not self:starts_bare_args() then return false end
+  if at_start then return true end
+  for i = #self.ctx, 1, -1 do
+    local k = self.ctx[i].kind
+    if k == 'block' then break end
+    if k == 'header' then return false end
+    if k == 'bare' then
+      self:error('a call in the arguments of a call without parentheses needs parentheses, as in f x, g(y)')
+    end
+    self:error('a call inside brackets needs parentheses, as in f(x)')
+  end
+  self:error('only a call that is a statement of its own can leave out its parentheses; write f(x) here')
+end
+
+-- The arguments of a call without parentheses, which run to the end of the line.
+function Parser:bare_args()
+  self:push('bare')
+  local args = {}
+  local named = self:argument(args)
+  while is_op(self.t, ',') and not self:ends_here() do
+    self:advance()
+    self:continuation()
+    named = self:argument(args, named)
+  end
   self:pop()
   if named then args[#args + 1] = named end
   return args
@@ -1266,7 +1348,7 @@ function Parser:with_field()
   return node('WithField', dot, { name = n.v }), true
 end
 
-function Parser:with_call()
+function Parser:with_call(at_start)
   local colon = self:advance()
   local n = self.t
   if colon.sa or not is_name_like(n) or n.sb then
@@ -1276,7 +1358,7 @@ function Parser:with_call()
     self:error(string.format("':%s()' calls a method on the target of a with block, but there's none here", n.v), colon)
   end
   self:advance()
-  return node('WithCall', colon, { name = n.v, args = self:method_args(n.v, colon) })
+  return node('WithCall', colon, { name = n.v, args = self:method_args(n.v, colon, at_start) })
 end
 
 function Parser:string(t)

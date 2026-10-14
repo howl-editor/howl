@@ -38,6 +38,19 @@ describe 'line alignment', ->
     assert.equals 9, line_of lua, 'one = 1'
     assert.equals 11, line_of lua, 'two = 2'
 
+  it 'keeps the lines of calls without parentheses', ->
+    lua = compile [[
+      f 1,
+        2
+      describe 'x', ->
+
+        g()
+      y = 1
+    ]]
+    assert.equals 2, line_of lua, '2)'
+    assert.equals 5, line_of lua, 'return g()'
+    assert.equals 6, line_of lua, 'local y = 1'
+
   it 'keeps the lines of strings spanning lines', ->
     lua = compile "x = 'a\nb'\ny = 1"
     assert.equals 3, line_of lua, 'local y = 1'

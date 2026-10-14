@@ -2,8 +2,9 @@
 
 Howlscript is the successor to MoonScript for Howl. It keeps what works in
 MoonScript, like indentation, implicit returns, classes, comprehensions and
-`with`. It drops what doesn't: `\` method calls, calls without parentheses, tables
-without braces, `!`, assignment as a value, function stubs and `using`.
+`with`. It drops what doesn't: `\` method calls, calls without parentheses inside
+expressions, tables without braces, `!`, assignment as a value, function stubs and
+`using`.
 
 Howlscript compiles to Lua for LuaJIT. Its classes have MoonScript's layout, so the
 two languages can extend each other's classes during a migration. The compiler in
@@ -37,13 +38,14 @@ count++
 | MoonScript | Howlscript |
 |---|---|
 | `obj\method args` | `obj:method(args)`. Using `\` is an error. |
-| `f a, b`, `f!`, `f{}`, `f (a)` | `f(a, b)`, `f()`. The `(` must touch the function. `!` is an error; negate with `not`. |
+| `f a, g b`, `x = f a` | `f a, g(b)`, `x = f(a)`. Only a call that is a statement of its own can leave out its parentheses, and only one per line (see [Calls](#calls)). |
+| `f!`, `f{}`, `f (a)` | `f()`, `f({})`, `f(a)`. The `(` must touch the function. `!` is an error; negate with `not`. |
 | `x = a: 1`, `return a: 1` | `x = {a: 1}`. A table needs braces, except for trailing `key: value` arguments of a call (see [Calls](#calls)). |
 | `x += 1` | `x++` and `x--` also work, as statements. |
 | `if x = f()` | Assignment is not an expression, so this is an error. |
 | `obj\method` (a function stub) | An error: write `(...) -> obj:method(...)`. Stubs hide references and keep objects alive. |
 | `(x using y) ->`, shadowing | `using` is gone. A parameter or loop variable may not shadow a visible local (see [Scope](#scope)). |
-| multi-line arguments by indentation | Arguments are inside parentheses, where line breaks are free. |
+| multi-line arguments by indentation | Arguments are inside parentheses, where line breaks are free. Without parentheses they end with the line. |
 | `MyClass.__base` filled first | A class body runs top to bottom (see [Classes](#classes)). |
 
 `local *`, `local ^`, `export ^`, class expressions and anonymous classes are not
@@ -82,8 +84,8 @@ foo(a, (x) ->
 ```
 
 A body on the same line, like `-> x + 1` or `if c then a else b`, ends at the first
-comma when it's inside call arguments or a table. Elsewhere it can be a list:
-`f = -> 1, 2` returns two values.
+comma when it's inside call arguments, with or without parentheses, or a table.
+Elsewhere it can be a list: `f = -> 1, 2` returns two values.
 
 `else` and `elseif` either follow on the same line or line up with the line where
 the `if` starts. A tab counts as four spaces. Comments start with `--`.
@@ -203,6 +205,35 @@ A positional argument can't follow the named ones. A nested table needs its brac
 A `:` is a method call when it touches both its receiver and the name. It's a key
 separator when followed by a space. In `{a:b}` it's a method call without arguments,
 which is an error, so a key needs a space after the colon: `{a: b}`.
+
+### Calls without parentheses
+
+A call that is a statement of its own can leave out its parentheses. Its arguments,
+named ones included, run to the end of the line, or on to a deeper indented line
+after a trailing `,`:
+
+```
+describe 'Buffer', ->
+  it 'inserts text', ->
+    buffer:insert 'x', 1
+    assert.equal 'x', buffer.text
+  VC.register 'git', find: find_git
+```
+
+Only one call per line can do this. Calls in its arguments need their parentheses,
+and so do calls inside brackets and calls whose value is used. A block opened on the
+following lines starts afresh, as in `describe` above.
+
+```
+assert.equal 1, f(x)                -- not f x
+it 'works', -> assert.is_true(ok)   -- not assert.is_true ok
+foo(a, -> bar(b))                   -- not bar b
+buf = Buffer({})                    -- not Buffer {}
+return f(a)                         -- not f a
+```
+
+`f -1` is still a subtraction, and `f (x)` and `f [x]` are still errors, while
+`f (x) -> x` passes a function.
 
 ## Control flow
 

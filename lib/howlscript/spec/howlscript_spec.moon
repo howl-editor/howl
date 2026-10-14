@@ -13,7 +13,7 @@ describe 'howlscript', ->
     it 'returns the error as a table too, with its byte column and length', ->
       _, _, err = howlscript.to_lua "x = 'å' foo"
       -- the å takes two bytes
-      assert.same {line: 1, col: 10, len: 3, message: 'function calls need parentheses, as in f(x, y)'}, err
+      assert.same {line: 1, col: 10, len: 3, message: "unexpected 'foo'"}, err
 
       _, _, err = howlscript.to_lua 'buffer = 1\nf = (buffer) -> 1'
       assert.same {2, 6, 6}, {err.line, err.col, err.len}
@@ -66,6 +66,6 @@ describe 'howlscript', ->
     it 'report compile errors with the path', ->
       with_tmpdir (dir) ->
         file = dir / 'bad.howl'
-        file.contents = 'print 1'
+        file.contents = 'x = f 1'
         _, err = howlscript.loadfile file
         assert.match err, '^' .. file.path\gsub('%p', '%%%0') .. ':1:7:'

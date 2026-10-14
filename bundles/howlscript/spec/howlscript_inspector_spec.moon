@@ -26,8 +26,8 @@ describe 'howlscript inspector', ->
       byte_start_col: 7
       byte_end_col: 10
       type: 'error'
-      message: 'function calls need parentheses, as in f(x, y)'
-    }}, inspector buffer_with "x = 1\nprint foo"
+      message: 'only a call that is a statement of its own can leave out its parentheses; write f(x) here'
+    }}, inspector buffer_with "x = 1\ny = f foo"
 
   it 'reports a parameter shadowing a local', ->
     res = inspector buffer_with 'buffer = 1\nf = (buffer) -> buffer'

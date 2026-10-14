@@ -47,6 +47,8 @@ foo(
   handler: (x) ->
     x + 1
 )
+describe 'calls without parentheses', ->
+  assert.equal 'x', obj:name(), key: 1
 
 -- control flow
 if x > 0

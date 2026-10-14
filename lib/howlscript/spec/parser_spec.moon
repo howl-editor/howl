@@ -64,6 +64,27 @@ describe 'howlscript.parser', ->
       ]]}
       assert.equals 2, #run '{-> 1, 2}'
 
+    it 'ends the arguments of a call without parentheses at the end of the line', ->
+      assert.same {{1}, 2}, {run [[
+        args = nil
+        f = (...) -> args = {...}
+        f 1
+        x = 2
+        args, x
+      ]]}
+
+    it 'ends the arguments of a call without parentheses with a block they open', ->
+      assert.same {'block', 'after'}, run [[
+        log = {}
+        f = (fn) -> fn()
+        f ->
+          log[#log + 1] = 'block'
+        log[#log + 1] = 'after'
+        log
+      ]]
+      -- unlike in parentheses, where `, x` can continue them
+      assert.match compile_error('f ->\n  x()\n, 1'), "unexpected ','"
+
     it 'lets inline bodies return lists in statements', ->
       assert.same {1, 2}, {run [[
         f = -> 1, 2
@@ -88,16 +109,16 @@ describe 'howlscript.parser', ->
     it 'rejects \\ for method calls', ->
       assert.match compile_error('obj\\m()'), "use ':', as in obj:method%(%)"
 
-    it 'rejects calls without parentheses', ->
-      assert.match compile_error('print 1'), 'function calls need parentheses'
-      assert.match compile_error("print 'x'"), 'function calls need parentheses'
-      assert.match compile_error('f {1}'), 'function calls need parentheses'
+    it 'rejects calls without parentheses in an expression or nested in another', ->
+      assert.match compile_error('x = f {1}'), 'only a call that is a statement of its own'
+      assert.match compile_error("print 'x', f 1"), 'a call in the arguments of a call without parentheses'
 
     it 'rejects a space before the parentheses of a call', ->
       assert.match compile_error('f (1)'), "no space is allowed between a function and the '%('"
 
     it 'rejects a space before the [ of an index', ->
       assert.match compile_error('x = t [1]'), "no space is allowed before the '%['"
+      assert.match compile_error('f [x for x in *t]'), "no space is allowed before the '%['"
 
     it 'rejects tables without braces outside call arguments', ->
       assert.match compile_error('x = a: 1, b: 2'), 'tables need braces'
