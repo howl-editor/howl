@@ -308,8 +308,9 @@ command.register
     editor = app.editor
     buffer = editor.buffer
     state = require('howl.lsp').attach buffer
+    -- without a language server, search the project for the word
     unless state
-      log.warn "No LSP server available for '#{buffer.title}'"
+      command.run 'project-file-search'
       return
 
     if editor.current_context.word.empty
@@ -322,8 +323,9 @@ command.register
       continue if client.initialized and not client.capabilities[t.provider]
       { t.label, icon: t.cmd, cmd: t.cmd }
 
+    -- a server that can't go anywhere is no better than none
     if #items == 0
-      log.warn "The LSP server for '#{buffer.title}' supports no goto requests"
+      command.run 'project-file-search'
       return
 
     -- the command runs once the menu has closed, as it may open the command panel

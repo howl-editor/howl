@@ -267,7 +267,9 @@ The `goto` command offers all of these in one place. It opens a menu at the
 cursor listing what the file's language server can go to: the definition,
 declaration, type definition, implementations or references of the symbol at
 the cursor. Picking one runs the corresponding command. Without a language
-server for the file, or with the cursor not on a symbol, it tells you so instead.
+server for the file, it searches the project for the word at the cursor using
+`project-file-search` instead, like `goto-definition`. With the cursor not on a
+symbol, it tells you so.
 
 ## Finding references
 
