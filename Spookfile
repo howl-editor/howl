@@ -33,11 +33,14 @@ spec = command "./bin/howl-spec"
 
 run_spec = (path, event) ->
   print "\027[1m\027[34m-> \027[22m(#{path}..)\027[0m"
-  notifies path, event,
-    task_list(
-      spec, path
-      lint, event.path
-    )
+  if event.path\match '%.moon$'
+    notifies path, event,
+      task_list(
+        spec, path
+        lint, event.path
+      )
+  else -- moonpick only lints MoonScript
+    notifies path, event, task_list(spec, path)
 
 watch "lib", "spec", ->
   on_changed "_spec%.moon", (event) ->
@@ -54,6 +57,10 @@ watch "lib", "spec", ->
   on_changed "^lib/ljglibs/.+%.moon", (event) ->
     base = event.path\match('^lib/ljglibs/(.*)%.moon')
     run_spec "lib/ljglibs/spec/#{base}_spec.moon", event
+
+  -- the compiler's parts all feed each other, so any change runs the whole suite
+  on_changed "^lib/howlscript/.+%.lua$", (event) ->
+    run_spec "lib/howlscript/spec", event
 
 watch "bundles", ->
   on_changed "^(.+_spec%.moon)", (event) ->

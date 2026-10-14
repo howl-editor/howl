@@ -14,14 +14,15 @@ cd "$ROOT" || exit 1
 
 if [ $# -eq 0 ]; then
   cat <<'EOF'
-Usage: howl-check <file.moon>...
+Usage: howl-check <file.moon|file.lua>...
 
-For each file: recompile it if it has a stale .bc, lint it, and run its spec.
-Stops at the first failing step and reports which one it was.
+For each file: recompile it if it has a stale .bc, lint it (.moon only), and run
+its spec. Stops at the first failing step and reports which one it was.
 
   lib/howl/X.moon           -> spec/X_spec.moon
   lib/aullar/X.moon         -> lib/aullar/spec/X_spec.moon
   lib/ljglibs/X.moon        -> lib/ljglibs/spec/X_spec.moon
+  lib/howlscript/X.lua      -> lib/howlscript/spec (the whole suite)
   bundles/<b>/<d>/X.moon    -> bundles/<b>/<d>/spec/X_spec.moon
   *_spec.moon               -> itself
 EOF
@@ -38,6 +39,7 @@ spec_for() {
       base=${1#lib/aullar/}; printf '%s\n' "lib/aullar/spec/${base%.moon}_spec.moon" ;;
     lib/ljglibs/*.moon)
       base=${1#lib/ljglibs/}; printf '%s\n' "lib/ljglibs/spec/${base%.moon}_spec.moon" ;;
+    lib/howlscript/*.lua) printf '%s\n' "lib/howlscript/spec" ;;
     bundles/*.moon)
       dir=$(dirname "$1"); base=$(basename "$1" .moon)
       printf '%s\n' "$dir/spec/${base}_spec.moon" ;;
@@ -60,7 +62,7 @@ for f in "$@"; do
 
   echo "== $f"
 
-  bc="${f%.moon}.bc"
+  bc="${f%.*}.bc"
   case "$f" in
     *_spec.moon) ;;  # never compiled
     *)
@@ -70,8 +72,12 @@ for f in "$@"; do
       ;;
   esac
 
-  "$ROOT/bin/howl-lint" "$f" || { echo "howl-check: lint failed" >&2; status=1; continue; }
-  echo "   lint ok"
+  case "$f" in
+    *.moon)
+      "$ROOT/bin/howl-lint" "$f" || { echo "howl-check: lint failed" >&2; status=1; continue; }
+      echo "   lint ok"
+      ;;
+  esac
 
   spec=$(spec_for "$f")
   if [ -z "$spec" ]; then
