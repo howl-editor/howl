@@ -558,7 +558,6 @@ block, since they would act on that function.
 
 ```howl
 squares = [x * x for x in *list if x > 0]
-points = [{x, y} for x in *xs for y in *ys]
 odds = [i for i = 1, 100 unless i % 2 == 0]
 lookup = {k, true for k in *keys}
 inverse = {v, k for k, v in pairs(t)}
@@ -568,9 +567,10 @@ pairs_table = {unpack(p) for p in *list_of_pairs}
 - **List:** `[expr for ...]` collects the values of `expr` into a list.
 - **Table:** `{key, value for ...}` sets `key` to `value`. With a single expression,
   `{expr for ...}`, `expr` returns both the key and the value.
-- **Clauses:** a comprehension takes one or more `for` clauses of any of the
-  [loop](#loops) forms, including slices, and `if` and `unless` clauses that skip
-  values. They nest from left to right.
+- **Clauses:** a comprehension takes a single `for` clause, of any of the
+  [loop](#loops) forms, including slices. An `if` or `unless` after it skips values.
+  A second `for` or filter is an error: nest `for` loops to go over several lists, and
+  combine conditions with `and`.
 
 Comprehension variables follow the shadowing rule (see [Scope](#scope)). A
 comprehension used as a statement is an error, since its table is thrown away.
@@ -659,6 +659,7 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | A function ending in an `if`, `unless`, `switch` or `do` returns the value its body ends with | It returns only what the body returns with `return`; a value or a call ending a branch is an error. A statement modifier at the end, as in `-> f(x) if x`, still passes on its value. |
 | Loops are values: `doubled = for x in *t` collects a list | Statements without a value; collect with a comprehension. |
 | Comprehensions and `for` modifiers filter with `when`: `[x for x in *t when x > 0]` | With `if` or `unless`: `[x for x in *t if x > 0]`. `when` there is an error; it only starts the cases of a `switch`. |
+| A comprehension takes several `for` and `when` clauses: `[{x, y} for x in *xs for y in *ys]` | A single `for`, with at most one filter. Nest `for` loops instead, and combine conditions with `and`. |
 | `x = do ...` gives the value of the block's last statement | An error: a `do` block is a statement. |
 | `(@x = 5, y = @x) =>` runs all defaults before setting `self.x`, so `y` gets the old `self.x` | Handles the parameters in order, so `y` gets 5. |
 | Parameters and loop variables can shadow locals | An error; rename one of them (see [Scope](#scope)). |

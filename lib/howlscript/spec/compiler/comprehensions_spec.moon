@@ -14,10 +14,10 @@ describe 'comprehensions', ->
       assert.match compile_error('r = [x for x in *t when x > 1]'), "filter with 'if' or 'unless' rather than 'when'"
       assert.match compile_error('r = [x if x > 1 for x in *t]'), "a comprehension's 'if' goes after its 'for'"
 
-    it 'combine several for and if clauses', ->
-      assert.same {{1, 'a'}, {1, 'b'}, {3, 'b'}}, run [[
-        [{x, y} for x in *{1, 2, 3} if x != 2 for y in *{'a', 'b'} if x == 1 or y == 'b']
-      ]]
+    it 'take a single for and a single filter', ->
+      assert.match compile_error('r = [{x, y} for x in *xs for y in *ys]'), "a comprehension takes a single 'for'; go over several with nested for loops"
+      assert.match compile_error('r = [x for x in *t if a if b]'), "a comprehension takes a single filter; combine the conditions with 'and'"
+      assert.match compile_error('r = [x for x in *t if a unless b]'), 'a comprehension takes a single filter'
 
     it 'support slices and destructuring', ->
       assert.same {{2, 3}, {3, 7}}, {run [==[
@@ -54,10 +54,8 @@ describe 'comprehensions', ->
         {k, k:upper() for k in *{'a', 'b'}}
       ]]
 
-    it 'combine several for clauses', ->
-      assert.same {a1: true, a2: true, b1: true, b2: true}, run [[
-        {x .. y, true for x in *{'a', 'b'} for y in *{'1', '2'}}
-      ]]
+    it 'take a single for', ->
+      assert.match compile_error("t = {x .. y, true for x in *xs for y in *ys}"), "a comprehension takes a single 'for'"
 
     it 'filter with if and unless', ->
       assert.same {{name: 'fast'}, {color: 'red'}}, {run [[

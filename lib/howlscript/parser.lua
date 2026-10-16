@@ -18,8 +18,8 @@
 --   Func{params, body, fat}: params are {name, tok, default, self_assign, pattern,
 --     vararg}
 --   Comprehension{kind = 'list', expr, clauses} or {kind = 'table', kexpr, vexpr,
---     clauses}: clauses are For and ForIn nodes without bodies, and
---     {k = 'filter', cond, unless} for `if cond` and `unless cond`
+--     clauses}: clauses are a For or ForIn node without a body, optionally followed
+--     by {k = 'filter', cond, unless} for `if cond` or `unless cond`
 --   Raw{code}: Lua code, only created by the compiler
 --
 -- Statements (With can also be a value):
@@ -1270,17 +1270,16 @@ function Parser:list_comprehension()
   return node('Comprehension', open, { kind = 'list', expr = expr, clauses = clauses })
 end
 
+-- A comprehension's single for clause, and the filter that can follow it. Several
+-- loops or filters make for an unreadable comprehension, so they're errors.
 function Parser:comprehension_clauses()
-  local clauses = {}
-  while true do
-    local t = self.t
-    if is_kw(t, 'for') then
-      clauses[#clauses + 1] = self:for_head()
-    else
-      local f = self:filter()
-      if not f then break end
-      clauses[#clauses + 1] = f
-    end
+  local clauses = { self:for_head() }
+  clauses[2] = self:filter()
+  local t = self.t
+  if is_kw(t, 'for') then
+    self:error("a comprehension takes a single 'for'; go over several with nested for loops", t)
+  elseif is_kw(t, 'if') or is_kw(t, 'unless') then
+    self:error("a comprehension takes a single filter; combine the conditions with 'and'", t)
   end
   return clauses
 end
