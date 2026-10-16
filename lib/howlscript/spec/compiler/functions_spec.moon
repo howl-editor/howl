@@ -20,6 +20,22 @@ describe 'functions', ->
       f()
     ]]
 
+  it 'return nothing when the last statement is an if taking no branch, or a declaration', ->
+    assert.same {0, 0, 0}, {run [[
+      f = (x) ->
+        if x
+          'a'
+      g = ->
+        local x
+      h = ->
+        x = 1
+        x += 1
+      select('#', f(false)), select('#', g()), select('#', h())
+    ]]}
+
+  it 'can be called right away', ->
+    assert.equals 5, run '(-> 5)()'
+
   it 'can be empty', ->
     assert.is_nil run [[
       f = ->
@@ -56,10 +72,17 @@ describe 'functions', ->
 
   describe 'parameters', ->
     it 'support defaults, evaluated when the argument is nil', ->
-      assert.same {3, 12}, {run [[
+      assert.same {3, 12, false}, {run [[
         f = (a, b = 2) -> a + b
-        f(1), f(2, 10)
+        g = (a = 'default') -> a
+        f(1), f(2, 10), g(false)
       ]]}
+
+    it 'evaluate defaults on each call', ->
+      assert.is_true run [[
+        f = (t = {}) -> t
+        f() != f()
+      ]]
 
     it 'let defaults use earlier parameters', ->
       assert.equals 6, run [[
@@ -120,13 +143,31 @@ describe 'functions', ->
         get(obj)
       ]]}
 
-    it 'call methods on self', ->
-      assert.equals 'hi there', run [[
-        obj = {
+    it 'are self and its class on their own', ->
+      assert.same {true, true}, {run [[
+        cls = {}
+        obj = setmetatable({__class: cls}, {})
+        get = => @, @@
+        a, b = get(obj)
+        a == obj, b == cls
+      ]]}
+
+    it 'call methods on self and its class', ->
+      assert.same {'hi there', 8}, {run [[
+        cls = {double: (x) => x * 2}
+        obj = setmetatable({
+          __class: cls
           greet: (name) => @prefix() .. ' ' .. name
           prefix: => 'hi'
-        }
-        obj:greet('there')
+          double: (x) => @@double(x)
+        }, {})
+        obj:greet('there'), obj:double(4)
+      ]]}
+
+    it 'take fields that are Lua keywords', ->
+      assert.equals 5, run [[
+        obj = {end: 5, get: => @end}
+        obj:get()
       ]]
 
     it 'reach self from thin arrows inside methods', ->

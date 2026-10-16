@@ -45,6 +45,18 @@ describe 'switch', ->
       calls, r
     ]]}
 
+  it 'tests the values in order, up to the first match', ->
+    assert.same {'one', '1'}, {run [[
+      log = {}
+      v = (n) ->
+        log[#log + 1] = n
+        n
+      r = switch 1
+        when v(1), v(2) then 'one'
+        when v(3) then 'three'
+      r, table.concat(log, ',')
+    ]]}
+
   it 'puts the case value on the left of ==', ->
     assert.equals 'matched', run [[
       mt = {__eq: (a, b) -> true}

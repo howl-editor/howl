@@ -6,6 +6,15 @@ describe 'tables', ->
       {1, 2, name: 'x', 'a b': true, [5 * 2]: 'ten'}
     ]]
 
+  it 'number positional entries in order, also after keyed ones', ->
+    assert.same {2, 4, a: 1, b: 3}, run '{a: 1, 2, b: 3, 4}'
+
+  it 'take all the values of a call as the last entry, and the first one elsewhere', ->
+    assert.same {{1, 2, 3}, {1, 'x'}, {1}}, {run [[
+      f = -> 1, 2, 3
+      {f()}, {f(), 'x'}, {(f())}
+    ]]}
+
   it 'take a variable of the same name with :name', ->
     assert.same {hair: 'golden', height: 200, size: 40}, run [[
       hair, height = 'golden', 200

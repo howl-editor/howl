@@ -40,7 +40,9 @@
 -- `self.ctx`: in a 'block', a 'header' (the head of an if, for, ...) or the 'bare'
 -- arguments of a call without parentheses it ends the statement, in 'call'
 -- arguments and 'table's it separates entries, and in a 'group' (parentheses), an
--- 'index' or a 'compr'ehension it's just whitespace.
+-- 'index' or a 'compr'ehension it's just whitespace. An 'inline' context marks an
+-- inline body inside call arguments or a table, and otherwise defers to the
+-- context around it.
 --
 -- A call can leave out its parentheses only when it's a statement directly in a
 -- block, and only one level deep: calls in its arguments, and calls inside
@@ -197,15 +199,23 @@ function Parser:pop()
   self.ctx[#self.ctx] = nil
 end
 
+-- The innermost context, apart from inline bodies.
 function Parser:kind()
-  return self.ctx[#self.ctx].kind
+  local ctx = self.ctx
+  local i = #ctx
+  while ctx[i].kind == 'inline' do i = i - 1 end
+  return ctx[i].kind
+end
+
+function Parser:in_inline()
+  return self.ctx[#self.ctx].kind == 'inline'
 end
 
 -- Whether a closing bracket can end the current block: only inside brackets.
 function Parser:in_bracket()
   for i = #self.ctx, 1, -1 do
     local k = self.ctx[i].kind
-    if k ~= 'block' and k ~= 'header' and k ~= 'bare' then return true end
+    if k ~= 'block' and k ~= 'header' and k ~= 'bare' and k ~= 'inline' then return true end
   end
   return false
 end
@@ -220,9 +230,13 @@ function Parser:ends_here()
   return k ~= 'group' and k ~= 'index' and k ~= 'compr'
 end
 
--- Whether expression lists can continue past a ','. Inline bodies inside call
--- arguments and tables stop at it instead, leaving it to separate the entries.
+-- Whether expression lists can continue past a ','. Inside call arguments and
+-- tables it separates the entries, except in an inline body there, which takes the
+-- rest of the line's entries, as in MoonScript: `f(-> a, b)` passes a function
+-- returning a and b. A ',' ending a line ends the body though, leaving the next line
+-- to the arguments or the table.
 function Parser:lists_allowed()
+  if self:in_inline() then return not self:peek(1).first end
   local k = self:kind()
   return k == 'block' or k == 'header' or k == 'group'
 end
@@ -297,6 +311,24 @@ function Parser:block(item)
   return stmts
 end
 
+-- A body on the same line: a single statement, which inside call arguments or a
+-- table can take the rest of the line's entries (see lists_allowed).
+function Parser:inline_body()
+  local k = self.ctx[#self.ctx].kind
+  if k ~= 'call' and k ~= 'table' and k ~= 'bare' then
+    return { self:statement() }
+  end
+  self:push('inline')
+  local stmt = self:statement()
+  self:pop()
+  local t = self.t
+  if is_op(t, ':') and t.sa and is_name_like(self.toks[self.i - 1]) then
+    self:error('the inline body before this key takes the rest of the line, key included; put the key on a line of its own, or the function or block in parentheses',
+      self.toks[self.i - 1])
+  end
+  return { stmt }
+end
+
 -- The body of a construct: a statement on the same line after `kw` (then/do), or an
 -- indented block.
 function Parser:body(kw)
@@ -306,7 +338,7 @@ function Parser:body(kw)
     if self.t.first then
       return self:block() or self:error("expected a statement after '" .. kw .. "'")
     end
-    return { self:statement() }
+    return self:inline_body()
   end
   local b = t.first and self:block()
   if b then return b end
@@ -321,7 +353,7 @@ function Parser:inline_or_block(what)
   if self.t.first then
     return self:block() or self:error('expected an indented block after ' .. what)
   end
-  return { self:statement() }
+  return self:inline_body()
 end
 
 function Parser:statement()
@@ -1142,7 +1174,9 @@ function Parser:bare_call(at_start)
     if k == 'bare' then
       self:error('a call in the arguments of a call without parentheses needs parentheses, as in f x, g(y)')
     end
-    self:error('a call inside brackets needs parentheses, as in f(x)')
+    if k ~= 'inline' then
+      self:error('a call inside brackets needs parentheses, as in f(x)')
+    end
   end
   self:error('only a call that is a statement of its own can leave out its parentheses; write f(x) here')
 end
@@ -1317,7 +1351,7 @@ function Parser:func(params, start)
   elseif is_closer(t) or is_op(t, ',') then
     n.body = {}
   else
-    n.body = { self:statement() }
+    n.body = self:inline_body()
   end
   return n
 end

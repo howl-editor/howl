@@ -16,6 +16,28 @@ describe 'destructuring', ->
   it 'takes values of the same name with :name', ->
     assert.same {table.concat, table.insert}, {run '{:concat, :insert} = table\nconcat, insert'}
 
+  it 'takes values by keyword, string and expression keys', ->
+    assert.same {1, 2, 3, 4}, {run [[
+      k = 'dyn'
+      src = {end: 1, if: 2, 'a b': 3, dyn: 4}
+      {end: e, if: i, 'a b': s, [k]: d} = src
+      e, i, s, d
+    ]]}
+
+  it 'gives nil for missing values', ->
+    assert.same {1, nil, nil}, {run [[
+      src = {1}
+      {a, b, :c} = src
+      a, b, c
+    ]]}
+
+  it 'assigns to fields of self', ->
+    assert.same {1, 2}, {run [[
+      obj = {set: (t) => {@a, @b} = t}
+      obj:set({1, 2})
+      obj.a, obj.b
+    ]]}
+
   it 'reads straight from a plain lookup', ->
     assert.match compile('{:a, :b} = t.x'), '^local a, b = t%.x%.a, t%.x%.b'
 

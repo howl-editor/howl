@@ -13,6 +13,16 @@ describe 'strings', ->
   it 'do not interpolate in single quoted strings', ->
     assert.equals '#{x}', run [['#{x}']]
 
+  it 'keep a # without a { as text', ->
+    assert.equals 'a # b #c', run [["a # b #c"]]
+
+  it 'interpolate with tostring, taking the first value of a call', ->
+    assert.equals '<OBJ> 1', run [[
+      obj = setmetatable({}, __tostring: -> 'OBJ')
+      f = -> 1, 2
+      "<#{obj}> #{f()}"
+    ]]
+
   it 'interpolate expressions with strings and braces', ->
     assert.equals 'a-b {1}', run [[
       t = {1}

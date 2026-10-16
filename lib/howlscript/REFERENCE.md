@@ -139,9 +139,20 @@ foo(a, (x) ->
 ```
 
 A body can also follow on the same line, as in `-> x + 1`, `if c then a else b`,
-`for x in *t do f(x)`, `while c do f()`, `do f()`, `when 1 then a` and `else b`. Inside
-call arguments, with or without parentheses, or a table, such a body ends at the first
-comma. Elsewhere it can be a list: `f = -> 1, 2` returns two values.
+`for x in *t do f(x)`, `while c do f()`, `do f()`, `when 1 then a` and `else b`. Such
+a body is a statement, which runs to the end of the line and can be a list. So
+`f = -> 1, 2` returns two values. Inside call arguments or a table, too, it takes the
+rest of the line's entries:
+
+```howl
+f(-> a, b)            -- passes one function, returning a and b
+f((-> a), b)          -- passes a function and b
+f(if c then a else b, z)   -- the else body is `b, z`
+```
+
+A `,` that ends a line ends such a body, so the entries on the following lines stay
+entries. A key after an inline body on the same line, as in `{f: -> 1, g: 2}`, is an
+error: put it on a line of its own, or the function in parentheses.
 
 `else` and `elseif` either follow on the same line, or line up with the line where
 the `if` starts.
@@ -189,20 +200,34 @@ a, b = b, a
 - **Targets:** names, fields, indexes, `@x`, `@@x`, `.x` in a `with` block, and
   destructuring patterns. The result of a call can't be assigned to.
 - **Update operators:** `+=` and the others, `++` and `--` work on a single target,
-  and not on a pattern.
+  and not on a pattern. They evaluate the target's object and key once. Like any
+  first assignment, one on a new name declares a local: `count += 1` is
+  `local count = count + 1`, reading the outer `count`.
 - **A statement:** assignment is not an expression. `a = b = 1` is an error, and so is
   `if x = f()`.
 
 ### Visibility
 
-A name becomes visible after the statement that declares it, not in its own
-right-hand side. Both `x = x + 1` for a new `x` and a new function that calls itself
-refer to a global of the same name. Declare the name first for recursion:
+A new name becomes visible after the statement that declares it, so `x = x + 1` for
+a new `x` reads the outer or global `x`. There are two exceptions, where the new names
+are visible in their own value:
+
+- **Functions:** when one of the values is a function, so that it can call itself.
+- **Blocks:** when the value is a block, such as an `if`, `with`, `do`, loop or
+  comprehension.
 
 ```howl
-local fact
 fact = (n) -> if n <= 1 then 1 else n * fact(n - 1)
+popup = with Popup()
+  .on_close = -> popup:destroy()
 ```
+
+A table or a parenthesized function isn't an exception: in `t = {get: -> t}`, the `t`
+inside is the outer or global one. Parameters and loop variables in the value may
+still use the name, as in `names = [names for names in *lists]`.
+
+`local f = value` declares the name after its value, as in Lua, so `f` there is the
+outer one even when the value is a function.
 
 A name first assigned inside a block, like the body of an `if`, a loop or a function,
 is local to that block. To use it after the block, declare it before with `local`.
@@ -444,8 +469,10 @@ expression, not an assignment, so to name it, assign it first: `file = File(p)`,
 - **Numeric:** `for i = start, stop[, step]`, as in Lua.
 - **Generic:** `for a, b in exprs`, as in Lua.
 - **Over a list:** `for x in *list` goes over the values of `list`, from 1 to `#list`,
-  with a single loop variable. A slice limits it: `*list[start, stop, step]`, where
-  each part is optional (`*t[2,]`, `*t[,,2]`). Slices only work here.
+  with a single loop variable. `list` and its length are taken once, before the loop.
+  A slice limits it: `*list[start, stop, step]`, where each part is optional (`*t[2,]`,
+  `*t[,,2]`). A negative stop counts from the end, as `#list + stop`, so `*t[1, -1]`
+  leaves out the last value. Slices only work here.
 - **Destructuring:** loop variables can be patterns: `for {a, b} in *pairs_list`.
 - **`while c`** loops while `c` holds.
 - **Bodies:** the body follows `do` on the same line, or is an indented block.
@@ -483,11 +510,12 @@ counter = do
 ```
 
 - **`if` and `switch`** give the value of the branch taken, or `nil` when there's
-  none.
+  none. So `x = if c then 1` sets `x` to nil when `c` doesn't hold.
 - **`with`** gives its target.
 - **`do`** gives the value of its last statement.
 - **Loops** collect the value of their body's last statement on each iteration into a
-  list. An iteration ended by `continue` adds nothing.
+  list. An iteration ended by `continue` adds nothing, and so does one whose last
+  statement is an `if` or `switch` taking no branch, which makes `x if c` a filter.
 
 A block assigned or returned, or the last statement of a function or block, is
 compiled in place. Anywhere else in an expression it becomes an immediately called
@@ -550,15 +578,21 @@ class BackPack extends Inventory
   `Name`, where `parent` is any expression. A class is a statement, not an expression,
   and its name is a plain name, not a field.
 - **Members:** `name: value`, `'text': value` and `[expr]: value` add a member, and
-  `:name` is short for `name: name`. `@name: value` sets a class variable.
+  `:name` is short for `name: name`. `@name: value` sets a class variable, such as a
+  class method. A member can't be named `__index`, since instances find their methods
+  through the `__index` of the base.
 - **Constructor:** `new` is the constructor. A class without one calls its parent's.
 - **`super`:**
-  - `super(...)` calls the parent's version of the current method (in `new`, the
-    parent constructor);
+  - `super(...)` calls the parent's version of the current method: in `new` the
+    parent constructor, and in a class method `@name:` the parent class's `name`;
   - `super:m(...)` calls any parent method on self;
   - `super.x` reads from the parent class, and `super` alone is the parent class.
 
-  It only works in the methods of a class that extends another.
+  It works in the methods of a class that extends another, including functions
+  inside them. A member keyed by an expression evaluates the key again for `super()`.
+- **Metamethods:** members such as `__tostring` and `__add` are metamethods of the
+  instances. A subclass doesn't inherit them, as Lua looks them up in the metatable
+  itself.
 - **Class body:** the body can also hold statements, which run with `self` being the
   class. Names assigned in it are locals that every method can see.
 - **`__inherited`:** a parent's `__inherited(parent, child)` is called when it's
@@ -597,11 +631,19 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | `f{a: 1}` and `f[[text]]` call `f` | Errors: write `f({a: 1})` and `f([[text]])`, or leave out the parentheses with a space in a statement. |
 | `x--note` is a comment | A decrement followed by `note`. Write `x -- note`. |
 | `unless a ... elseif b` | `unless` takes an `else` but no `elseif`. |
-| `f = -> f()` calls the new local `f` | A name isn't visible in its own right-hand side, so this calls a global `f`. Declare it first with `local f`. |
+| `x = if c then 1` leaves an existing `x` unchanged when `c` doesn't hold | Sets `x` to nil, the value of the `if`. The same goes for `unless` and `switch`. |
+| A loop collecting values leaves a hole for an iteration whose `if` takes no branch: `{1, nil, 3}` | Skips the iteration: `{1, 3}`. |
+| `(@x = 5, y = @x) =>` runs all defaults before setting `self.x`, so `y` gets the old `self.x` | Handles the parameters in order, so `y` gets 5. |
 | Parameters and loop variables can shadow locals | An error; rename one of them (see [Scope](#scope)). |
 | A class body adds all its members before running its other statements | It runs top to bottom (see [Classes](#classes)). |
 | `goto` can be a variable name | An error, like the other Lua keywords Howlscript doesn't use. |
 | `import`, `from`, `using` and `extends` are reserved | They're ordinary names; `extends` only means something after a class name. |
+
+These MoonScript 0.5.0 bugs are fixed:
+
+- **Update operators:** `t[f()] += 1` and `f().n += 1` call `f` twice.
+- **Destructuring among other targets:** in `a, {:b}, c = f()`, `b` and `c` get nil.
+- **Lua keywords as method names:** `obj\end!` and `@end` compile to invalid Lua.
 
 Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complaint:
 
@@ -615,6 +657,8 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
 - **`self`:** using `@` or `@@` with no `self` around, and `@x` parameters in a
   function made with `->`.
 - **`super`:** using `super` outside a class method, or in a class without a parent.
+- **`__index` members:** MoonScript ignores them, as it sets the base's `__index` to
+  the base afterwards.
 
 ### Left out
 
@@ -625,6 +669,7 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
 | `obj\method` (a function stub) | `(...) -> obj:method(...)`. Stubs hide references and keep objects alive. |
 | `(a using b) ->`, `(using nil) ->` | Parameters can't shadow locals, and `local x` declares a fresh local where one is needed. |
 | `local *`, `local ^` | `local a, b`, naming each. |
+| `(@@x) =>`, setting `self.__class.x` | `@@x = x` in the body. |
 | `export ^` | `export A, B`, naming each. |
 | `x = class ...`, `class extends Base` (class expressions and anonymous classes) | A named class statement, then `x = Name`. |
 | `class a.B` | `class B`, then `a.B = B`. |
@@ -636,8 +681,11 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
 ### New
 
 - **`++` and `--`:** `x++` and `t.count--` add or subtract 1, as statements.
+- **`local a = value`:** MoonScript's `local` only declares.
 - **Destructured parameters:** `({:width, :height}) -> width * height`. MoonScript
   0.5.0 reads this as a call.
-- **Imaginary numbers:** LuaJIT's `2i`.
+- **Destructuring by string and expression keys:** `{'a b': x, [k]: y} = t`.
+- **Numbers:** all of LuaJIT's forms, where MoonScript 0.5.0 lacks `0XFF`, `1e+2`,
+  hex floats such as `0x1p4`, and imaginary numbers such as `2i`.
 - **Hints:** errors for MoonScript habits like `\`, `!`, `f (x)`, braceless tables,
   `using` and stubs say what to write instead.

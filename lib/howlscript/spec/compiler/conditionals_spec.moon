@@ -32,10 +32,11 @@ describe 'conditionals', ->
         'ran'
     ]]
 
-  it 'support then and else on one line', ->
-    assert.same {'a', 'b'}, {run [[
-      f = (x) -> if x then 'a' else 'b'
-      f(true), f(false)
+  it 'support then, elseif and else on one line', ->
+    assert.same {'a', 'b', 'c', 'ran'}, {run [[
+      f = (x) -> if x == 1 then 'a' elseif x == 2 then 'b' else 'c'
+      g = -> unless false then 'ran'
+      f(1), f(2), f(3), g()
     ]]}
 
   it 'can be values in assignments', ->
@@ -65,7 +66,13 @@ describe 'conditionals', ->
     assert.same {'a', 'z'}, {run [[
       f = (...) -> ...
       x = true
-      f(if x then 'a' else 'b', 'z')
+      f((if x then 'a' else 'b'), 'z')
+    ]]}
+
+  it 'take the rest of the line in their inline else body', ->
+    assert.same {'b', 'z'}, {run [[
+      f = (...) -> ...
+      f(if false then 'a' else 'b', 'z')
     ]]}
 
   it 'take the else on a line aligned with the if', ->

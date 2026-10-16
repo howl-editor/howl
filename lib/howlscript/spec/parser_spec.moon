@@ -22,6 +22,19 @@ describe 'howlscript.parser', ->
         a, b, c, d
       ]]}
 
+    it 'ignores the indentation of comment lines inside a block', ->
+      assert.equals 2, run [[
+        f = ->
+          x = 1
+        -- a comment at the start of the line
+              -- an indented comment
+          x + 1
+        f()
+      ]]
+
+    it 'takes tabs for indentation', ->
+      assert.equals 3, run "f = (x) ->\n\tif x\n\t\t3\n\telse\n\t\t4\nf(true)"
+
     it 'requires blocks to be indented consistently', ->
       assert.match compile_error('if x\n    a()\n  b()'), 'unexpected indentation'
       _, err = howlscript.to_lua '  x = 1'
@@ -57,12 +70,33 @@ describe 'howlscript.parser', ->
         )
       ]]
 
-    it 'ends inline bodies inside arguments and tables at a comma', ->
+    it 'lets inline bodies inside arguments and tables take the rest of the line', ->
       assert.same {1, 'z'}, {run [[
-        f = (fn, z) -> fn(), z
+        f = (fn) -> fn()
         f(-> 1, 'z')
       ]]}
-      assert.equals 2, #run '{-> 1, 2}'
+      t = run '{-> 1, 2}'
+      assert.same {1, {1, 2}}, {#t, {t[1]()}}
+      assert.same {1, 2}, {run [[
+        f = (fn) -> fn()
+        f -> 1, 2
+      ]]}
+
+    it 'ends inline bodies inside arguments and tables at a comma ending the line', ->
+      assert.same {'f', 2, 'h', 3}, {run [[
+        t = {
+          f: -> 'f',
+          g: 2,
+        }
+        call = (fn, x) -> fn(), x
+        h, x = call(-> 'h',
+          3)
+        t.f(), t.g, h, x
+      ]]}
+
+    it 'reports a key taken into an inline body', ->
+      assert.match compile_error('t = {f: -> 1, g: 2}'), 'the inline body before this key takes the rest of the line'
+      assert.match compile_error('f(a: (x) -> x, b: 2)'), '^spec:1:16:'
 
     it 'ends the arguments of a call without parentheses at the end of the line', ->
       assert.same {{1}, 2}, {run [[

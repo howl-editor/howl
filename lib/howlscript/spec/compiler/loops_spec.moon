@@ -37,6 +37,16 @@ describe 'loops', ->
       calls, n
     ]]}
 
+  it 'take the length of the list of a * loop once', ->
+    assert.equals 3, run [[
+      t = {1, 2, 3}
+      n = 0
+      for x in *t
+        t[#t + 1] = x
+        n += 1
+      n
+    ]]
+
   it 'iterate slices', ->
     assert.same {'b,c', 'a,c', 'c,b,a', 'b,c,d'}, {run [[
       items = {'a', 'b', 'c', 'd'}
@@ -46,6 +56,23 @@ describe 'loops', ->
       c[#c + 1] = x for x in *items[3, 1, -1]
       d[#d + 1] = x for x in *items[2,]
       table.concat(a, ','), table.concat(b, ','), table.concat(c, ','), table.concat(d, ',')
+    ]]}
+
+  it 'count a negative slice stop from the end, as #list + stop', ->
+    assert.same {'a,b,c', 'b', 'a,b', 'a,b', '', 2}, {run [[
+      items = {'a', 'b', 'c', 'd'}
+      calls = 0
+      stop = (n) ->
+        calls += 1
+        n
+      join = (t) -> table.concat(t, ',')
+      a, b, c, d, e = {}, {}, {}, {}, {}
+      a[#a + 1] = x for x in *items[1, -1]
+      b[#b + 1] = x for x in *items[2, -2]
+      c[#c + 1] = x for x in *items[1, stop(-2)]
+      d[#d + 1] = x for x in *items[1, stop(2)]
+      e[#e + 1] = x for x in *items[1, 0]
+      join(a), join(b), join(c), join(d), join(e), calls
     ]]}
 
   it 'reject slices outside of loops', ->
@@ -125,10 +152,24 @@ describe 'loops', ->
 
   describe 'as values', ->
     it 'collect the value of each iteration', ->
-      assert.same {2, 4, 6}, run [[
+      assert.same {{2, 4, 6}, {1, 2, 3}, {'a1'}}, {run [[
         doubled = for i = 1, 3
           i * 2
-        doubled
+        i = 0
+        counted = while i < 3
+          i += 1
+          i
+        pairs_ = for k, v in pairs({a: 1})
+          k .. v
+        doubled, counted, pairs_
+      ]]}
+
+    it 'stop collecting at a break', ->
+      assert.same {1, 2}, run [[
+        r = for i = 1, 5
+          break if i == 3
+          i
+        r
       ]]
 
     it 'skip iterations that continue or have no value', ->

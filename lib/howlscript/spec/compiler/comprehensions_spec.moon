@@ -13,6 +13,12 @@ describe 'comprehensions', ->
         [{x, y} for x in *{1, 2, 3} when x != 2 for y in *{'a', 'b'} when x == 1 or y == 'b']
       ]]
 
+    it 'support slices and destructuring', ->
+      assert.same {{2, 3}, {3, 7}}, {run [==[
+        items = {1, 2, 3, 4}
+        [x for x in *items[2, 3]], [a + b for {a, b} in *{{1, 2}, {3, 4}}]
+      ]==]}
+
     it 'support numeric and generic for', ->
       assert.same {{2, 4}, {'a'}}, {run [[
         [i for i = 2, 4, 2], [k for k in pairs({a: 1})]
@@ -40,6 +46,11 @@ describe 'comprehensions', ->
     it 'build tables from keys and values', ->
       assert.same {a: 'A', b: 'B'}, run [[
         {k, k:upper() for k in *{'a', 'b'}}
+      ]]
+
+    it 'combine several for clauses', ->
+      assert.same {a1: true, a2: true, b1: true, b2: true}, run [[
+        {x .. y, true for x in *{'a', 'b'} for y in *{'1', '2'}}
       ]]
 
     it 'filter with when', ->

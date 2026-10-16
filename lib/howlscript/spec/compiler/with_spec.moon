@@ -37,6 +37,25 @@ describe 'with', ->
       t.v
     ]]
 
+  it 'evaluates its target once', ->
+    assert.same {1, 1, 2}, {run [[
+      calls = 0
+      get = ->
+        calls += 1
+        {}
+      t = with get()
+        .a = 1
+        .b = 2
+      calls, t.a, t.b
+    ]]}
+
+  it 'keeps the locals of its block inside it', ->
+    assert.is_nil run [[
+      with {}
+        inner = 1
+      inner
+    ]]
+
   it 'is a value: its target', ->
     assert.equals 'x', run [[
       t = with {}

@@ -12,6 +12,22 @@ describe 'calls', ->
       id'x', t.id"x"
     ]]}
 
+  it 'continue after a string call', ->
+    assert.same {'x', 'ABC', 3, 'abab'}, {run [[
+      wrap = (s) -> {v: s}
+      id = (s) -> s
+      P = (s) -> #s
+      rep = (s) -> (n) -> s:rep(n)
+      wrap'x'.v, id'abc':upper(), P'x' + P'yz', rep'ab'(2)
+    ]]}
+
+  it 'pass all the values of a last call argument, and the first of others', ->
+    assert.same {1, 1, 2}, run [[
+      f = -> 1, 2
+      g = (...) -> {...}
+      g(f(), f())
+    ]]
+
   it 'do not make a call of a long string touching a name', ->
     assert.match compile_error('id[[x]]'), 'a long string touching a name is not a call'
 
@@ -135,7 +151,7 @@ describe 'calls', ->
         d:twice(1), d.v
       ]]}
       assert.same {1, 2, 3}, run [[
-        obj = {items: {}, add: (x) => @items[#@items + 1] = x, three: 3}
+        obj = {items: {}, three: 3, add: (x) => @items[#@items + 1] = x}
         with obj
           :add 1
           .add obj, 2

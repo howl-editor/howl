@@ -19,6 +19,7 @@ describe 'howlscript.lexer', ->
     assert.same {{'number', '12'}, {'number', '0.5'}, {'number', '.5'}, {'number', '3e10'}}, lex '12 0.5 .5 3e10'
     assert.same {{'number', '0xff'}, {'number', '0x1p4'}}, lex '0xff 0x1p4'
     assert.same {{'number', '10ULL'}, {'number', '7LL'}, {'number', '2i'}}, lex '10ULL 7LL 2i'
+    assert.same {{'number', '0XFF'}, {'number', '1e+2'}, {'number', '1E2'}, {'number', '0xA23p-4'}}, lex '0XFF 1e+2 1E2 0xA23p-4'
 
   it 'lexes Lua-only keywords as names', ->
     assert.same {{'name', 'end'}, {'name', 'function'}, {'name', 'goto'}}, lex 'end function goto'
@@ -50,6 +51,9 @@ describe 'howlscript.lexer', ->
       assert.same {{'name', 'x'}}, lex 'x\n-- a comment'
       assert.same {{'keyword', 'nil'}}, lex 'nil--'
       assert.same {}, lex '-- only a comment'
+
+    it 'has no block comments: --[[ starts a line comment', ->
+      assert.same {{'name', 'x'}, {'name', 'y'}}, lex 'x --[[ not a block\ny'
 
   describe 'strings', ->
     it 'keeps single quoted strings as is', ->

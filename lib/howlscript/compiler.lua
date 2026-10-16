@@ -113,15 +113,6 @@ local function has_continue(n)
   return false
 end
 
--- Whether any of `names` occurs as a name in a node.
-local function mentions(n, names)
-  if n.k == 'Name' and names[n.v] then return true end
-  for _, v in pairs(n) do
-    if type(v) == 'table' and mentions(v, names) then return true end
-  end
-  return false
-end
-
 local DISCARD = { k = 'discard' }
 local IMPLICIT_RETURN = { k = 'return', implicit = true }
 
@@ -172,12 +163,13 @@ function Compiler:declare_all(names, line)
   end
 end
 
--- Declares a parameter or loop variable, which may not shadow a visible local.
+-- Declares a parameter or loop variable, which may not shadow a visible local,
+-- other than one being assigned the value it's in.
 function Compiler:bind(name, n, what)
   self:check_name(name, n)
   if name ~= '_' and name ~= 'self' then
     local decl = self.scope:lookup(name)
-    if decl then
+    if decl and not decl.assigning then
       self:error(format(
         "%s '%s' shadows the local declared on line %d; rename one of them",
         what, name, decl.line), n, #name)
@@ -493,10 +485,27 @@ function Compiler:loop_head(s)
     end
     E:w('do local ' .. list .. ' = ')
     self:expr(star)
+    -- as in MoonScript, a negative stop counts from the end: #list + stop
+    local negative = stop and stop.k == 'Unop' and stop.op == '-' and stop.e.k == 'Number'
+      and (tonumber(stop.e.v) or 0) > 0
+    local max
+    if stop and stop.k ~= 'Number' and not negative then
+      max = self:tmp('max')
+      E:w('; local ' .. max .. ' = ')
+      self:expr(stop)
+    end
     E:w('; for ' .. i .. ' = ')
     if start then self:expr(start) else E:w('1') end
     E:w(', ')
-    if stop then self:expr(stop) else E:w('#' .. list) end
+    if max then
+      E:w(format('%s < 0 and #%s + %s or %s', max, list, max, max))
+    elseif negative then
+      E:w('#' .. list .. ' - ' .. stop.e.v)
+    elseif stop then
+      self:expr(stop)
+    else
+      E:w('#' .. list)
+    end
     if step then
       E:w(', ')
       self:expr(step)
@@ -676,30 +685,33 @@ function Compiler:stmt_Assign(s)
   local values = s.values
   E:stmt(s.line)
 
-  if #values == 1 and value_blocks[values[1].k] then
-    local names = {}
-    for _, name in ipairs(fresh) do names[name] = true end
-    if #fresh > 0 then
-      E:w('local ' .. concat(fresh, ', '))
-    end
+  -- As in MoonScript, the new names are visible in their own value when it's a
+  -- block, or when one of the values is a function, which can then call itself.
+  -- Otherwise they're visible after the statement, so `x = x + 1` reads the outer x.
+  local block = #values == 1 and value_blocks[values[1].k]
+  local func = false
+  for _, v in ipairs(values) do
+    if v.k == 'Func' then func = true end
+  end
 
-    if #fresh > 0 and mentions(values[1], names) then
-      -- the block mentions a name being declared, which it mustn't see as the
-      -- new local, so it assigns to temporaries first
-      local tmps, sink_targets = {}, {}
-      for i = 1, #s.targets do
-        tmps[i] = self:tmp('value')
-        sink_targets[i] = raw(tmps[i])
+  if block or func then
+    local decls = {}
+    if #fresh > 0 then
+      E:w('local ' .. concat(fresh, ', ') .. (block and '' or '; '))
+      for i, name in ipairs(fresh) do
+        -- parameters and loop variables in the value may still use the name
+        decls[i] = self.scope:declare(name, s.line)
+        decls[i].assigning = true
       end
-      E:w(' do local ' .. concat(tmps, ', '))
-      self:lower(values[1], { k = 'assign', targets = sink_targets, fresh = true })
-      E:w('; ')
-      self:targets(s.targets)
-      E:w(' = ' .. concat(tmps, ', ') .. ' end')
-    else
-      self:lower(values[1], { k = 'assign', targets = s.targets, fresh = all_fresh })
     end
-    self:declare_all(fresh, s.line)
+    if block then
+      self:lower(values[1], { k = 'assign', targets = s.targets, fresh = all_fresh })
+    else
+      self:targets(s.targets)
+      E:w(' = ')
+      self:expr_list(values)
+    end
+    for _, decl in ipairs(decls) do decl.assigning = nil end
     return
   end
 
@@ -868,6 +880,14 @@ function Compiler:stmt_Update(s)
   local t = target
   if target.k == 'Name' then
     self:check_name(target.v, target)
+    -- like any first assignment, it declares a local: `local x = x + 1`, where the
+    -- right-hand side still sees the outer x
+    if self.scope:is_fresh(target.v) then
+      E:w('local ' .. target.v .. ' = ')
+      self:expr({ k = 'Binop', op = s.op, l = target, r = s.value })
+      self.scope:declare(target.v, s.line)
+      return
+    end
   elseif target.k == 'Field' and target.obj.k ~= 'Super' then
     t = { k = 'Field', obj = once(target.obj), name = target.name, line = target.line }
   elseif target.k == 'Index' then
@@ -1043,6 +1063,10 @@ function Compiler:stmt_Class(s)
 
   for _, item in ipairs(s.body) do
     if item.k == 'prop' then
+      local key = item.key
+      if key == '__index' or (type(key) == 'table' and key.k == 'String' and key.parts[1] == '__index' and #key.parts == 1) then
+        self:error("a class can't have an __index member, since its instances find their methods through the __index of its base", item, 7)
+      end
       E:stmt(item.line)
       local is_new = item.key == 'new'
       if is_new then
@@ -1054,7 +1078,7 @@ function Compiler:stmt_Class(s)
         self:expr(item.key)
         E:w(p and ', ' or '] = ')
       end
-      self.cls.method = type(item.key) == 'string' and item.key or nil
+      self.cls.method = item.key
       if item.value.k == 'Func' then
         -- constructors return nothing
         self:func(item.value, is_new)
@@ -1066,7 +1090,9 @@ function Compiler:stmt_Class(s)
     elseif item.k == 'classvar' then
       E:stmt(item.line)
       E:w(c .. field(item.key) .. ' = ')
+      self.cls.method, self.cls.static = item.key, true
       self:expr(item.value)
+      self.cls.method, self.cls.static = nil, nil
     else
       self:stmt(item)
     end
@@ -1234,12 +1260,23 @@ function Compiler:e_Call(e)
     self:need_self(fn)
     self:invoke(raw('self.__class'), fn.name, e.args)
   elseif fn.k == 'Super' then
+    -- the parent's version of the current method: a method of its base, or with
+    -- `@name:` a function of the parent class itself
     local cls = self:super_cls(fn, true)
+    local method = cls.method
     self:need_self(fn)
-    if cls.method == 'new' then
+    if method == 'new' and not cls.static then
       E:w(cls.c .. '.__parent.__init')
     else
-      E:w(cls.c .. '.__parent.__base' .. field(cls.method))
+      E:w(cls.c .. (cls.static and '.__parent' or '.__parent.__base'))
+      if type(method) == 'string' then
+        E:w(field(method))
+      else
+        -- a key given as an expression is evaluated again, as MoonScript does
+        E:w('[')
+        self:expr(method)
+        E:w(']')
+      end
     end
     self:args(e.args, 'self')
   else

@@ -19,7 +19,9 @@ local function new(parent)
 end
 
 function Scope:declare(name, line)
-  self.names[name] = { line = line }
+  local decl = { line = line }
+  self.names[name] = decl
+  return decl
 end
 
 -- The declaration of the local `name` visible from this scope, if any.
