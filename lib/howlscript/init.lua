@@ -1,7 +1,7 @@
 -- Copyright 2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
--- Howlscript compiles to Lua. See README.md in this directory for the language.
+-- Howlscript compiles to Lua. See REFERENCE.md in this directory for the language.
 
 local lexer = require('howlscript.lexer')
 local parser = require('howlscript.parser')
