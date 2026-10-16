@@ -91,7 +91,7 @@ squares = [i * i for i in *list if i > 0]
 lookup = {k, true for k in *keys}
 
 -- classes
-class Inventory extends PropertyObject
+class Inventory extends Container
   @count: 0
   helper = -> 'private'
 
@@ -101,7 +101,14 @@ class Inventory extends PropertyObject
   add: (name) =>
     super:add(name)
 
-  @property(weight: {get: => #@items})
+  property weight => #@items
+
+  property label
+    get: => @_label
+    set: (label) => @_label = label
+
+  __tostring: => "Inventory(#{@size})"
+  __index: (key) => @items[key]
 
 export class Exported
 export *

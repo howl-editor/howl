@@ -101,9 +101,254 @@ describe 'classes', ->
       tostring(Point(1, 2))
     ]]
 
-  it 'reject an __index member, which would hide their methods', ->
-    assert.match compile_error('class A\n  __index: (k) => k'), "a class can't have an __index member"
-    assert.match compile_error("class A\n  '__index': {}"), "a class can't have an __index member"
+  it 'keep the base as the __index of a class without properties or fallbacks', ->
+    assert.same {true, true}, {run [[
+      class Point
+        __tostring: => 'point'
+      class Sub extends Point
+      Point.__base.__index == Point.__base, Sub.__base.__index == Sub.__base
+    ]]}
+
+  describe 'properties', ->
+    range = [[
+      class Range
+        new: (@first, @last) =>
+        property empty => @last < @first
+        property size =>
+          return 0 if @empty
+          @last - @first + 1
+    ]]
+
+    with_range = (src) -> run dedent(range) .. '\n' .. dedent(src)
+
+    it 'are read-only when declared with property name =>', ->
+      assert.same {true, 0, 3}, {with_range [[
+        Range(2, 1).empty, Range(2, 1).size, Range(2, 4).size
+      ]]}
+
+    it 'take get: and set: in a block', ->
+      assert.same {'ab', 'CD', nil}, {run [[
+        class Name
+          new: (@_v) =>
+          property value
+            get: => @_v
+            set: (v) => @_v = v:upper()
+        n = Name('ab')
+        before = n.value
+        n.value = 'cd'
+        before, n.value, rawget(n, 'value')
+      ]]}
+
+    it 'can be set-only', ->
+      assert.equals 5, run [[
+        class Widget
+          property max_height
+            set: (h) => @_max_height = h
+        w = Widget()
+        w.max_height = 5
+        w._max_height
+      ]]
+
+    it 'take any expression as an accessor', ->
+      assert.equals 'got', run [[
+        getter = => 'got'
+        class Thing
+          property value
+            get: getter
+        Thing().value
+      ]]
+
+    it 'raise an error when setting a read-only one, at the assignment', ->
+      assert.equals "spec:4: property 'size' is read-only", run [[
+        class Range
+          property size => 1
+        ok, err = pcall(->
+          Range().size = 3
+        )
+        err
+      ]]
+
+    it 'raise an error when reading a set-only one, at the read', ->
+      assert.equals "spec:6: property 'height' is write-only", run [[
+        class Widget
+          property height
+            set: (h) =>
+          __index: (key) => 'fallback'
+        ok, err = pcall(->
+          Widget().height
+        )
+        err
+      ]]
+
+    it 'go through the setter for @x parameters', ->
+      assert.equals 'X', run [[
+        class Name
+          new: (@value) =>
+          property value
+            get: => @_v
+            set: (v) => @_v = v:upper()
+        Name('x')._v
+      ]]
+
+    it 'work in a constructor before super() is called', ->
+      assert.equals 'x', run [[
+        class Base
+          property name
+            get: => @_name
+            set: (n) => @_name = n
+        class Sub extends Base
+          new: =>
+            @name = 'x'
+            super()
+        Sub().name
+      ]]
+
+    it 'are inherited, also by subclasses without properties of their own', ->
+      assert.same {3, true, false}, {with_range [[
+        class Span extends Range
+        class Labeled extends Span
+          label: 'x'
+        Labeled(1, 3).size, Labeled(1, 0).empty,
+          Labeled.__base.__properties == Range.__base.__properties
+      ]]}
+
+    it 'are replaced as a whole by a property of the same name in a subclass', ->
+      assert.same {'sub', true}, {run [[
+        class Base
+          property value
+            get: => 'base'
+            set: (v) =>
+        class Sub extends Base
+          property value => 'sub'
+        s = Sub()
+        ok, err = pcall(-> s.value = 1)
+        s.value, err:match("property 'value' is read%-only") != nil
+      ]]}
+
+    it "stay out of their parent's and siblings' instances", ->
+      assert.same {'a', nil, nil}, {run [[
+        class Base
+        class A extends Base
+          property name => 'a'
+        class B extends Base
+        A().name, B().name, Base().name
+      ]]}
+
+    it 'win over members of the same name in subclasses', ->
+      assert.equals 'property', run [[
+        class Base
+          property value => 'property'
+        class Sub extends Base
+          value: 'member'
+        Sub().value
+      ]]
+
+    it "call the parent's accessor with super()", ->
+      assert.same {'<BASE>', 'BASE'}, {run [[
+        class Base
+          property value
+            get: => @_v
+            set: (v) => @_v = v:upper()
+        class Sub extends Base
+          property value
+            get: => "<#{super()}>"
+            set: (v) => super(v)
+        s = Sub()
+        s.value = 'base'
+        s.value, s._v
+      ]]}
+
+    it 'reach the methods of the parent with super:method()', ->
+      assert.equals 'sub of base', run [[
+        class Base
+          describe: => 'base'
+        class Sub extends Base
+          property description => 'sub of ' .. super:describe()
+        Sub().description
+      ]]
+
+    it 'leave property as an ordinary name elsewhere', ->
+      assert.same {'member', 'called'}, {run [[
+        class Thing
+          @property: (t) => @log = t.name
+          @property(name: 'called')
+          property: 'member'
+        Thing().property, Thing.log
+      ]]}
+
+    it 'reject -> for accessors', ->
+      assert.match compile_error('class A\n  property x -> 1'), "use '=>'"
+
+    it 'reject parameters for the getter of a read-only property', ->
+      assert.match compile_error('class A\n  property x (a) => a'), 'takes no parameters'
+
+    it 'reject anything but get: and set: in the block', ->
+      assert.match compile_error('class A\n  property x\n    got: => 1'), "holds only 'get:' and 'set:'"
+
+    it 'reject an accessor given twice', ->
+      assert.match compile_error('class A\n  property x\n    get: => 1\n    get: => 2'),
+        "'get:' is given twice for the property 'x'"
+
+    it 'reject a property without accessors', ->
+      assert.match compile_error('class A\n  property x\n  y: 1'), "expected '=>' or an indented block"
+      assert.match compile_error('class A\n  property x 1'), "expected '=>' or an indented block.*found '1'"
+
+    it 'reject a name defined twice in a class', ->
+      assert.match compile_error('class A\n  property x => 1\n  property x => 2'),
+        "'x' is already defined on line 2 of this class"
+      assert.match compile_error('class A\n  x: 1\n  property x => 2'),
+        "'x' is already defined on line 2 of this class"
+      assert.match compile_error("class A\n  property x => 2\n  'x': 1"),
+        "'x' is already defined as a property on line 2 of this class"
+
+  describe 'fallbacks', ->
+    -- new fields go to __newindex: as well, so the constructor sets its field raw
+    proxy = [[
+      class Proxy
+        new: (target) => rawset(self, 'target', target)
+        property size => 1
+        m: => 'm'
+        __index: (key) => @target[key]
+        __newindex: (key, value) => @target[key] = value
+    ]]
+
+    with_proxy = (src) -> run dedent(proxy) .. '\n' .. dedent(src)
+
+    it 'call __index: for keys that are not fields, properties or methods', ->
+      assert.same {'A', 'm', 1, 't', nil}, {with_proxy [[
+        p = Proxy({a: 'A', m: 'no', size: 'no'})
+        p.a, p:m(), p.size, p.target and 't', p.missing
+      ]]}
+
+    it 'call __newindex: for assignments to keys that are not fields or properties', ->
+      assert.same {'v', nil, 'w'}, {with_proxy [[
+        t = {}
+        p = Proxy(t)
+        p.x = 'v'
+        rawset(p, 'y', 'old')
+        p.y = 'w'
+        t.x, t.y, rawget(p, 'y')
+      ]]}
+
+    it 'take tables, as in Lua', ->
+      assert.same {'d', 'v'}, {run [[
+        store = {}
+        class Defaults
+          '__index': {color: 'd'}
+          __newindex: store
+        d = Defaults()
+        d.size = 'v'
+        d.color, store.size
+      ]]}
+
+    it 'are inherited', ->
+      assert.same {'A', 'v'}, {with_proxy [[
+        class SubProxy extends Proxy
+        t = {a: 'A'}
+        p = SubProxy(t)
+        p.x = 'v'
+        p.a, t.x
+      ]]}
 
   it 'allow keys that are Lua keywords and expressions', ->
     assert.same {1, 2}, {run [[
@@ -216,13 +461,25 @@ describe 'classes', ->
         c:m(), c.log
       ]]}
 
-    it 'does not inherit metamethods, as in MoonScript', ->
-      assert.same {'P3', true}, {run [[
+    it 'inherits metamethods, which subclasses can override', ->
+      assert.same {'P3', 'P3', 'S3', 'P3'}, {run [[
         class Point
           new: (@x) =>
           __tostring: => "P#{@x}"
         class Sub extends Point
-        tostring(Point(3)), tostring(Sub(3)):match('^table') != nil
+        class Other extends Sub
+          __tostring: => "S#{@x}"
+        class Deeper extends Sub
+        tostring(Point(3)), tostring(Sub(3)), tostring(Other(3)), tostring(Deeper(3))
+      ]]}
+
+    it 'compares instances of a parent and a subclass with an inherited __eq', ->
+      assert.same {true, false}, {run [[
+        class Point
+          new: (@x) =>
+          __eq: (other) => @x == other.x
+        class Sub extends Point
+        Point(1) == Sub(1), Point(1) == Sub(2)
       ]]}
 
     it 'reaches the parent class with super and super.field', ->

@@ -70,6 +70,38 @@ describe 'line alignment', ->
     assert.equals 6, line_of lua, 'A = __hs_class' -- on the class's last line
     assert.equals 7, line_of lua, 'local y'
 
+  it 'keeps the lines of properties, whatever the order of their accessors', ->
+    lua = compile [[
+      class A extends B
+        property size => @n
+
+        property text
+          set: (t) =>
+            @_t = t
+          get: =>
+
+            @_t
+        __tostring: => 'a'
+      y = 1
+    ]]
+    assert.equals 2, line_of lua, 'return self.n'
+    assert.equals 5, line_of lua, 'set = function(self, t)'
+    assert.equals 6, line_of lua, 'self._t = t'
+    assert.equals 7, line_of lua, ' get = function(self)'
+    assert.equals 9, line_of lua, 'return self._t'
+    assert.equals 10, line_of lua, '__hs_hook(' -- on the class's last line
+    assert.equals 11, line_of lua, 'local y'
+
+  it 'reports runtime errors in accessors on the source line', ->
+    assert.equals 5, error_line [[
+      class Thing
+        property value
+          get: => 1
+          set: (v) =>
+            @x = v .. nil
+      Thing().value = 1
+    ]]
+
   it 'reports runtime errors on the source line', ->
     assert.equals 4, error_line [[
       f = (t) ->

@@ -22,6 +22,7 @@ class HowlscriptMode
       '[([{:=]%s*$' -- hanging operators
       '[({][^(){}]*,%s*$' -- arguments or entries continuing on the next line
       r'^\\s*\\b(class|switch|do|with|when)\\b', -- block starters
+      '^%s*property%s+[%w_]+%s*$', -- properties with a block of get: and set:
       { r'^\\s*\\b(for|while)\\b', '%sdo%s+%S' }, -- loops, unless the body follows 'do'
       { r'^\\s*\\b(elseif|if|unless)\\b', '%sthen%s*'}, -- conditionals
       '^%s*else%s*$',
@@ -64,6 +65,8 @@ class HowlscriptMode
 
     patterns = {
       '%s*class%s+%w'
+      '^%s*property%s+[%w_]+%s*=>'
+      '^%s*property%s+[%w_]+%s*$'
       r'\\w\\s*[=:]\\s*(\\([^)]*\\))?\\s*[=-]>'
       r'(?:it|describe|context)\\(\\s*[\'"].+->\\s*$'
     }

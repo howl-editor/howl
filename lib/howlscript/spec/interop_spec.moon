@@ -48,6 +48,58 @@ describe 'interop with MoonScript classes', ->
     run 'class Sub extends Base', :Base
     assert.equals 'Sub', Base.child
 
+  it "gives a Howlscript subclass the metamethods of a MoonScript parent", ->
+    Point = moon_run [[
+      class Point
+        new: (@x) =>
+        __tostring: => "P#{@x}"
+    ]]
+    assert.equals 'P1', tostring run([[
+      class Sub extends Point
+      Sub(1)
+    ]], :Point)
+
+  describe 'MoonScript subclasses of Howlscript classes with properties', ->
+    Base = nil
+
+    before_each ->
+      Base = run [[
+        class Base
+          @__inherited: (child) => @child = child.__name
+          new: (@_v = 'v') =>
+          property value
+            get: => @_v
+            set: (v) => @_v = v:upper()
+          property size => #@_v
+          __tostring: => "Base(#{@_v})"
+          __index: (key) => "fallback #{key}"
+      ]]
+
+    it 'get the properties, metamethods and fallbacks', ->
+      Sub = moon_run [[
+        class Sub extends Base
+          shout: => @value .. '!'
+      ]], :Base
+      s = Sub!
+      s.value = 'x'
+      assert.equals 'X!', s\shout!
+      assert.equals 'Base(X)', tostring s
+      assert.equals 'fallback other', s.other
+      assert.raises "property 'size' is read%-only", -> s.size = 2
+
+    it 'pass them on to their own subclasses', ->
+      Sub = moon_run 'class Sub extends Base', :Base
+      Deeper = moon_run [[
+        class Deeper extends Sub
+          new: => super 'd'
+      ]], :Sub
+      assert.equals 'Base(d)', tostring Deeper!
+      assert.equals 'd', Deeper!.value
+
+    it 'still call the parent class __inherited', ->
+      moon_run 'class Sub extends Base', :Base
+      assert.equals 'Sub', Base.child
+
   it 'sees methods added to __base later, as MoonScript code does', ->
     Thing = run [[
       class Thing

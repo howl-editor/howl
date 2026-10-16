@@ -1,0 +1,39 @@
+-- A Howlscript port of lib/howl/chunk.moon, run against its own spec by
+-- acceptance_spec.moon. Keep it in step when that module changes. It declares its
+-- properties and metamethods itself, where the original uses PropertyObject.
+
+class Chunk
+  new: (@buffer, @start_pos, @end_pos) =>
+
+  property empty => @end_pos < @start_pos
+
+  property text
+    get: =>
+      @_text or= @buffer:sub(@start_pos, @end_pos)
+      @_text
+
+    set: (text) =>
+      @buffer:as_one_undo ->
+        @delete()
+        @buffer:insert(text, @start_pos)
+        @end_pos = @start_pos + tostring(text).ulen - 1
+
+  property styles =>
+    unless @_styles
+      if @empty
+        @_styles = {}
+      else
+        a_buf = @buffer._buffer
+        b_start, b_end = a_buf:byte_offset(@start_pos), a_buf:byte_offset(@end_pos)
+        a_buf:ensure_styled_to(pos: b_end)
+
+        @_styles = @buffer._buffer.styling:get(b_start, b_end)
+
+    @_styles
+
+  delete: => @buffer:delete(@start_pos, @end_pos) unless @empty
+
+  __tostring: => @text
+  __len: => (@end_pos - @start_pos) + 1
+
+return Chunk

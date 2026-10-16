@@ -2,9 +2,10 @@
 
 Howlscript is the successor to MoonScript for Howl. It keeps what works in
 MoonScript, like indentation, implicit returns, classes, comprehensions and
-`with`. It drops what doesn't: `\` method calls, calls without parentheses inside
-expressions, tables without braces, `!`, assignment, `if`, `do` and loops as values,
-function stubs, `import` and `using`.
+`with`. It adds properties and inherited metamethods to classes. It drops what
+doesn't work: `\` method calls, calls without parentheses inside expressions, tables
+without braces, `!`, assignment, `if`, `do` and loops as values, function stubs,
+`import` and `using`.
 
 Howlscript compiles to Lua for LuaJIT. Its classes have MoonScript's layout, so the
 two languages can extend each other's classes during a migration. The compiler in
@@ -14,13 +15,10 @@ parser. Howlscript files use the extension `.howl`.
 ```howl
 {:File} = howl.io
 
-class Note extends PropertyObject
+class Note
   new: (@path, @tags = {}) =>
-    super()
 
-  @property(title: {
-    get: => @path:match('[^/]+$')
-  })
+  property title => @path:match('[^/]+$')
 
   tagged: (tag) => [t for t in *@tags if t == tag]
 
@@ -28,6 +26,8 @@ class Note extends PropertyObject
     file = File(@path)
     file.contents = text unless file.exists
     signal.emit('note-saved', note: self, size: #text)
+
+  __tostring: => "Note(#{@title})"
 
 count = 0
 count++

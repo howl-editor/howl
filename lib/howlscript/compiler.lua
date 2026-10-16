@@ -114,6 +114,109 @@ end
 local DISCARD = { k = 'discard' }
 local IMPLICIT_RETURN = { k = 'return', implicit = true }
 
+-- Lua's metamethods, which a class passes on to its subclasses: Lua looks them up
+-- in the metatable itself, so the base of a subclass needs copies of them.
+local metamethods = {
+  '__tostring', '__len', '__eq', '__lt', '__le', '__concat', '__call', '__unm', '__add',
+  '__sub', '__mul', '__div', '__mod', '__pow', '__pairs', '__ipairs', '__mode', '__gc',
+}
+local is_metamethod = {}
+for _, name in ipairs(metamethods) do is_metamethod[name] = true end
+
+-- The runtime support for classes, prepended on the first line of files that need
+-- it, so the Lua stays self-contained.
+--
+-- `__hs_setup(class, own)` runs when a class is created. It copies the metamethods
+-- of the ancestors' bases, and the `__index:` and `__newindex:` fallbacks
+-- (`__hs_index`, `__hs_newindex`). A class with properties or fallbacks of its own
+-- (`own`), or with an ancestor that dispatches, then dispatches too: its base gets
+-- `__properties`, a flat table of `{get, set}` by name that starts out with the
+-- ancestors' properties, and `__index` and `__newindex` functions that go through
+-- the properties, the methods, the fallbacks and finally the instance. Methods are
+-- looked up raw along the chain of bases, so that the dispatcher of a parent never
+-- runs with the base of a subclass as `self`. It returns the properties table.
+--
+-- `__hs_hook(class)` runs at the end of a class body. It makes the class's
+-- `__inherited` run the setup for a subclass first, for MoonScript subclasses, and
+-- then any `__inherited` the class had. The setup is skipped for subclasses that
+-- dispatch already, which keeps it from resetting their properties.
+local CLASS_SUPPORT = string.gsub([[
+local __hs_setup, __hs_hook
+do
+  local rawget, rawset, getmetatable, pairs, type, error, tostring =
+    rawget, rawset, getmetatable, pairs, type, error, tostring
+  local inherited_keys = {'__hs_index', '__hs_newindex', ]] ..
+  "'" .. table.concat(metamethods, "', '") .. "'" .. [[}
+  local function dispatch(b, props)
+    rawset(b, '__properties', props)
+    rawset(b, '__index', function(o, k)
+      local p = props[k]
+      if p ~= nil then
+        local get = p.get
+        if get == nil then error("property '" .. tostring(k) .. "' is write-only", 2) end
+        return get(o)
+      end
+      local a = b
+      repeat
+        local v = rawget(a, k)
+        if v ~= nil then return v end
+        a = getmetatable(a)
+      until a == nil
+      local f = rawget(b, '__hs_index')
+      if type(f) == 'function' then return f(o, k) end
+      if f ~= nil then return f[k] end
+    end)
+    rawset(b, '__newindex', function(o, k, v)
+      local p = props[k]
+      if p ~= nil then
+        local set = p.set
+        if set == nil then error("property '" .. tostring(k) .. "' is read-only", 2) end
+        set(o, v)
+        return
+      end
+      local f = rawget(b, '__hs_newindex')
+      if type(f) == 'function' then
+        f(o, k, v)
+      elseif f ~= nil then
+        f[k] = v
+      else
+        rawset(o, k, v)
+      end
+    end)
+  end
+  __hs_setup = function(c, own)
+    local b, parent, props = c.__base, c.__parent, nil
+    local a = parent and parent.__base
+    while a do
+      for i = 1, #inherited_keys do
+        local k = inherited_keys[i]
+        if rawget(b, k) == nil then rawset(b, k, rawget(a, k)) end
+      end
+      local inherited = rawget(a, '__properties')
+      if inherited then
+        props = props or {}
+        for k, p in pairs(inherited) do
+          if props[k] == nil then props[k] = p end
+        end
+      end
+      a = getmetatable(a)
+    end
+    if own or props then
+      props = props or {}
+      dispatch(b, props)
+    end
+    return props
+  end
+  __hs_hook = function(c)
+    local inherited = c.__inherited
+    rawset(c, '__inherited', function(cls, child)
+      if rawget(child.__base, '__properties') == nil then __hs_setup(child) end
+      if inherited then return inherited(cls, child) end
+    end)
+  end
+end
+]], '\n%s*', ' ')
+
 local Compiler = {}
 Compiler.__index = Compiler
 
@@ -125,10 +228,11 @@ local function new(source)
     E = Emitter.new(source),
     n_tmp = 0,
     with_stack = {},
-    cls = nil,     -- the class being compiled: { c, b, p, method }
+    cls = nil,     -- the class being compiled: { c, b, p, method, static, accessor }
     fn = nil,      -- the function being compiled: { vararg, iife, loop }
     scope = nil,
     needs_invoke = false,
+    needs_class_support = false,
   }, Compiler)
 end
 
@@ -982,16 +1086,45 @@ local function class_locals(body, scope)
   return names
 end
 
+-- The name a member's key gives, when it's a name or a plain string.
+local function key_name(key)
+  if type(key) == 'string' then return key end
+  if key.k == 'String' and #key.parts == 1 and type(key.parts[1]) == 'string' then
+    return key.parts[1]
+  end
+end
+
 -- Classes are laid out exactly as MoonScript lays them out, so that the two can
 -- extend each other. Unlike MoonScript, the body runs top to bottom, which keeps
 -- the lines aligned; since the base may then already have a parent with a
 -- __newindex, members are added with rawset.
+--
+-- Classes with a parent, properties, fallbacks or metamethods use the runtime
+-- support in CLASS_SUPPORT, which extends that layout.
 function Compiler:stmt_Class(s)
   local E = self.E
   local name = s.name
   self:check_name(name, s.name_tok)
   local c, b = self:tmp('class'), self:tmp('base')
   local p = s.parent and self:tmp('parent')
+
+  -- own: whether the class has properties or fallbacks of its own, which make it
+  -- dispatch even without a parent that does
+  local own, has_properties, support = false, false, p ~= nil
+  for _, item in ipairs(s.body) do
+    if item.k == 'property' then
+      own, has_properties = true, true
+    elseif item.k == 'prop' then
+      local kn = key_name(item.key)
+      if kn == '__index' or kn == '__newindex' then
+        own = true
+      elseif is_metamethod[kn] then
+        support = true
+      end
+    end
+  end
+  support = support or own
+  local props = has_properties and self:tmp('props')
 
   E:stmt(s.line)
   if self.scope:is_fresh(name) then
@@ -1022,30 +1155,47 @@ function Compiler:stmt_Class(s)
   if p then
     E:w(format('; setmetatable(%s, %s.__base)', b, p))
   end
+  if support then
+    self.needs_class_support = true
+    E:w('; ' .. (props and ('local ' .. props .. ' = ') or '') ..
+      format('__hs_setup(%s%s)', c, own and ', true' or ''))
+  end
   E:w('; local self = ' .. c)
   self.scope:declare('self', s.line)
 
   local saved_cls = self.cls
   self.cls = { c = c, b = b, p = p }
 
+  -- the lines of the properties, and of the members sharing a name with one
+  local properties, members = {}, {}
+
   for _, item in ipairs(s.body) do
     if item.k == 'prop' then
+      local kn = key_name(item.key)
       local key = item.key
-      if key == '__index' or (type(key) == 'table' and key.k == 'String' and key.parts[1] == '__index' and #key.parts == 1) then
-        self:error("a class can't have an __index member, since its instances find their methods through the __index of its base", item, 7)
+      if kn == '__index' or kn == '__newindex' then
+        -- fallbacks, as the base's own __index and __newindex dispatch
+        key = '__hs_' .. string.sub(kn, 3)
+      end
+      if kn then
+        if properties[kn] then
+          self:error(format("'%s' is already defined as a property on line %d of this class",
+            kn, properties[kn]), item, #kn)
+        end
+        members[kn] = members[kn] or item.line
       end
       E:stmt(item.line)
-      local is_new = item.key == 'new'
+      local is_new = key == 'new'
       if is_new then
         E:w(c .. '.__init = ')
-      elseif type(item.key) == 'string' then
-        E:w(p and format('rawset(%s, %q, ', b, item.key) or (b .. field(item.key) .. ' = '))
+      elseif type(key) == 'string' then
+        E:w(p and format('rawset(%s, %q, ', b, key) or (b .. field(key) .. ' = '))
       else
         E:w(p and ('rawset(' .. b .. ', ') or (b .. '['))
-        self:expr(item.key)
+        self:expr(key)
         E:w(p and ', ' or '] = ')
       end
-      self.cls.method = item.key
+      self.cls.method = key
       if item.value.k == 'Func' then
         -- constructors return nothing
         self:func(item.value, is_new)
@@ -1054,6 +1204,37 @@ function Compiler:stmt_Class(s)
       end
       self.cls.method = nil
       if p and not is_new then E:w(')') end
+    elseif item.k == 'property' then
+      local pname = item.name
+      local defined = properties[pname] or members[pname]
+      if defined then
+        self:error(format("'%s' is already defined on line %d of this class", pname, defined),
+          item.name_tok, #pname)
+      end
+      properties[pname] = item.line
+      E:stmt(item.line)
+      E:w(props .. field(pname) .. ' = {')
+      local accessors = { { 'get', item.get }, { 'set', item.set } }
+      if not item.get or (item.set and item.set.line < item.get.line) then
+        accessors[1], accessors[2] = accessors[2], accessors[1]
+      end
+      for i, accessor in ipairs(accessors) do
+        local kind, value = accessor[1], accessor[2]
+        if value then
+          if i > 1 then E:w(', ') end
+          E:at(value.line)
+          E:w(kind .. ' = ')
+          self.cls.method, self.cls.accessor = pname, kind
+          if value.k == 'Func' then
+            -- like constructors, setters return nothing
+            self:func(value, kind == 'set')
+          else
+            self:expr(value)
+          end
+          self.cls.method, self.cls.accessor = nil, nil
+        end
+      end
+      E:w('}')
     elseif item.k == 'classvar' then
       E:stmt(item.line)
       E:w(c .. field(item.key) .. ' = ')
@@ -1069,6 +1250,9 @@ function Compiler:stmt_Class(s)
   self:pop_scope()
   if p then
     E:w(format(' if %s.__inherited then %s.__inherited(%s, %s) end', p, p, p, c))
+  end
+  if support then
+    E:w(format(' __hs_hook(%s)', c))
   end
   E:sp()
   E:w(name .. ' = ' .. c .. ' end')
@@ -1232,7 +1416,10 @@ function Compiler:e_Call(e)
     local cls = self:super_cls(fn, true)
     local method = cls.method
     self:need_self(fn)
-    if method == 'new' and not cls.static then
+    if cls.accessor then
+      -- in an accessor, the parent's accessor of the same kind
+      E:w(cls.c .. '.__parent.__base.__properties' .. field(method) .. '.' .. cls.accessor)
+    elseif method == 'new' and not cls.static then
       E:w(cls.c .. '.__parent.__init')
     else
       E:w(cls.c .. (cls.static and '.__parent' or '.__parent.__base'))
@@ -1412,6 +1599,9 @@ local function compile(stmts, source)
   local lua = c.E:result()
   if c.needs_invoke then
     lua = 'local function __hs_invoke(o, k, ...) return o[k](o, ...) end ' .. lua
+  end
+  if c.needs_class_support then
+    lua = CLASS_SUPPORT .. lua
   end
   return lua
 end

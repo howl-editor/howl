@@ -9,27 +9,31 @@ match = require 'luassert.match'
 fixtures = debug.getinfo(1, 'S').source\match('^@(.+/)') .. 'fixtures/'
 
 -- Loads a module's own spec with the Howlscript port of the module in its place:
--- `require` returns the port while the spec loads, and so does `howl.util`, which
--- `import X from howl.util` reads, when `util_key` is given. The spec keeps the
--- port, while everything is restored for any other code.
-spec_against_port = (spec, module_name, port_file, util_key) ->
+-- `require` returns the port while the spec loads, and so does the auto-loading
+-- table that `import X from howl.util` reads, when `auto` gives it and its key, as
+-- in `{howl.util, 'Matcher'}`. The spec keeps the port, while everything is
+-- restored for any other code.
+spec_against_port = (spec, module_name, port_file, auto) ->
   port = assert(howlscript.loadfile fixtures .. port_file)!
   saved = package.loaded[module_name]
-  saved_util = util_key and rawget howl.util, util_key
+  saved_auto = auto and rawget auto[1], auto[2]
   package.loaded[module_name] = port
-  rawset howl.util, util_key, port if util_key
+  rawset auto[1], auto[2], port if auto
 
   ok, err = pcall -> assert(moonscript.loadfile howl.app.root_dir\join(spec).path)!
 
   package.loaded[module_name] = saved
-  rawset howl.util, util_key, saved_util if util_key
+  rawset auto[1], auto[2], saved_auto if auto
   error err, 0 unless ok
 
 describe 'acceptance: lib/aullar/spec/gap_buffer_spec.moon against a Howlscript GapBuffer', ->
   spec_against_port 'lib/aullar/spec/gap_buffer_spec.moon', 'aullar.gap_buffer', 'gap_buffer.howl'
 
 describe 'acceptance: spec/util/matcher_spec.moon against a Howlscript Matcher', ->
-  spec_against_port 'spec/util/matcher_spec.moon', 'howl.util.matcher', 'matcher.howl', 'Matcher'
+  spec_against_port 'spec/util/matcher_spec.moon', 'howl.util.matcher', 'matcher.howl', {howl.util, 'Matcher'}
+
+describe 'acceptance: spec/chunk_spec.moon against a Howlscript Chunk', ->
+  spec_against_port 'spec/chunk_spec.moon', 'howl.chunk', 'chunk.howl', {howl, 'Chunk'}
 
 -- PropertyObject's spec (spec/util/moon/propertyobject_spec.moon) declares its
 -- classes in MoonScript, so it's translated here, with the classes in Howlscript.

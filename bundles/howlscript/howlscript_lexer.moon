@@ -52,6 +52,14 @@ howl.util.lpeg_lexer ->
     c('type_def', upper^1 * (alpha + digit + '_')^0)
   }
 
+  -- `property name =>`, or `property name` ending its line, declares a property
+  property_def = sequence {
+    c('keyword', -after_access * word('property')),
+    c('whitespace', blank^1),
+    c('key', ident),
+    #(blank^0 * (P'=>' + eol + P(-1)))
+  }
+
   sq_string = span("'", "'", '\\')
   dq_string = span('"', '"', P'\\')
   long_string = span('[[', ']]')
@@ -97,7 +105,7 @@ howl.util.lpeg_lexer ->
     'all'
     all: any {
       number, key, V'string', decrement, comment, long_string_level, operator, illegal,
-      special, type_def, keyword, member, type_name, lua_keyword, V'fdecl', cdef,
+      special, type_def, property_def, keyword, member, type_name, lua_keyword, V'fdecl', cdef,
       identifier
     }
     string: any {

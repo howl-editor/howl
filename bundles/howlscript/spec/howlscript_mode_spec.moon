@@ -48,6 +48,10 @@ describe 'howlscript-mode', ->
         'class Frob',
         'class Frob extends Bar ',
       }
+      'pending property declarations': {
+        'property size =>',
+        'property text',
+      }
       'hanging assignments': {
         'var = ',
         'var: ',
@@ -108,6 +112,7 @@ describe 'howlscript-mode', ->
         'iffy()'
         'dojo_style(foo)'
         'one(for_two)'
+        'property size => @n'
       }
     }
 
@@ -169,6 +174,9 @@ class Foo
     nil
   other: =>
     'this one to'
+  property size => 1
+  property text
+    get: => 'text'
 describe('thing', ->
   it('works', ->
     assert.is_true(true)
@@ -182,6 +190,9 @@ foo = ->
 class Foo
   new: (frob) =>
   other: =>
+  property size => 1
+  property text
+    get: => 'text'
 describe('thing', ->
   it('works', ->
 ]]

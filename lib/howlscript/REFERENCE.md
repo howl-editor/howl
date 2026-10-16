@@ -41,8 +41,9 @@ and  break  class  continue  do  else  elseif  export  false  for  if  in  local
 nil  not  or  return  switch  then  true  unless  when  while  with
 ```
 
-- `extends` only means something after a class name. Elsewhere it's an ordinary name,
-  and so are `import`, `from` and `using`.
+- `extends` only means something after a class name, and `property` at the start of
+  a class item (see [Properties](#properties)). Elsewhere they're ordinary names, and
+  so are `import`, `from` and `using`.
 - `super` always refers to the parent class (see [Classes](#classes)), so it can't be
   assigned to.
 - `self` is an ordinary name, which `=>` declares as a method's first parameter.
@@ -595,7 +596,9 @@ class BackPack extends Inventory
     super(name)
   describe: => 'a backpack, ' .. super:describe()
   :helper                    -- short for helper: helper
-  @property(weight: {get: => #@items})  -- class body code runs with self = the class
+  property weight => #@items
+  __tostring: => "BackPack(#{@size})"
+  @sizes = {'small', 'large'}  -- class body code runs with self = the class
 ```
 
 - **Declaring:** `class Name` or `class Name extends parent` declares the local
@@ -603,20 +606,17 @@ class BackPack extends Inventory
   and its name is a plain name, not a field.
 - **Members:** `name: value`, `'text': value` and `[expr]: value` add a member, and
   `:name` is short for `name: name`. `@name: value` sets a class variable, such as a
-  class method. A member can't be named `__index`, since instances find their methods
-  through the `__index` of the base.
+  class method.
 - **Constructor:** `new` is the constructor. A class without one calls its parent's.
 - **`super`:**
   - `super(...)` calls the parent's version of the current method: in `new` the
-    parent constructor, and in a class method `@name:` the parent class's `name`;
+    parent constructor, in a class method `@name:` the parent class's `name`, and in
+    an accessor the parent's accessor (see [Properties](#properties));
   - `super:m(...)` calls any parent method on self;
   - `super.x` reads from the parent class, and `super` alone is the parent class.
 
   It works in the methods of a class that extends another, including functions
   inside them. A member keyed by an expression evaluates the key again for `super()`.
-- **Metamethods:** members such as `__tostring` and `__add` are metamethods of the
-  instances. A subclass doesn't inherit them, as Lua looks them up in the metatable
-  itself.
 - **Class body:** the body can also hold statements, which run with `self` being the
   class. Names assigned in it are locals that every method can see.
 - **`__inherited`:** a parent's `__inherited(parent, child)` is called when it's
@@ -624,16 +624,106 @@ class BackPack extends Inventory
 
 **A class body runs top to bottom.** The class is created at the `class` line, and
 its members and statements then run in order. Members are added with `rawset`, since
-the parent's base may already have a `__newindex` (Howl's `PropertyObject` adds one).
+the parent's base may already have a `__newindex`.
 
-The classes are laid out exactly as MoonScript's, so Howlscript and MoonScript
-classes can extend each other:
+### Properties
+
+```howl
+class Chunk
+  new: (@buffer, @start_pos, @end_pos) =>
+
+  property empty => @end_pos < @start_pos
+
+  property text
+    get: => @buffer:sub(@start_pos, @end_pos)
+    set: (text) =>
+      @buffer:replace(@start_pos, @end_pos, text)
+```
+
+- **Read-only:** `property name => body` declares a property with a getter. The
+  getter takes no parameters, and its body is inline or a block.
+- **With a block:** `property name` followed by an indented block declares a
+  property with `get:` and `set:`, either of which can be left out. Each takes an
+  expression, normally a method: the getter takes no parameters, and the setter
+  takes the value.
+- **Use:** reading a property calls its getter, and assigning to it calls its setter.
+  So `new: (@text) =>` goes through the setter too. Setters, like constructors,
+  return nothing.
+- **Errors:** assigning to a property without a setter is an error,
+  `property 'x' is read-only`. So is reading one without a getter,
+  `property 'x' is write-only`. Both are reported where the property is used.
+- **Inheritance:**
+  - A subclass inherits its parent's properties.
+  - A property of the same name replaces the parent's, both accessors.
+  - In an accessor, `super()` calls the parent's getter, and `super(value)` its
+    setter.
+- **Names:**
+  - A property wins over a method or member of the same name, also in a subclass.
+  - Within one class, a name can't be both.
+  - `property` only means this at the start of a class item, followed by a name.
+    Elsewhere it's an ordinary name, so `property: value` and `@property(...)`
+    still work.
+
+### Metamethods
+
+Members named after Lua's metamethods are metamethods of the instances: `__tostring`,
+`__eq`, `__lt`, `__le`, `__len`, `__concat`, `__call`, `__unm`, `__add`, `__sub`,
+`__mul`, `__div`, `__mod`, `__pow`, `__pairs`, `__ipairs`, `__mode` and `__gc`.
+Subclasses inherit them. A subclass's copy is the same function, so an `__eq`
+compares the instances of a class and its subclasses.
+
+`__index:` and `__newindex:` are fallbacks:
+
+- **`__index:`** is called with the key, as in `(key) =>`, for a key that the
+  instance doesn't have as a field, property or method.
+- **`__newindex:`** is called with the key and the value for an assignment to a key
+  that isn't a field of the instance or a property. Without it, the assignment sets
+  a field.
+- **Tables:** either can be a table instead, which the key is read from or set in.
+- **New fields:** setting a new field in `new` goes through `__newindex:` too, so set
+  those with `rawset(self, key, value)`.
+- **Inheritance:** subclasses inherit the fallbacks.
+- **Metatable:** they're called by the base's real `__index` and `__newindex`
+  functions, so `getmetatable(obj).__index` isn't the fallback.
+
+```howl
+class Window
+  new: (win) => rawset(self, 'win', win)
+  property title => @win.title
+  __index: (key) => @win[key]
+```
+
+### Layout
+
+The classes are laid out as MoonScript's, so Howlscript and MoonScript classes can
+extend each other:
 
 - **Class object:** holds `__init`, `__base`, `__name` and `__parent`. Its metatable
   looks names up in the base and then the parent, and calling it creates an instance.
 - **Instances:** an instance's metatable is the class's `__base`. The base has
   `__index` set to itself and `__class` pointing at the class, and it inherits from
   the parent's base through its metatable.
+
+Properties and fallbacks extend this:
+
+- **Dispatching classes:** a class with properties or fallbacks, or with a parent
+  that has them, keeps its properties in its base's `__properties`.
+  - That's a table of `{get = f, set = f}` tables by name, including the inherited
+    ones.
+  - Its base's `__index` and `__newindex` are functions, which try the properties,
+    the methods (along the bases), the fallbacks and the instance, in that order.
+  - The fallbacks are kept in the base as `__hs_index` and `__hs_newindex`.
+- **Inheritance:** metamethods and fallbacks are copied to the base of a subclass
+  when it's created, and its properties are set up then.
+- **MoonScript subclasses:** they get the same setup through the parent's
+  `__inherited`. Classes with metamethods, properties or fallbacks wrap their
+  `__inherited` to do that, and still call the one they had.
+- **PropertyObject:** a class extending a MoonScript class built on Howl's
+  `PropertyObject` uses `@property` and `@meta` instead. PropertyObject replaces the
+  base's `__index` and `__newindex` with its own.
+
+A class without a parent, properties, fallbacks or metamethods compiles to exactly
+MoonScript's layout.
 
 ## Compared with MoonScript
 
@@ -651,7 +741,10 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | Arguments continued on indented lines, nested by indentation | Inside parentheses, where line breaks are free. Without parentheses, arguments only continue after a trailing `,` and can't nest. |
 | `f a: 1, 2` | An error: positional arguments come first. |
 | `x = a: 1`, `return a: 1`, indented key blocks | `x = {a: 1}`. A table needs braces, except for the trailing named arguments of a call. |
-| `@property name: get: => @x` | `@property(name: {get: => @x})`. A nested table always needs its braces. |
+| `@property name: get: => @x`, with Howl's `PropertyObject` | `property name => @x` (see [Properties](#properties)). In a class still extending `PropertyObject`, `@property(name: {get: => @x})`, as a nested table needs its braces. |
+| `@meta __tostring: => @x`, with Howl's `PropertyObject` | `__tostring: => @x`, a member (see [Metamethods](#metamethods)). |
+| A subclass doesn't inherit its parent's metamethods | It does. |
+| An `__index` member is ignored, as the base's `__index` is set to the base afterwards | `__index:` and `__newindex:` are fallbacks for keys the instance doesn't have (see [Metamethods](#metamethods)). |
 | `f{a: 1}` and `f[[text]]` call `f` | Errors: write `f({a: 1})` and `f([[text]])`, or leave out the parentheses with a space in a statement. |
 | `x--note` is a comment | A decrement followed by `note`. Write `x -- note`. |
 | `unless a ... elseif b` | `unless` takes an `else` but no `elseif`. |
@@ -666,7 +759,6 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | A class body adds all its members before running its other statements | It runs top to bottom (see [Classes](#classes)). |
 | `goto` can be a variable name | An error, like the other Lua keywords Howlscript doesn't use. |
 | `import`, `from`, `using` and `extends` are reserved | They're ordinary names; `extends` only means something after a class name. |
-
 These MoonScript 0.5.0 bugs are fixed:
 
 - **Update operators:** `t[f()] += 1` and `f().n += 1` call `f` twice.
@@ -685,8 +777,6 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
 - **`self`:** using `@` or `@@` with no `self` around, and `@x` parameters in a
   function made with `->`.
 - **`super`:** using `super` outside a class method, or in a class without a parent.
-- **`__index` members:** MoonScript ignores them, as it sets the base's `__index` to
-  the base afterwards.
 
 ### Left out
 
@@ -713,6 +803,8 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
 - **Destructured parameters:** `({:width, :height}) -> width * height`. MoonScript
   0.5.0 reads this as a call.
 - **Destructuring by string and expression keys:** `{'a b': x, [k]: y} = t`.
+- **Properties:** `property name => @x`, or with a block of `get:` and `set:`, in a
+  class body (see [Properties](#properties)).
 - **Numbers:** all of LuaJIT's forms, where MoonScript 0.5.0 lacks `0XFF`, `1e+2`,
   hex floats such as `0x1p4`, and imaginary numbers such as `2i`.
 - **Hints:** errors for MoonScript habits like `\`, `!`, `f (x)`, braceless tables,
