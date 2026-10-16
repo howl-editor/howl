@@ -5,12 +5,18 @@ describe 'comprehensions', ->
     it 'map lists', ->
       assert.same {2, 4, 6}, run '[x * 2 for x in *{1, 2, 3}]'
 
-    it 'filter with when', ->
-      assert.same {2}, run '[x for x in *{1, 2, 3} when x % 2 == 0]'
+    it 'filter with if and unless', ->
+      assert.same {{2}, {1, 3}}, {run [[
+        [x for x in *{1, 2, 3} if x % 2 == 0], [x for x in *{1, 2, 3} unless x == 2]
+      ]]}
 
-    it 'combine several for and when clauses', ->
+    it 'reject when as a filter, and an if before the for', ->
+      assert.match compile_error('r = [x for x in *t when x > 1]'), "filter with 'if' or 'unless' rather than 'when'"
+      assert.match compile_error('r = [x if x > 1 for x in *t]'), "a comprehension's 'if' goes after its 'for'"
+
+    it 'combine several for and if clauses', ->
       assert.same {{1, 'a'}, {1, 'b'}, {3, 'b'}}, run [[
-        [{x, y} for x in *{1, 2, 3} when x != 2 for y in *{'a', 'b'} when x == 1 or y == 'b']
+        [{x, y} for x in *{1, 2, 3} if x != 2 for y in *{'a', 'b'} if x == 1 or y == 'b']
       ]]
 
     it 'support slices and destructuring', ->
@@ -30,7 +36,7 @@ describe 'comprehensions', ->
     it 'can span lines', ->
       assert.same {1, 3}, run [[
         [x for x in *{1, 2, 3}
-          when x != 2]
+          if x != 2]
       ]]
 
     it 'take a function ending at the for', ->
@@ -53,11 +59,11 @@ describe 'comprehensions', ->
         {x .. y, true for x in *{'a', 'b'} for y in *{'1', '2'}}
       ]]
 
-    it 'filter with when', ->
-      assert.same {name: 'fast'}, run [[
+    it 'filter with if and unless', ->
+      assert.same {{name: 'fast'}, {color: 'red'}}, {run [[
         thing = {color: 'red', name: 'fast'}
-        {k, v for k, v in pairs(thing) when k != 'color'}
-      ]]
+        {k, v for k, v in pairs(thing) if k != 'color'}, {k, v for k, v in pairs(thing) unless k == 'name'}
+      ]]}
 
     it 'take the key and value from a single expression', ->
       assert.same {hello: 'world', foo: 'bar'}, run [[

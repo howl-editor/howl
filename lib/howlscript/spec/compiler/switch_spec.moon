@@ -5,31 +5,23 @@ describe 'switch', ->
     run [[
       switch ...
         when 'Robert'
-          'robert'
+          return 'robert'
         when 'Dan', 'Daniel'
-          'dan'
+          return 'dan'
         else
-          'unknown'
+          return 'unknown'
     ]], {}, n
 
   it 'picks the first matching when, comparing with ==', ->
     assert.same {'robert', 'dan', 'dan', 'unknown'}, {name_of('Robert'), name_of('Dan'), name_of('Daniel'), name_of('x')}
 
-  it 'supports when ... then on one line', ->
-    assert.equals 'two', run [[
-      x = 2
-      switch x
-        when 1 then 'one'
-        when 2 then 'two'
-    ]]
-
-  it 'can be a value', ->
-    assert.same {'b', nil}, {run [[
+  it 'supports when ... then and else on one line', ->
+    assert.same {'two', 'other'}, {run [[
       f = (x) ->
-        r = switch x
-          when 1 then 'a'
-          when 2 then 'b'
-        r
+        switch x
+          when 1 then return 'one'
+          when 2 then return 'two'
+          else return 'other'
       f(2), f(3)
     ]]}
 
@@ -39,9 +31,10 @@ describe 'switch', ->
       subject = ->
         calls += 1
         2
-      r = switch subject()
-        when 1 then 'a'
-        when 2 then 'b'
+      local r
+      switch subject()
+        when 1 then r = 'a'
+        when 2 then r = 'b'
       calls, r
     ]]}
 
@@ -51,20 +44,27 @@ describe 'switch', ->
       v = (n) ->
         log[#log + 1] = n
         n
-      r = switch 1
-        when v(1), v(2) then 'one'
-        when v(3) then 'three'
+      local r
+      switch 1
+        when v(1), v(2) then r = 'one'
+        when v(3) then r = 'three'
       r, table.concat(log, ',')
     ]]}
 
   it 'puts the case value on the left of ==', ->
-    assert.equals 'matched', run [[
-      mt = {__eq: (a, b) -> true}
-      always = setmetatable({}, mt)
-      switch setmetatable({}, mt)
-        when always then 'matched'
-        else 'no'
+    assert.equals 'when value on the left', run [[
+      mt = {__eq: (a, b) -> a.id == 'when'}
+      case = setmetatable({id: 'when'}, mt)
+      local r
+      switch setmetatable({id: 'subject'}, mt)
+        when case then r = 'when value on the left'
+        else r = 'subject on the left'
+      r
     ]]
+
+  it 'has no value', ->
+    assert.match compile_error('x = switch y\n  when 1 then 2'), "'switch' is a statement and gives no value"
+    assert.match compile_error('f = (y) ->\n  switch y\n    when 1 then 2'), "the 'switch' ending this function gives no value, so write 'return' before this"
 
   it 'needs when clauses', ->
     assert.match compile_error('switch x\nprint(1)'), "expected 'when' clauses"

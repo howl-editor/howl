@@ -5,95 +5,81 @@ describe 'conditionals', ->
     run [[
       n = ...
       if n < 0
-        'negative'
+        return 'negative'
       elseif n == 0
-        'zero'
+        return 'zero'
       else
-        'positive'
+        return 'positive'
     ]], {}, n
 
   it 'pick the branch with if, elseif and else', ->
     assert.same {'negative', 'zero', 'positive'}, {classify(-1), classify(0), classify(1)}
 
   it 'support unless', ->
-    assert.same {'no', 'yes'}, {run [[
+    assert.same {'no', 'yes', 'ran'}, {run [[
       f = (x) ->
         unless x
-          'no'
+          return 'no'
         else
-          'yes'
-      f(false), f(true)
-    ]]}
-
-  it 'negate a whole unless condition', ->
-    assert.equals 'ran', run [[
+          return 'yes'
       a, b = true, false
+      local r
       unless a and b
-        'ran'
-    ]]
+        r = 'ran'
+      f(false), f(true), r
+    ]]}
 
   it 'support then, elseif and else on one line', ->
     assert.same {'a', 'b', 'c', 'ran'}, {run [[
-      f = (x) -> if x == 1 then 'a' elseif x == 2 then 'b' else 'c'
-      g = -> unless false then 'ran'
+      f = (x) -> if x == 1 then return 'a' elseif x == 2 then return 'b' else return 'c'
+      g = -> unless false then return 'ran'
       f(1), f(2), f(3), g()
     ]]}
 
-  it 'can be values in assignments', ->
-    assert.same {'tall', 'short'}, {run [[
-      x = if 1 > 0
-        'tall'
-      else
-        'short'
-      y = if false then 'tall' else 'short'
-      x, y
-    ]]}
-
-  it 'assign nil to an existing name when no branch is taken', ->
-    assert.is_nil run [[
-      x = 1
-      x = if false then 2
-      x
-    ]]
-
-  it 'can be values anywhere in expressions', ->
-    assert.equals 'a!', run [[
-      x = true
-      (if x then 'a' else 'b') .. '!'
-    ]]
-
-  it 'can be arguments', ->
-    assert.same {'a', 'z'}, {run [[
-      f = (...) -> ...
-      x = true
-      f((if x then 'a' else 'b'), 'z')
-    ]]}
-
-  it 'take the rest of the line in their inline else body', ->
-    assert.same {'b', 'z'}, {run [[
-      f = (...) -> ...
-      f(if false then 'a' else 'b', 'z')
-    ]]}
-
   it 'take the else on a line aligned with the if', ->
-    assert.same {'outer else', 'inner else'}, {run [[
+    assert.equals 'outer else', run [[
       f = (a, b) ->
         if a
           if b
-            'inner'
+            return 'inner'
         else
-          'outer else'
-      g = (a, b) ->
-        if a
-          r = if b
-            'inner'
-          else
-            'inner else'
-          r
-      f(false, true), g(true, false)
-    ]]}
+          return 'outer else'
+      f(false, true)
+    ]]
 
-  describe 'decorators', ->
+  describe 'have no value', ->
+    it 'so they are errors where a value is expected', ->
+      for src in *{'x = if c then 1 else 2', 'f(if c then 1)', "x = 'a' .. (if c then 'b')", 'x = unless c then 1', 'x = switch c\n  when 1 then 2'}
+        assert.match compile_error(src), "is a statement and gives no value; assign or return in its branches instead"
+
+    it 'so a function ending in one returns what its branches return', ->
+      assert.same {'a', 0, 0}, {run [[
+        f = (x) ->
+          if x
+            return 'a'
+        g = (x) ->
+          unless x
+            y = x
+        f(true), select('#', f(false)), select('#', g(false))
+      ]]}
+
+    it 'so a value or call ending a branch at the end of a function is an error, suggesting return', ->
+      err = compile_error [[
+        f = (x) ->
+          if x
+            'a'
+          else
+            'b'
+      ]]
+      assert.match err, "the 'if' ending this function gives no value, so write 'return' before this to return it"
+      assert.match err, '^spec:3:5:'
+      assert.match compile_error('f = (x) ->\n  if x\n    print(x)'), "the 'if' ending this function gives no value"
+      assert.match compile_error('f = (x) -> unless x then 1'), "the 'unless' ending this function"
+      assert.match compile_error('f = (x) -> if x then 1, 2'), "the 'if' ending this function"
+      assert.match compile_error('f = (x) ->\n  if x\n    with x\n      .y = 1'), "the 'if' ending this function"
+      assert.match compile_error('f = (x) ->\n  if x\n    print(x) if x'), "the 'if' ending this function"
+
+  describe 'as statement modifiers', ->
     it 'run a statement if or unless a condition holds', ->
       assert.same {1, 2}, {run [[
         t = {}
@@ -122,17 +108,25 @@ describe 'conditionals', ->
         t[1], t[3]
       ]]}
 
-    it 'still return an if with then as a value', ->
-      assert.equals 'b', run [[
-        f = (c) ->
-          return if c then 'a' else 'b'
-        f(false)
-      ]]
+    it 'reject `return if c then a else b`, as an if has no value', ->
+      assert.match compile_error('f = (c) ->\n  return if c then 1 else 2'), "'if' is a statement and gives no value; return in its branches instead"
+
+    it 'pass on the value of what they modify at the end of a function', ->
+      assert.same {'x', 0, 2, 0}, {run [[
+        f = (v) -> v if v
+        g = (v) ->
+          n = v * 2
+          tostring(n) unless v == 0
+        f('x'), select('#', f(false)), tonumber(g(1)), select('#', g(0))
+      ]]}
 
     it 'bind to the innermost inline function body', ->
-      assert.same {'x', nil}, {run [[
+      assert.same {'x', 0}, {run [[
+        each = (fn) -> fn()
+        r = {}
+        each(-> r[#r + 1] = 'x' if true)
         f = (v) -> v if v
-        f('x'), f(false)
+        r[1], select('#', f(false))
       ]]}
 
   it 'reject assignment as a condition', ->

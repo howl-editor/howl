@@ -48,11 +48,11 @@ score_for = (match, text, match_type, reverse, base_score) ->
   -- boundary
   length_penalty = (len - base_score) / 3
   if reverse
-    (len - match[1]) + length_penalty
+    return (len - match[1]) + length_penalty
   else
     start_pos = match[1]
     end_pos = match[#match]
-    (end_pos - start_pos) + start_pos + length_penalty
+    return (end_pos - start_pos) + start_pos + length_penalty
 
 create_matcher = (search, reverse) ->
   search = search.ulower
@@ -123,20 +123,21 @@ load_entries = (candidates) ->
   max_len = 0
   t_candidates = type(candidates[1]) == 'table' and #candidates[1] > 0
 
-  entries = if t_candidates
+  entries = {}
+  if t_candidates
     for candidate in *candidates
       text = concat([tostring(c) for c in *candidate], ' ')
       max_len = max(max_len, #text)
       lower = text.ulower
       case_text = text if text != lower
-      {text: lower, :case_text, :candidate}
+      append(entries, {text: lower, :case_text, :candidate})
   else
     for candidate in *candidates
       text = tostring(candidate)
       max_len = max(max_len, #text)
       lower = text.ulower
       case_text = text if text != lower
-      {text: lower, :case_text, :candidate}
+      append(entries, {text: lower, :case_text, :candidate})
 
   entries.base_score = max_len * 3
   entries

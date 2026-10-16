@@ -93,8 +93,8 @@ describe 'line alignment', ->
   it 'reports runtime errors in comprehensions and value blocks on the source line', ->
     assert.equals 3, error_line [[
       t = {1, 2}
-      x = if t
-        nil .. 'x'
+      x = with t
+        .missing()
     ]]
     assert.equals 2, error_line [[
       t = {1, 2}

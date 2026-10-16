@@ -20,17 +20,17 @@ describe 'functions', ->
       f()
     ]]
 
-  it 'return nothing when the last statement is an if taking no branch, or a declaration', ->
+  it 'return nothing when the last statement is an if, or a declaration', ->
     assert.same {0, 0, 0}, {run [[
       f = (x) ->
         if x
-          'a'
+          y = x
       g = ->
         local x
       h = ->
         x = 1
         x += 1
-      select('#', f(false)), select('#', g()), select('#', h())
+      select('#', f(true)), select('#', g()), select('#', h())
     ]]}
 
   it 'can be called right away', ->

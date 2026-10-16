@@ -46,11 +46,11 @@ __newindex = (key, value) =>
   prop = base.__properties[key]
   if prop
     if prop.set
-      prop.set(self, value)
+      return prop.set(self, value)
     else
-      error('Attempt to set read-only property "' .. key .. '"', 1)
+      return error('Attempt to set read-only property "' .. key .. '"', 1)
   else
-    rawset(self, key, value)
+    return rawset(self, key, value)
 
 class PropertyObject
   new: (delegate_target) =>

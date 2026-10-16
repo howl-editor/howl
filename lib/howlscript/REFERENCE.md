@@ -147,7 +147,6 @@ rest of the line's entries:
 ```howl
 f(-> a, b)            -- passes one function, returning a and b
 f((-> a), b)          -- passes a function and b
-f(if c then a else b, z)   -- the else body is `b, z`
 ```
 
 A `,` that ends a line ends such a body, so the entries on the following lines stay
@@ -202,28 +201,31 @@ a, b = b, a
 - **Update operators:** `+=` and the others, `++` and `--` work on a single target,
   and not on a pattern. They evaluate the target's object and key once. Like any
   first assignment, one on a new name declares a local: `count += 1` is
-  `local count = count + 1`, reading the outer `count`.
+  `local count = count + 1`, reading the global `count`.
 - **A statement:** assignment is not an expression. `a = b = 1` is an error, and so is
   `if x = f()`.
 
 ### Visibility
 
-A new name becomes visible after the statement that declares it, so `x = x + 1` for
-a new `x` reads the outer or global `x`. There are two exceptions, where the new names
-are visible in their own value:
+A name is new when no local of that name is visible, since assigning to a visible
+local updates it. A new name becomes visible after the statement that declares it, so
+the right-hand side of `x = x + 1` for a new `x` reads the global `x`. That's how a
+global is made local, as in `tonumber = tonumber`. There are two exceptions, where
+the new names are visible in their own value:
 
 - **Functions:** when one of the values is a function, so that it can call itself.
-- **Blocks:** when the value is a block, such as an `if`, `with`, `do`, loop or
-  comprehension.
+- **Blocks:** when the value is a `with` block or a comprehension.
 
 ```howl
-fact = (n) -> if n <= 1 then 1 else n * fact(n - 1)
+fact = (n) ->
+  return 1 if n <= 1
+  n * fact(n - 1)
 popup = with Popup()
   .on_close = -> popup:destroy()
 ```
 
 A table or a parenthesized function isn't an exception: in `t = {get: -> t}`, the `t`
-inside is the outer or global one. Parameters and loop variables in the value may
+inside is the global one. Parameters and loop variables in the value may
 still use the name, as in `names = [names for names in *lists]`.
 
 `local f = value` declares the name after its value, as in Lua, so `f` there is the
@@ -295,13 +297,29 @@ noop = ->
 
 ### Returning
 
-A function returns the value of its last statement, which can be a list
-(`-> a, b`). A trailing loop is the exception: it isn't collected into a table, so in
-`-> for x in *t do x` the `x` does nothing, which is an error. Write
-`return for x in *t do x`, or use a comprehension.
+A function returns the value of its last statement when that's an expression, such
+as a call, a value, a `with` block or a comprehension, or a list of them (`-> a, b`).
+A statement without a value, such as an assignment, returns nothing.
 
-`return` alone returns nothing. `return if c` returns nothing when `c` holds, while
-`return if c then a else b` returns a value.
+`if`, `unless`, `switch`, `do` and loops have no value (see
+[Blocks as values](#blocks-as-values)). So a function ending in an `if`, `unless`,
+`switch` or `do` returns only what its body returns with `return`, and a value or a
+call ending one of its branches is an error, since it would look returned:
+
+```howl
+sign = (n) ->
+  if n < 0
+    return -1
+  elseif n > 0
+    return 1
+  else
+    return 0
+```
+
+A statement modifier is different: `(v) -> f(v) if v` returns `f(v)` when `v` holds,
+and nothing otherwise (see [Statement modifiers](#statement-modifiers)).
+
+`return` alone returns nothing, and `return if c` returns nothing when `c` holds.
 
 A file returns the value of its last statement too, so a module can end with its
 table: `{:open, :close}`.
@@ -412,11 +430,11 @@ else
 
 unless done then retry()
 
-kind = switch value
-  when 1, 2 then 'small'
+switch value
+  when 1, 2 then print('small')
   when 3
-    'medium'
-  else 'large'
+    print('medium')
+  else print('large')
 
 with Window()
   .title = 'Notes'
@@ -437,6 +455,11 @@ while busy() do wait()
   body follows `then` on the same line, or is an indented block.
 - **`unless c`** is `if not c`. It takes an `else` branch but no `elseif`.
 - **Conditions** are expressions, not assignments: `if x = f()` is an error.
+- **No value:** `if`, `unless` and `switch` are statements, and give no value. So
+  `label = if n == 1 then 'item' else 'items'` is an error: assign or return in the
+  branches instead, or use `and` and `or` when the value can't be false or nil:
+  `label = n == 1 and 'item' or 'items'`. This holds at the end of a function too
+  (see [Returning](#returning)).
 
 ### `switch`
 
@@ -448,6 +471,7 @@ lined up, and optionally by an `else` lined up with them.
   switched on is evaluated once.
 - **Bodies:** the body follows `then` on the same line, or is an indented block, and
   `else` takes its body directly.
+- **No value:** like `if`, a `switch` is a statement and gives no value.
 
 ### `with`
 
@@ -478,49 +502,48 @@ expression, not an assignment, so to name it, assign it first: `file = File(p)`,
 - **Bodies:** the body follows `do` on the same line, or is an indented block.
 - **`break`** leaves the loop, and **`continue`** goes on with the next iteration. It
   compiles to a `goto`.
+- **No value:** a loop is a statement and gives no value; a comprehension collects
+  values.
 
-### Decorators
+### Statement modifiers
 
-A statement can end with `if cond`, `unless cond` or `for x in xs [when cond]`:
+A statement can end with a modifier: `if cond`, `unless cond`, or `for x in xs`, which
+can filter with an `if` or `unless` of its own:
 
 ```howl
 print(x) if x
 retry() unless done
-print(item) for item in *items when item.visible
+print(item) for item in *items if item.visible
 ```
 
-- **Binding:** a decorator binds to the innermost inline body, so in
+Modifiers are separate from the `if` and `unless` statements, and apply to the whole
+statement:
+
+- **Values:** a modified expression at the end of a function is returned when the
+  condition holds, so `(v) -> v if v` returns `v`, or nothing.
+- **Statements:** `return x if c` returns only when `c` holds, and `x = 1 if c`
+  assigns only then. It declares `x` outside the condition, where it can be used.
+- **Binding:** a modifier binds to the innermost inline body, so in
   `handler: (f) -> open(f) if f` the `if` is part of the function.
-- **Assignment:** `x = 1 if c` declares `x` outside the condition.
 
 ### Blocks as values
 
-`if`, `unless`, `switch`, `with`, `do`, loops and comprehensions are values:
+Only `with` blocks and comprehensions are values. A `with` block gives its target,
+and a comprehension the table it builds:
 
 ```howl
-label = if count == 1 then 'item' else 'items'
-doubled = for x in *list
-  continue if x < 0
-  x * 2
-counter = do
-  n = 0
-  ->
-    n += 1
-    n
+window = with Window()
+  .title = 'Notes'
+doubled = [x * 2 for x in *list if x >= 0]
 ```
 
-- **`if` and `switch`** give the value of the branch taken, or `nil` when there's
-  none. So `x = if c then 1` sets `x` to nil when `c` doesn't hold.
-- **`with`** gives its target.
-- **`do`** gives the value of its last statement.
-- **Loops** collect the value of their body's last statement on each iteration into a
-  list. An iteration ended by `continue` adds nothing, and so does one whose last
-  statement is an `if` or `switch` taking no branch, which makes `x if c` a filter.
+`if`, `unless`, `switch`, `do` and loops are statements, and give no value: using one
+as a value is an error. A `do` block runs its body in a scope of its own.
 
-A block assigned or returned, or the last statement of a function or block, is
-compiled in place. Anywhere else in an expression it becomes an immediately called
-function. `return`, `break` and `continue` can't be used in such a block, since they
-would act on that function.
+A `with` block or comprehension assigned or returned, or the last statement of a
+function, is compiled in place. Anywhere else in an expression it becomes an
+immediately called function. `return`, `break` and `continue` can't be used in such a
+block, since they would act on that function.
 
 ### Statement checks
 
@@ -528,14 +551,15 @@ would act on that function.
   error.
 - **Useless expressions:** an expression that isn't a call is only allowed as a
   statement where it's a value: the last statement of a function, a file, or a block
-  whose value is used.
+  whose value is used. The last statement in the body of an `if`, `unless`,
+  `switch`, `do` or loop isn't such a place.
 
 ## Comprehensions
 
 ```howl
-squares = [x * x for x in *list when x > 0]
+squares = [x * x for x in *list if x > 0]
 points = [{x, y} for x in *xs for y in *ys]
-evens = [i for i = 1, 100 when i % 2 == 0]
+odds = [i for i = 1, 100 unless i % 2 == 0]
 lookup = {k, true for k in *keys}
 inverse = {v, k for k, v in pairs(t)}
 pairs_table = {unpack(p) for p in *list_of_pairs}
@@ -545,8 +569,8 @@ pairs_table = {unpack(p) for p in *list_of_pairs}
 - **Table:** `{key, value for ...}` sets `key` to `value`. With a single expression,
   `{expr for ...}`, `expr` returns both the key and the value.
 - **Clauses:** a comprehension takes one or more `for` clauses of any of the
-  [loop](#loops) forms, including slices, and `when` clauses that skip values. They
-  nest from left to right.
+  [loop](#loops) forms, including slices, and `if` and `unless` clauses that skip
+  values. They nest from left to right.
 
 Comprehension variables follow the shadowing rule (see [Scope](#scope)). A
 comprehension used as a statement is an error, since its table is thrown away.
@@ -631,8 +655,11 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | `f{a: 1}` and `f[[text]]` call `f` | Errors: write `f({a: 1})` and `f([[text]])`, or leave out the parentheses with a space in a statement. |
 | `x--note` is a comment | A decrement followed by `note`. Write `x -- note`. |
 | `unless a ... elseif b` | `unless` takes an `else` but no `elseif`. |
-| `x = if c then 1` leaves an existing `x` unchanged when `c` doesn't hold | Sets `x` to nil, the value of the `if`. The same goes for `unless` and `switch`. |
-| A loop collecting values leaves a hole for an iteration whose `if` takes no branch: `{1, nil, 3}` | Skips the iteration: `{1, 3}`. |
+| `if`, `unless` and `switch` are values: `label = if n == 1 then 'item' else 'items'`, `return if c then a else b` | Statements without a value, so using one as a value is an error. Assign or return in the branches. |
+| A function ending in an `if`, `unless`, `switch` or `do` returns the value its body ends with | It returns only what the body returns with `return`; a value or a call ending a branch is an error. A statement modifier at the end, as in `-> f(x) if x`, still passes on its value. |
+| Loops are values: `doubled = for x in *t` collects a list | Statements without a value; collect with a comprehension. |
+| Comprehensions and `for` modifiers filter with `when`: `[x for x in *t when x > 0]` | With `if` or `unless`: `[x for x in *t if x > 0]`. `when` there is an error; it only starts the cases of a `switch`. |
+| `x = do ...` gives the value of the block's last statement | An error: a `do` block is a statement. |
 | `(@x = 5, y = @x) =>` runs all defaults before setting `self.x`, so `y` gets the old `self.x` | Handles the parameters in order, so `y` gets 5. |
 | Parameters and loop variables can shadow locals | An error; rename one of them (see [Scope](#scope)). |
 | A class body adds all its members before running its other statements | It runs top to bottom (see [Classes](#classes)). |

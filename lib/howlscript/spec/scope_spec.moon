@@ -13,13 +13,18 @@ describe 'scoping', ->
       inner, f()
     ]]}
 
-  it 'keeps the locals of a do block inside it, and gives the block a value', ->
+  it 'keeps the locals of a do block inside it', ->
     assert.same {6, nil}, {run [[
-      x = do
+      local x
+      do
         a = 2
-        a * 3
+        x = a * 3
       x, a
     ]]}
+
+  it 'gives a do block no value', ->
+    assert.match compile_error('x = do 1'), "'do' is a statement and gives no value; assign or return inside it instead"
+    assert.match compile_error('f = ->\n  do\n    1'), "the 'do' ending this function gives no value, so write 'return' before this"
 
   describe 'shadowing', ->
     it 'is an error for parameters', ->
@@ -107,20 +112,24 @@ describe 'scoping', ->
       ]]
 
   it 'rejects return, break and continue in expressions compiled to functions', ->
-    assert.match compile_error('f(if c then return 1)'), "'return' can't be used here"
+    assert.match compile_error('f(with t\n  return 1\n)'), "'return' can't be used here"
     assert.match compile_error([[
       for x in *t
-        f(if x then break)
+        f(with x
+          break
+        )
     ]]), "'break' can't be used here"
     assert.match compile_error([[
       for x in *t
-        f(if x then continue)
+        f(with x
+          continue
+        )
     ]]), "'continue' can't be used here"
 
-  it 'allows return and loops inside blocks that are assigned', ->
+  it 'allows return inside blocks that are assigned', ->
     assert.equals 2, run [[
       f = ->
-        x = if true
+        x = with {}
           return 2
         x
       f()

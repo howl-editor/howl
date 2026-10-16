@@ -4,11 +4,13 @@
 -- Compiles the AST from the parser into Lua, in a single pass that also resolves
 -- names: an assignment to a name that isn't visible declares a new local.
 --
--- Blocks used as values (if, switch, with, do, loops, comprehensions) are lowered
--- with a "sink" saying what to do with the value of their last statement: return
--- it, assign it, accumulate it into a table, or discard it. When such a block is
--- assigned or returned it's lowered in place; anywhere else in an expression it
--- becomes an immediately called function (an IIFE).
+-- The blocks that are values, with and comprehensions, are lowered with a "sink"
+-- saying what to do with their value: return it, assign it, or discard it. When
+-- such a block is assigned or returned it's lowered in place; anywhere else in an
+-- expression it becomes an immediately called function (an IIFE). The other blocks
+-- (if, switch, do and loops) are statements, without a value, also as the last
+-- statement of a function. Statement modifiers (`f(x) if x`) are separate from the
+-- if statement: they pass on the value of the statement they modify.
 --
 -- Generated names start with `__hs`, which the lexer doesn't allow in source.
 
@@ -58,11 +60,7 @@ local precedence = {
 }
 local UNARY = 7
 
-local value_blocks = {
-  If = true, Switch = true, With = true, Do = true, For = true, ForIn = true,
-  While = true, Comprehension = true,
-}
-local loops = { For = true, ForIn = true, While = true }
+local value_blocks = { With = true, Comprehension = true }
 local calls = { Call = true, MethodCall = true, WithCall = true }
 
 -- what Lua accepts as the receiver of a call, index or field access without
@@ -239,29 +237,39 @@ end
 -- Compiles the last statement of a block, sending its value to the sink.
 function Compiler:tail(s, sink, wrap)
   local k = s.k
+  -- an if, unless, switch or do ending a function gives no value, so a value at the
+  -- end of one of its bodies has to be returned explicitly
+  if sink.no_value and (k == 'ExprStmt' or k == 'With') then
+    self:error(format(
+      "the '%s' ending this function gives no value, so write 'return' before this to return it",
+      sink.no_value), k == 'ExprStmt' and s.exprs[1] or s)
+  end
+
   if k == 'ExprStmt' then
     if #s.exprs == 1 and value_blocks[s.exprs[1].k] then
       return self:lower(s.exprs[1], sink)
     end
     if sink.k == 'discard' then return self:stmt_ExprStmt(s) end
     return self:apply(sink, s.exprs, s.line)
-  elseif k == 'If' or k == 'Switch' or k == 'With' or k == 'Do' or loops[k] then
+  elseif k == 'If' and s.decorator then
+    -- a modifier passes on the value of the statement it modifies: -> f(x) if x
+    return self:stmt_If(s, sink)
+  elseif k == 'If' or k == 'Switch' or k == 'Do' then
+    local no_value = sink.no_value
+    if sink.implicit then
+      no_value = k == 'Switch' and 'switch' or k == 'Do' and 'do' or s.unless and 'unless' or 'if'
+    end
+    return stmt_handlers[k](self, s, no_value and { k = 'discard', no_value = no_value } or nil)
+  elseif k == 'With' then
     return self:lower(s, sink)
   elseif k == 'Return' or k == 'Break' then
     return stmt_handlers[k](self, s, wrap)
-  elseif k == 'Continue' then
-    return self:stmt(s)
   elseif sink.k ~= 'discard' and (k == 'Class' or (k == 'Export' and s.class)) then
     self:stmt(s)
     local name = k == 'Class' and s.name or s.class.name
     return self:apply(sink, { { k = 'Name', v = name } })
   end
-
   self:stmt(s)
-  -- a block ending in a statement without a value has the value nil
-  if sink.k == 'assign' and not sink.fresh then
-    self:apply(sink, { { k = 'Nil' } })
-  end
 end
 
 -- Sends the values of `exprs` to the sink.
@@ -279,31 +287,14 @@ function Compiler:apply(sink, exprs, line)
     self:targets(sink.targets)
     E:w(' = ')
     self:expr_list(exprs)
-  elseif k == 'accum' then
-    local n = sink.n
-    E:w(format('%s = %s + 1; %s[%s] = ', n, n, sink.acc, n))
-    self:expr(exprs[1])
   end
 end
 
 -- Lowers a block used as a value in place, sending its value to the sink.
 function Compiler:lower(e, sink)
   local k = e.k
-  if k == 'If' then
-    return self:lower_if(e, sink)
-  elseif k == 'Switch' then
-    return self:lower_switch(e, sink)
-  elseif k == 'With' then
+  if k == 'With' then
     return self:lower_with(e, sink)
-  elseif k == 'Do' then
-    return self:lower_do(e, sink)
-  elseif loops[k] then
-    -- loops only collect their values when used as values, not as statements
-    -- or as the last statement of a function
-    if sink.k == 'discard' or sink.implicit then
-      return self:loop(e)
-    end
-    return self:lower_loop(e, sink)
   elseif k == 'Comprehension' then
     if sink.k == 'discard' then
       self:error('this comprehension does nothing; only calls can be statements', e)
@@ -313,17 +304,10 @@ function Compiler:lower(e, sink)
   return self:apply(sink, { e }, e.line)
 end
 
--- When a value block without a fallback branch assigns to existing names, the
--- missing branch assigns nil, as the block's value is nil then.
-function Compiler:nil_branch(sink)
-  if sink and sink.k == 'assign' and not sink.fresh then
-    self.E:sp()
-    self.E:w('else')
-    self:apply(sink, { { k = 'Nil' } })
-  end
-end
-
-function Compiler:lower_if(s, sink)
+-- If, switch and do take a sink for the last statements of their bodies only from
+-- tail(): a modifier's to pass on a value, and otherwise one marking the end of a
+-- function, where values have to be returned explicitly.
+function Compiler:stmt_If(s, sink)
   local E = self.E
   E:stmt(s.line)
 
@@ -369,14 +353,12 @@ function Compiler:lower_if(s, sink)
     self:push_scope()
     self:block(s.else_body, sink)
     self:pop_scope()
-  else
-    self:nil_branch(sink)
   end
   E:sp()
   E:w('end')
 end
 
-function Compiler:lower_switch(s, sink)
+function Compiler:stmt_Switch(s, sink)
   local E = self.E
   E:stmt(s.line)
   local subject = s.subject
@@ -416,8 +398,6 @@ function Compiler:lower_switch(s, sink)
     self:push_scope()
     self:block(s.else_body, sink)
     self:pop_scope()
-  else
-    self:nil_branch(sink)
   end
   E:sp()
   E:w(tmp and 'end end' or 'end')
@@ -430,19 +410,20 @@ function Compiler:lower_with(s, sink)
   E:w('do local ' .. var .. ' = ')
   self:expr(s.target)
   self.with_stack[#self.with_stack + 1] = var
+  -- the value of a with block is its target, which code after the body passes on
+  local passes_value = sink and sink.k ~= 'discard'
   self:push_scope()
-  self:block(s.body, nil)
+  self:block(s.body, nil, passes_value)
   self:pop_scope()
   self.with_stack[#self.with_stack] = nil
-  -- the value of a with block is its target
-  if sink and sink.k ~= 'discard' then
+  if passes_value then
     self:apply(sink, { raw(var) })
   end
   E:sp()
   E:w('end')
 end
 
-function Compiler:lower_do(s, sink)
+function Compiler:stmt_Do(s, sink)
   local E = self.E
   E:stmt(s.line)
   E:w('do')
@@ -543,8 +524,7 @@ function Compiler:loop_head(s)
   return 1
 end
 
--- Emits a loop. With `acc`, an 'accum' sink, each iteration's value is collected.
-function Compiler:loop(s, acc)
+function Compiler:loop(s)
   local E = self.E
   local loop = { label = has_continue(s.body) and self:tmp('continue') or nil }
   E:stmt(s.line)
@@ -552,7 +532,7 @@ function Compiler:loop(s, acc)
   local closes = self:loop_head(s)
   local saved = self.fn.loop
   self.fn.loop = loop
-  self:block(s.body, acc, loop.label ~= nil)
+  self:block(s.body, nil, loop.label ~= nil)
   self.fn.loop = saved
   if loop.label then
     -- a label ending the body is outside the scope of the body's locals, so the
@@ -567,17 +547,6 @@ function Compiler:loop(s, acc)
   self:pop_scope()
 end
 
-function Compiler:lower_loop(s, sink)
-  local E = self.E
-  local acc, n = self:tmp('acc'), self:tmp('n')
-  E:stmt(s.line)
-  E:w(format('do local %s, %s = {}, 0', acc, n))
-  self:loop(s, { k = 'accum', acc = acc, n = n })
-  self:apply(sink, { raw(acc) })
-  E:sp()
-  E:w('end')
-end
-
 function Compiler:lower_comprehension(c, sink)
   local E = self.E
   local acc = self:tmp('acc')
@@ -589,9 +558,9 @@ function Compiler:lower_comprehension(c, sink)
   local closes = 0
   for _, clause in ipairs(c.clauses) do
     E:sp(clause.line)
-    if clause.k == 'when' then
-      E:w('if ')
-      self:expr(clause.cond)
+    if clause.k == 'filter' then
+      E:w(clause.unless and 'if not ' or 'if ')
+      self:expr(clause.cond, clause.unless and UNARY or nil)
       E:w(' then')
       closes = closes + 1
     else
@@ -646,10 +615,10 @@ end
 -- Statements
 
 function Compiler:stmt_ExprStmt(s)
+  local e = s.exprs[1]
   if #s.exprs > 1 then
     self:error('a list of values can only be the last statement of a function, which returns it', s.exprs[2])
   end
-  local e = s.exprs[1]
   if value_blocks[e.k] then
     return self:lower(e, DISCARD)
   end
@@ -686,8 +655,9 @@ function Compiler:stmt_Assign(s)
   E:stmt(s.line)
 
   -- As in MoonScript, the new names are visible in their own value when it's a
-  -- block, or when one of the values is a function, which can then call itself.
-  -- Otherwise they're visible after the statement, so `x = x + 1` reads the outer x.
+  -- with block or a comprehension, or when one of the values is a function, which
+  -- can then call itself. Otherwise they're visible after the statement, so
+  -- `x = x + 1` reads the global x.
   local block = #values == 1 and value_blocks[values[1].k]
   local func = false
   for _, v in ipairs(values) do
@@ -705,7 +675,7 @@ function Compiler:stmt_Assign(s)
       end
     end
     if block then
-      self:lower(values[1], { k = 'assign', targets = s.targets, fresh = all_fresh })
+      self:lower(values[1], { k = 'assign', targets = s.targets })
     else
       self:targets(s.targets)
       E:w(' = ')
@@ -987,10 +957,7 @@ function Compiler:stmt_Export(s)
   end
 end
 
-function Compiler:stmt_If(s) self:lower_if(s, DISCARD) end
-function Compiler:stmt_Switch(s) self:lower_switch(s, DISCARD) end
 function Compiler:stmt_With(s) self:lower_with(s, DISCARD) end
-function Compiler:stmt_Do(s) self:lower_do(s, DISCARD) end
 function Compiler:stmt_For(s) self:loop(s) end
 function Compiler:stmt_ForIn(s) self:loop(s) end
 function Compiler:stmt_While(s) self:loop(s) end

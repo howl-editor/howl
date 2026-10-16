@@ -150,53 +150,15 @@ describe 'loops', ->
       assert.match compile_error('continue'), "'continue' outside of a loop"
       assert.match compile_error('break'), "'break' outside of a loop"
 
-  describe 'as values', ->
-    it 'collect the value of each iteration', ->
-      assert.same {{2, 4, 6}, {1, 2, 3}, {'a1'}}, {run [[
-        doubled = for i = 1, 3
-          i * 2
-        i = 0
-        counted = while i < 3
-          i += 1
-          i
-        pairs_ = for k, v in pairs({a: 1})
-          k .. v
-        doubled, counted, pairs_
-      ]]}
+  describe 'have no value', ->
+    it 'so they are errors where a value is expected', ->
+      for src in *{'x = for i = 1, 2 do i', 'x = while c do f()', 'return for x in *t do x', 'f(for x in *t do x)'}
+        assert.match compile_error(src), 'is a statement and gives no value; collect values with a comprehension'
 
-    it 'stop collecting at a break', ->
-      assert.same {1, 2}, run [[
-        r = for i = 1, 5
-          break if i == 3
-          i
-        r
-      ]]
-
-    it 'skip iterations that continue or have no value', ->
-      assert.same {2, 4}, run [[
-        evens = for x in *{1, 2, 3, 4}
-          continue if x % 2 == 1
-          x
-        evens
-      ]]
-
-    it 'skip iterations where an if takes no branch', ->
-      assert.same {1, 3}, run [[
-        odds = for x in *{1, 2, 3}
-          x if x % 2 == 1
-        odds
-      ]]
-
-    it 'are collected when returned explicitly, but not as the last statement', ->
-      assert.same {{1, 2}, nil}, {run [[
-        f = -> return for i = 1, 2 do i
-        g = -> for i = 1, 2 do tostring(i)
-        f(), g()
-      ]]}
-
-    it 'can be used in expressions', ->
-      assert.equals 3, run [[
-        #(for i = 1, 3 do i)
+    it 'so a function ending in one returns nothing', ->
+      assert.equals 0, run [[
+        f = -> for i = 1, 2 do tostring(i)
+        select('#', f())
       ]]
 
   it 'reject loop variables shadowing locals', ->
@@ -213,7 +175,7 @@ describe 'loops', ->
       n
     ]]
 
-  describe 'decorators', ->
+  describe 'as statement modifiers', ->
     it 'run a statement for each value', ->
       assert.equals 6, run [[
         sum = 0
@@ -221,9 +183,11 @@ describe 'loops', ->
         sum
       ]]
 
-    it 'filter with when', ->
-      assert.equals 4, run [[
-        sum = 0
-        sum += x for x in *{1, 2, 3} when x != 2
-        sum
-      ]]
+    it 'filter with if and unless', ->
+      assert.same {4, 5}, {run [[
+        a, b = 0, 0
+        a += x for x in *{1, 2, 3} if x != 2
+        b += x for x in *{1, 2, 3} unless x == 1
+        a, b
+      ]]}
+      assert.match compile_error('print(x) for x in *t when x'), "filter with 'if' or 'unless' rather than 'when'"

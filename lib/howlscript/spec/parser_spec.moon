@@ -33,7 +33,7 @@ describe 'howlscript.parser', ->
       ]]
 
     it 'takes tabs for indentation', ->
-      assert.equals 3, run "f = (x) ->\n\tif x\n\t\t3\n\telse\n\t\t4\nf(true)"
+      assert.equals 3, run "f = (x) ->\n\tif x\n\t\treturn 3\n\telse\n\t\treturn 4\nf(true)"
 
     it 'requires blocks to be indented consistently', ->
       assert.match compile_error('if x\n    a()\n  b()'), 'unexpected indentation'

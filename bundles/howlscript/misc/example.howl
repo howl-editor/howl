@@ -79,15 +79,15 @@ for item in *items[2,]
 
 while busy() do wait()
 
-label = switch x
-  when 1, 2 then 'small'
-  else 'large'
+switch x
+  when 1, 2 then label = 'small'
+  else label = 'large'
 
 with Window()
   .title = 'example'
   :show()
 
-squares = [i * i for i in *list when i > 0]
+squares = [i * i for i in *list if i > 0]
 lookup = {k, true for k in *keys}
 
 -- classes

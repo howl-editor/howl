@@ -18,10 +18,11 @@
 --   Func{params, body, fat}: params are {name, tok, default, self_assign, pattern,
 --     vararg}
 --   Comprehension{kind = 'list', expr, clauses} or {kind = 'table', kexpr, vexpr,
---     clauses}: clauses are For and ForIn nodes without bodies, and {k = 'when', cond}
+--     clauses}: clauses are For and ForIn nodes without bodies, and
+--     {k = 'filter', cond, unless} for `if cond` and `unless cond`
 --   Raw{code}: Lua code, only created by the compiler
 --
--- Statements (If, Switch, With, Do, For, ForIn and While can also be values):
+-- Statements (With can also be a value):
 --   Assign{targets, values}, Update{target, op, value}, ExprStmt{exprs}
 --   Return{values}, Break, Continue
 --   Local{names, values}, Export{names, values} / {all} / {class}
@@ -396,7 +397,8 @@ function Parser:statement()
   return stmt
 end
 
--- `stmt if cond`, `stmt unless cond` and `stmt for x in xs [when cond]`
+-- Statement modifiers: `stmt if cond`, `stmt unless cond` and
+-- `stmt for x in xs [if cond]`, which the AST calls decorators
 function Parser:decorators(stmt)
   local t = self.t
   if t.first then return stmt end
@@ -413,10 +415,9 @@ function Parser:decorators(stmt)
   elseif is_kw(t, 'for') and (self:kind() == 'block' or self:kind() == 'bare') then
     local head = self:for_head()
     local body = stmt
-    local w = self.t
-    if is_kw(w, 'when') then
-      self:advance()
-      body = node('If', stmt, { conds = { self:cond() }, bodies = { { stmt } } })
+    local f = self:filter()
+    if f then
+      body = node('If', stmt, { conds = { f.cond }, bodies = { { stmt } }, unless = f.unless })
     end
     head.body = { body }
     head.line = stmt.line
@@ -753,24 +754,21 @@ function Parser:return_()
   end
 
   if is_kw(n, 'if') or is_kw(n, 'unless') then
-    -- `return if c` returns nothing when c holds, while `return if c then a else b`
-    -- (or with blocks) returns the value of the if
-    local saved = self.i
+    -- `return if c` returns nothing when c holds. An if has no value to return, so
+    -- `return if c then a else b` is an error.
     self:advance()
     local cond = self:header_cond()
     local after = self.t
-    local is_value = is_kw(after, 'then')
-      or (after.first and after.t ~= 'eof' and after.indent > self.ref)
-    if not is_value then
-      return node('If', t, {
-        conds = { cond },
-        bodies = { { node('Return', t, { values = {} }) } },
-        unless = n.v == 'unless',
-        decorator = true,
-      })
+    if is_kw(after, 'then') or (after.first and after.t ~= 'eof' and after.indent > self.ref) then
+      self:error(string.format(
+        "'%s' is a statement and gives no value; return in its branches instead", n.v), n)
     end
-    self.i = saved
-    self.t = self.toks[saved]
+    return node('If', t, {
+      conds = { cond },
+      bodies = { { node('Return', t, { values = {} }) } },
+      unless = n.v == 'unless',
+      decorator = true,
+    })
   end
 
   return node('Return', t, { values = self:expr_list() })
@@ -842,19 +840,17 @@ function Parser:primary()
     if v == 'nil' or v == 'true' or v == 'false' then
       self:advance()
       e = node(v == 'nil' and 'Nil' or v == 'true' and 'True' or 'False', t)
-    -- blocks as values take no postfix operators: they end with their body
-    elseif v == 'if' or v == 'unless' then
-      return self:if_()
-    elseif v == 'switch' then
-      return self:switch()
+    elseif v == 'if' or v == 'unless' or v == 'switch' then
+      self:error(string.format(
+        "'%s' is a statement and gives no value; assign or return in its branches instead", v))
+    elseif v == 'for' or v == 'while' then
+      self:error(string.format(
+        "'%s' is a statement and gives no value; collect values with a comprehension, as in [x * 2 for x in *t]", v))
+    elseif v == 'do' then
+      self:error("'do' is a statement and gives no value; assign or return inside it instead")
+    -- a with block as a value takes no postfix operators: it ends with its body
     elseif v == 'with' then
       return self:with()
-    elseif v == 'for' then
-      return self:for_()
-    elseif v == 'while' then
-      return self:while_()
-    elseif v == 'do' then
-      return self:do_()
     elseif v == 'class' then
       self:error('a class can only be declared as a statement')
     else
@@ -1241,10 +1237,30 @@ function Parser:table()
   return node('Table', open, { entries = entries })
 end
 
+-- The `if cond` or `unless cond` filtering a comprehension's or a for modifier's
+-- values, if there's one there.
+function Parser:filter()
+  local t = self.t
+  if self:ends_here() then return nil end
+  if is_kw(t, 'when') then
+    self:error("filter with 'if' or 'unless' rather than 'when', as in [x for x in *t if x > 0]", t)
+  end
+  if not (is_kw(t, 'if') or is_kw(t, 'unless')) then return nil end
+  self:advance()
+  self:push('header')
+  local cond = self:cond()
+  self:pop()
+  return { k = 'filter', cond = cond, unless = t.v == 'unless', line = t.line }
+end
+
 function Parser:list_comprehension()
   local open = self:advance()
   self:push('compr')
   local expr = self:expr()
+  local t = self.t
+  if is_kw(t, 'if') or is_kw(t, 'unless') then
+    self:error(string.format("a comprehension's '%s' goes after its 'for', as in [x for x in *t if x > 0]", t.v), t)
+  end
   if not is_kw(self.t, 'for') then
     self:error("expected 'for' in a list comprehension; table literals use {}", self.t)
   end
@@ -1260,13 +1276,10 @@ function Parser:comprehension_clauses()
     local t = self.t
     if is_kw(t, 'for') then
       clauses[#clauses + 1] = self:for_head()
-    elseif is_kw(t, 'when') then
-      self:advance()
-      self:push('header')
-      clauses[#clauses + 1] = { k = 'when', cond = self:cond(), line = t.line }
-      self:pop()
     else
-      break
+      local f = self:filter()
+      if not f then break end
+      clauses[#clauses + 1] = f
     end
   end
   return clauses

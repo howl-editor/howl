@@ -53,22 +53,17 @@ describe 'assignment', ->
 
     it 'includes its own value when that is a function, which can then recurse', ->
       assert.same {120, true, true}, {run [[
-        fact = (n) -> if n <= 1 then 1 else n * fact(n - 1)
+        fact = (n) -> n <= 1 and 1 or n * fact(n - 1)
         p, q = 1, -> q
         fact(5), q() == q, p == 1
       ]]}
 
-    it 'includes its own value when that is a block', ->
-      assert.same {true, true, true, true, true}, {run [[
+    it 'includes its own value when that is a with block or a comprehension', ->
+      assert.same {true, true}, {run [[
         obj = with {}
           .get = -> obj
-        f = if true then -> f
-        g = do
-          -> g
-        fs = for i = 1, 2
-          -> fs
         list = [(-> list) for i = 1, 2]
-        obj.get() == obj, f() == f, g() == g, fs[2]() == fs, list[1]() == list
+        obj.get() == obj, list[1]() == list
       ]]}
 
     it 'does not include tables and parenthesized functions', ->
@@ -136,7 +131,7 @@ describe 'assignment', ->
         calls, t[1].n
       ]]}
 
-    it 'declare a local when the name is new, reading the outer value', ->
+    it 'declare a local when the name is new, reading the global', ->
       assert.match compile('y or= 3'), '^local y = y or 3'
       env = count: 1
       assert.same {2, 1}, {run([[

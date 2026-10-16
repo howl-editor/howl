@@ -35,7 +35,7 @@ describe 'howlscript commands', ->
       assert.same { n: 3, 6, nil, 'z' }, result
 
     it 'handles indented selections', ->
-      ok, result = commands.eval '    a = 1\n    if a\n      a + 1'
+      ok, result = commands.eval '    a = 1\n    if a\n      a += 1\n    a'
       assert.is_true ok
       assert.equals 2, result[1]
 

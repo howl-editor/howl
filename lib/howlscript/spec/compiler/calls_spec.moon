@@ -87,7 +87,7 @@ describe 'calls', ->
     it 'can start with any value that does not continue an expression', ->
       assert.same {'s', 'l', {1}, false, 2, 7, true, 8, 9, 10}, run [==[
         got = {}
-        f = (x) -> got[#got + 1] = if type(x) == 'function' then x(8) else x
+        f = (x) -> got[#got + 1] = type(x) == 'function' and x(8) or x
         g = (...) -> f ...
         t = {1, 2}
         f 's'
@@ -159,16 +159,16 @@ describe 'calls', ->
         obj.items
       ]]
 
-    it 'take decorators that apply to the whole call', ->
+    it 'take statement modifiers that apply to the whole call', ->
       assert.same {1, 3}, run [[
         got = {}
         f = (x) -> got[#got + 1] = x
-        f x for x in *{1, 2, 3} when x != 2
+        f x for x in *{1, 2, 3} if x != 2
         f 4 if false
         got
       ]]
 
-    it 'leave a decorator in an inline body of an argument to that body', ->
+    it 'leave a statement modifier in an inline body of an argument to that body', ->
       assert.same {1, 2}, run [[
         got = {}
         each = (fn) -> fn()
