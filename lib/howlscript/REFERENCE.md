@@ -8,6 +8,11 @@ Howlscript compiles to Lua for LuaJIT, so its values, operators and standard lib
 are Lua's. The last section lists how it differs from MoonScript 0.5.0, the version
 Howl ships in `lib/ext/moonscript`.
 
+In the examples, a comment like `-- 12` gives the value of the expression on its line,
+and `-- error: ...` gives the compile error the line causes. Where the Lua is the clearest way to
+say what something means, the example shows it. `bin/howlc -e 'code'` prints the Lua
+for any snippet.
+
 - [Lexical structure](#lexical-structure)
 - [Layout](#layout)
 - [Values](#values)
@@ -28,6 +33,13 @@ comments: `--[[` starts an ordinary line comment.
 
 `--` right after a name or `]` is the decrement operator, so a comment after code
 needs a space before it: write `x -- note`, not `x--note`.
+
+```howl
+x = 1 -- a comment, after a space
+x--             -- decrements x
+t[i]--          -- decrements t[i]
+x--note         -- error: unexpected 'note'
+```
 
 ### Names and keywords
 
@@ -52,6 +64,12 @@ nil  not  or  return  switch  then  true  unless  when  while  with
 - Any keyword works as a table key, a field name and a method name: `{end: 1, if: 2}`,
   `t.end`, `assert.true(x)`, `obj:end()`.
 
+```howl
+range = {start: 1, end: 10}
+print(range.end)  -- 10
+end = 10          -- error: 'end' is a Lua keyword and can't be used as a variable name
+```
+
 ### Numbers
 
 Numbers are written as in Lua and LuaJIT: `42`, `3.14`, `.5`, `1e3`, `314.16e-2`,
@@ -73,10 +91,14 @@ right after a number is an error, as in `12abc`.
 ```howl
 name = 'Howl'
 greeting = "Hello, #{name}!"
+summary = "#{#items} items, #{sum(items)} in total"   -- any expression
+pattern = '#{x}'           -- single quotes: the text #{x}, as it is
 row = 'a\tb\n'
+two_lines = 'one
+two'                       -- 'one\ntwo'
 ffi.cdef([[
   int strlen(const char *s);
-]])
+]])                        -- the line break right after [[ isn't part of the text
 ```
 
 ### Operators
@@ -94,9 +116,17 @@ Lua's operators, with Lua's precedence, from lowest to highest:
 | `not` `#` `-` | unary |
 | `^` | right associative |
 
+As in Lua, the unary operators bind tighter than comparisons, and `^` binds tighter
+than unary minus:
+
+```howl
+x = not a == b    -- (not a) == b; write a != b
+y = -2^2          -- -(2^2), which is -4
+```
+
 There are no bitwise operators and no `//`, as LuaJIT has neither; use the `bit`
-library. Assignment and its update operators are statements (see
-[Assignment and scope](#assignment-and-scope)).
+library, as in `bit.band(flags, 0x4)`, and `math.floor(a / b)`. Assignment and its
+update operators are statements (see [Assignment and scope](#assignment-and-scope)).
 
 `;`, `\` and `!` aren't used. Each is an error with a hint: statements end at the end
 of the line, methods are called with `:`, and functions with `()`.
@@ -115,8 +145,13 @@ line the statement starts on:
 
 ```howl
 total = price +
-  shipping
+  shipping            -- continues the line before, which ends with +
+total = price
+  + shipping          -- error: unexpected indentation
 ```
+
+In the second, `total = price` is a whole statement, so the deeper line after it
+continues nothing.
 
 The headers of `if`, `unless`, `elseif`, `while`, `for`, `with`, `switch`, `when` and
 `class` end at the end of their line too.
@@ -124,6 +159,15 @@ The headers of `if`, `unless`, `elseif`, `while`, `for`, `with`, `switch`, `when
 Inside `{ }` and the parentheses of a call, a line break separates entries, like a
 comma, and the indentation of the lines doesn't matter. Inside grouping parentheses,
 `[ ]` indexes and list comprehensions, a line break is just whitespace.
+
+```howl
+size = {
+  width: 80           -- the line break separates the entries
+  height: 24
+}
+total = (price
+  + shipping)         -- in grouping parentheses, the line break is whitespace
+```
 
 A block can open inside brackets. Its lines must be indented deeper than the line
 where the enclosing statement or bracket entry starts. The block ends at the first
@@ -153,6 +197,16 @@ f((-> a), b)          -- passes a function and b
 A `,` that ends a line ends such a body, so the entries on the following lines stay
 entries. A key after an inline body on the same line, as in `{f: -> 1, g: 2}`, is an
 error: put it on a line of its own, or the function in parentheses.
+
+```howl
+f(-> a,
+  b)                  -- passes a function and b, as the , ends the line
+t = {f: -> 1, g: 2}   -- error: the inline body before this key takes the rest of the line, ...
+t = {
+  f: -> 1
+  g: 2
+}
+```
 
 `else` and `elseif` either follow on the same line, or line up with the line where
 the `if` starts.
@@ -184,10 +238,26 @@ The only place a table can leave out its braces is in the trailing named argumen
 a call (see [Calls](#calls)). A `[` that starts a value always starts a list
 comprehension (see [Comprehensions](#comprehensions)), so `[1]` is an error.
 
+```howl
+t = {a:b}       -- error: method reference without a call; ... or add a space after ':' for a key
+t = [1]         -- error: expected 'for' in a list comprehension; table literals use {}
+```
+
 ## Assignment and scope
 
 The first assignment to a name declares a local. Later assignments, including those
 inside nested functions, update it:
+
+```howl
+count = 0               -- local count = 0
+bump = -> count += 1    -- updates the count above
+bump()
+bump()
+print(count)            -- 2
+```
+
+An assignment can have several targets and values, and update operators change a
+target in place:
 
 ```howl
 a, b = 1, 2
@@ -202,7 +272,8 @@ a, b = b, a
 - **Update operators:** `+=` and the others, `++` and `--` work on a single target,
   and not on a pattern. They evaluate the target's object and key once. Like any
   first assignment, one on a new name declares a local: `count += 1` is
-  `local count = count + 1`, reading the global `count`.
+  `local count = count + 1`, reading the global `count`. To update a global, `export`
+  its name first (see [Declarations](#declarations)).
 - **A statement:** assignment is not an expression. `a = b = 1` is an error, and so is
   `if x = f()`.
 
@@ -227,13 +298,30 @@ popup = with Popup()
 
 A table or a parenthesized function isn't an exception: in `t = {get: -> t}`, the `t`
 inside is the global one. Parameters and loop variables in the value may
-still use the name, as in `names = [names for names in *lists]`.
+still use the name, as in `names = [names for names in *lists]`. To refer to the
+table itself, declare the name first:
+
+```howl
+local t
+t = {get: -> t}         -- the t inside is this table
+```
 
 `local f = value` declares the name after its value, as in Lua, so `f` there is the
 outer one even when the value is a function.
 
 A name first assigned inside a block, like the body of an `if`, a loop or a function,
 is local to that block. To use it after the block, declare it before with `local`.
+
+```howl
+if ready
+  state = 'go'          -- a local of the if's body
+print(state)            -- the global state, so probably nil
+
+local status
+if ready
+  status = 'go'         -- updates the local declared before the if
+print(status)           -- 'go'
+```
 
 ### Declarations
 
@@ -244,19 +332,65 @@ is local to that block. To use it after the block, declare it before with `local
 - **`export *`** makes every new name in its own scope global, and
   **`export class Foo`** exports a class.
 
+```howl
+local is_even, is_odd           -- declared up front, so each can call the other
+is_even = (n) -> n == 0 or is_odd(n - 1)
+is_odd = (n) -> n != 0 and is_even(n - 1)
+
+export VERSION = '1.0'          -- a global
+export setup
+setup = -> init()               -- assigns the global setup
+```
+
 ### Destructuring
 
-A table literal used as a target takes values apart by position or key. It works in
-assignments, `for` loops and parameters, nests, and can be mixed with other targets.
-Its targets can be new or existing names, or fields:
+A table literal used as a target is a pattern, which takes the value assigned to it
+apart. Each entry of the pattern reads one value out of the table and assigns it to
+the entry's target:
+
+- **By position:** a plain entry reads the next index, so `{first, second} = t` sets
+  `first` to `t[1]` and `second` to `t[2]`.
+- **By key:** `key: target` reads `t.key`, and `:name` is short for `name: name`.
+  String and expression keys work too, as in `'a b': x` and `[k]: y`.
+- **Nesting:** a target can be a pattern itself, which takes apart the value read for
+  it.
+- **Targets:** new or existing names, fields and indexes. New names are declared as
+  locals, as in any assignment.
 
 ```howl
-{:concat, insert: append} = table
-{numbers: {first, second}} = config
-num, {:message} = result()
-{x: point.x, y: point.y} = coords
-for {left, right} in *pairs_list
-  print(left, right)
+{:concat, insert: append} = table   -- concat = table.concat, append = table.insert
+{numbers: {first, second}} = config -- config.numbers[1] and config.numbers[2]
+num, {:message} = result()          -- the first value, and the second value's message
+{x: point.x, y: point.y} = coords   -- sets fields of point
+{'a b': spaced, [key]: value} = t
+```
+
+The value is evaluated once, and each target reads its own path out of it, so
+`{numbers: {first, second}, :name} = load_config()` compiles to the equivalent of:
+
+```lua
+local first, second, name
+do
+  local obj = load_config()
+  first, second, name = obj.numbers[1], obj.numbers[2], obj.name
+end
+```
+
+A value missing from the table gives `nil`. Taking apart `nil` itself is an error when
+it runs, as indexing `nil` is in Lua.
+
+Patterns work in three places:
+
+- **Assignments**, as above, where they can be mixed with other targets.
+- **Parameters**, where the pattern takes the argument apart (see
+  [Destructured parameters](#destructured-parameters)).
+- **`for` loops**, where it takes each value apart:
+
+```howl
+for {left, right} in *{{1, 2}, {3, 4}}
+  print(left + right)               -- 3, then 7
+for i, {:name} in ipairs(people)
+  print(i, name)
 ```
 
 ### Scope
@@ -270,15 +404,25 @@ f = (buffer) -> buffer.text    -- error: parameter 'buffer' shadows the local de
 ```
 
 `_` is exempt, and so is the `self` of a method defined inside another method. An
-explicit `local x` may still shadow.
+explicit `local x` may still shadow, since it says so:
+
+```howl
+f = (buf) -> buf.text                 -- fine: a different name
+for _, entry in ipairs(entries)
+  for _, tag in ipairs(entry.tags)    -- _ can be reused
+    print(tag)
+g = ->
+  local buffer = other_buffer         -- shadows on purpose
+  buffer.text
+```
 
 ## Functions
 
 ```howl
-add = (a, b = 1) -> a + b
+add = (a, b = 1) -> a + b                     -- add(2) is 3
 greet = -> print('hi')
 log = (fmt, ...) -> print(fmt:format(...))
-render = ({:width, :height} = {width: 1, height: 1}) -> width * height
+area = ({:width, :height}) -> width * height  -- area({width: 3, height: 4}) is 12
 noop = ->
 ```
 
@@ -287,7 +431,7 @@ noop = ->
   either is empty.
 - **Parameters:** a parameter is one of these:
   - a name;
-  - a destructuring pattern;
+  - a destructuring pattern (see [Destructured parameters](#destructured-parameters));
   - `@x` in a method, which sets `self.x` and also declares the local `x`;
   - `...`, which must be last.
 - **Defaults:** any parameter except `...` can have a default, used when the argument
@@ -296,11 +440,63 @@ noop = ->
 - **`...`** is only available in functions that take it, not in functions nested in
   them, and at the top of a file.
 
+```howl
+pad = (s, width = #s + 2, fill = ' ') -> s .. fill:rep(width - #s)
+pad('ab')               -- 'ab  ', as width defaults to #s + 2
+pad('ab', nil, '-')     -- 'ab--': a nil argument gets the default too
+
+log_later = (fmt, ...) ->
+  args = {...}          -- the function below can't use ..., so keep the values
+  -> print(fmt:format(unpack(args)))
+```
+
+### Destructured parameters
+
+A destructuring pattern as a parameter takes its argument apart, as assigning the
+argument to the pattern would (see [Destructuring](#destructuring)). It's still a
+single parameter, so the caller passes one table for it:
+
+```howl
+area = ({:width, :height}) -> width * height
+area({width: 3, height: 4})                 -- 12
+area(width: 3, height: 4)                   -- 12, with named arguments (see Calls)
+
+send = ({:sender, :recipient, body: msg}) -> "#{sender} -> #{recipient}: #{msg}"
+send({sender: 'ann', recipient: 'bo', body: 'hi'})   -- 'ann -> bo: hi'
+
+distance = ({x1, y1}, {x2, y2}) -> math.abs(x2 - x1) + math.abs(y2 - y1)
+distance({1, 1}, {4, 5})                    -- 7
+```
+
+`area` compiles to a function of one argument, which is taken apart before the body
+runs:
+
+```lua
+area = function(__hs_arg1)
+  local width, height = __hs_arg1.width, __hs_arg1.height
+  return width * height
+end
+```
+
+A default applies to the whole argument, before it's taken apart. So
+`render = ({:width, :height} = {width: 1, height: 1}) -> width * height` can be called
+as `render()`, giving 1. Without a default, calling `area()` is an error when it
+runs, as `nil` can't be taken apart.
+
+The names a pattern declares are parameters, so they follow the shadowing rule (see
+[Scope](#scope)).
+
 ### Returning
 
 A function returns the value of its last statement when that's an expression, such
 as a call, a value, a `with` block or a comprehension, or a list of them (`-> a, b`).
 A statement without a value, such as an assignment, returns nothing.
+
+```howl
+pair = -> 1, 2                    -- returns 1 and 2
+double = (x) -> x * 2             -- returns x * 2
+store = (t, v) -> t.value = v     -- returns nothing: an assignment has no value
+```
 
 `if`, `unless`, `switch`, `do` and loops have no value (see
 [Blocks as values](#blocks-as-values)). So a function ending in an `if`, `unless`,
@@ -310,11 +506,29 @@ call ending one of its branches is an error, since it would look returned:
 ```howl
 sign = (n) ->
   if n < 0
+    -1            -- error: the 'if' ending this function gives no value, so write 'return' before this to return it
+  else
+    1
+```
+
+Write `return` where a value is meant to be returned. When nothing is, end the
+function with a bare `return`, which makes the `if` no longer the last statement:
+
+```howl
+sign = (n) ->
+  if n < 0
     return -1
   elseif n > 0
     return 1
   else
     return 0
+
+report = (ok) ->
+  if ok
+    log.info('done')
+  else
+    log.error('failed')
+  return          -- without it, both calls are errors
 ```
 
 A statement modifier is different: `(v) -> f(v) if v` returns `f(v)` when `v` holds,
@@ -336,7 +550,27 @@ table: `{:open, :close}`.
 | `@@x` | `self.__class.x` |
 | `@@m(...)` | `self.__class:m(...)` |
 
+```howl
+class Counter
+  @made: 0                -- a class variable, Counter.made
+  new: (@step = 1) =>     -- sets self.step, and declares the local step
+    @@made += 1           -- self.__class.made
+    @value = 0
+  bump: => @value += @step
+  twice: =>
+    @bump()               -- self:bump()
+    @bump()
+    @value
+
+print(Counter(2):twice()) -- 4
+print(Counter.made)       -- 1
+```
+
 They need a `self`: using them outside a method is an error.
+
+```howl
+f = -> @x                 -- error: '@' refers to self, but there's none here; methods are defined with '=>'
+```
 
 ## Calls
 
@@ -379,8 +613,19 @@ command.register(
 howl.config.define(name: 'tab_width', default: 4, :scope)
 ```
 
-A positional argument can't follow the named ones. A nested table needs its braces:
-`@property(title: {get: => @title})`.
+The last call is `howl.config.define({name = 'tab_width', default = 4, scope = scope})`
+in Lua. Positional arguments come first, so `f(a, b, key: 1)` is `f(a, b, {key = 1})`,
+and a positional argument can't follow the named ones. A nested table needs its
+braces: `@property(title: {get: => @title})`.
+
+With a [destructured parameter](#destructured-parameters), named arguments work like
+keyword arguments:
+
+```howl
+area = ({:width, :height}) -> width * height
+area(width: 3, height: 4)       -- 12
+area(width: 3, 4)               -- error: positional arguments must come before the named ones
+```
 
 ### Calls without parentheses
 
@@ -393,12 +638,15 @@ describe 'Buffer', ->
   it 'inserts text', ->
     buffer:insert 'x', 1
     assert.equal 'x', buffer.text
+    assert.same {'x', 'y'},
+      lines                     -- continues after the trailing ,
   VC.register 'git', find: find_git
 ```
 
 Only one call per line can do this. Calls in its arguments need their parentheses,
-and so do calls inside brackets and calls whose value is used. A block opened on the
-following lines starts afresh, as in `describe` above.
+and so do calls inside brackets and calls whose value is used. That way it's always
+clear which arguments belong to which call. A block opened on the following lines
+starts afresh, as in `describe` above.
 
 ```howl
 assert.equal 1, f(x)                -- not f x
@@ -418,6 +666,12 @@ something that can't continue the expression before it:
 - the parameter list of a function, as in `f (x) -> x`.
 
 So `f -1` is a subtraction, and `f (x)` and `f [x]` are errors.
+
+```howl
+n = f -1        -- f - 1
+print (x)       -- error: no space is allowed between a function and the '(' of its call, as in f(x)
+print x, -1     -- print(x, -1): the first argument starts with a name
+```
 
 ## Control flow
 
@@ -462,6 +716,18 @@ while busy() do wait()
   `label = n == 1 and 'item' or 'items'`. This holds at the end of a function too
   (see [Returning](#returning)).
 
+```howl
+label = if n == 1 then 'item' else 'items'  -- error: 'if' is a statement and gives no value; ...
+
+local label           -- declared first, as a name first assigned in a branch is local to it
+if n == 1
+  label = 'item'
+else
+  label = 'items'
+
+label = n == 1 and 'item' or 'items'   -- or this, as neither value is false or nil
+```
+
 ### `switch`
 
 `switch value` is followed by `when` clauses on the lines below, indented deeper and
@@ -473,6 +739,15 @@ lined up, and optionally by an `else` lined up with them.
 - **Bodies:** the body follows `then` on the same line, or is an indented block, and
   `else` takes its body directly.
 - **No value:** like `if`, a `switch` is a statement and gives no value.
+
+```howl
+local kind
+switch next_token()           -- called once
+  when 'if', 'unless'         -- 'if' == value or 'unless' == value
+    kind = 'conditional'
+  when 'for', 'while' then kind = 'loop'
+  else kind = 'other'
+```
 
 ### `with`
 
@@ -489,15 +764,27 @@ A line starting with `.` or `:` is always such a statement. The target is an
 expression, not an assignment, so to name it, assign it first: `file = File(p)`, then
 `with file`. Used as a value, a `with` block gives its target.
 
+```howl
+button = with Button('OK')
+  .width = 80                         -- button.width = 80
+  :on 'click', -> .label = 'Clicked'  -- button:on(...), and .label is button.label
+
+with window
+  .title = 'Notes'                    -- window.title
+  with .status_bar
+    .text = 'Ready'                   -- window.status_bar.text
+```
+
 ### Loops
 
 - **Numeric:** `for i = start, stop[, step]`, as in Lua.
 - **Generic:** `for a, b in exprs`, as in Lua.
 - **Over a list:** `for x in *list` goes over the values of `list`, from 1 to `#list`,
-  with a single loop variable. `list` and its length are taken once, before the loop.
-  A slice limits it: `*list[start, stop, step]`, where each part is optional (`*t[2,]`,
-  `*t[,,2]`). A negative stop counts from the end, as `#list + stop`, so `*t[1, -1]`
-  leaves out the last value. Slices only work here.
+  with a single loop variable. `list` and its length are taken once, before the loop,
+  so values added to `list` in the body aren't visited. A slice limits it:
+  `*list[start, stop, step]`, where each part is optional (`*t[2,]`, `*t[,,2]`). A
+  negative stop counts from the end, as `#list + stop`, so `*t[1, -1]` leaves out the
+  last value. Slices only work here.
 - **Destructuring:** loop variables can be patterns: `for {a, b} in *pairs_list`.
 - **`while c`** loops while `c` holds.
 - **Bodies:** the body follows `do` on the same line, or is an indented block.
@@ -505,6 +792,18 @@ expression, not an assignment, so to name it, assign it first: `file = File(p)`,
   compiles to a `goto`.
 - **No value:** a loop is a statement and gives no value; a comprehension collects
   values.
+
+With `t = {10, 20, 30, 40, 50}`:
+
+| Loop | Goes over |
+|---|---|
+| `for x in *t` | 10, 20, 30, 40, 50 |
+| `for x in *t[2,]` | 20, 30, 40, 50 |
+| `for x in *t[,,2]` | 10, 30, 50 |
+| `for x in *t[1, -1]` | 10, 20, 30, 40 |
+| `for x in *t[2, -2]` | 20, 30 |
+
+`s = t[1, 2]` is an error, as slices only work in loops and comprehensions.
 
 ### Statement modifiers
 
@@ -527,6 +826,12 @@ statement:
 - **Binding:** a modifier binds to the innermost inline body, so in
   `handler: (f) -> open(f) if f` the `if` is part of the function.
 
+```howl
+label = 'item' if n == 1      -- local label; if n == 1 then label = 'item' end
+print(label)                  -- 'item', or nil
+first = (t) -> t[1] if t      -- returns t[1] when t holds, and nothing otherwise
+```
+
 ### Blocks as values
 
 Only `with` blocks and comprehensions are values. A `with` block gives its target,
@@ -546,6 +851,15 @@ function, is compiled in place. Anywhere else in an expression it becomes an
 immediately called function. `return`, `break` and `continue` can't be used in such a
 block, since they would act on that function.
 
+```howl
+n = count([x for x in *list if x > 1])  -- an argument, so a function called in place
+show = (t) ->
+  display(with t
+    return if .hidden   -- error: 'return' can't be used here, as the expression it's in is compiled to a function; ...
+    .shown = true
+  )
+```
+
 ### Statement checks
 
 - **Dead code:** code after `return`, `break` or `continue` in the same block is an
@@ -555,14 +869,22 @@ block, since they would act on that function.
   whose value is used. The last statement in the body of an `if`, `unless`,
   `switch`, `do` or loop isn't such a place.
 
+```howl
+a == b                -- error: this expression does nothing; only calls can be statements
+f = ->
+  return 1
+  print('never')      -- error: unreachable code after 'return'
+```
+
 ## Comprehensions
 
 ```howl
-squares = [x * x for x in *list if x > 0]
-odds = [i for i = 1, 100 unless i % 2 == 0]
-lookup = {k, true for k in *keys}
-inverse = {v, k for k, v in pairs(t)}
-pairs_table = {unpack(p) for p in *list_of_pairs}
+list = {3, -1, 4}
+squares = [x * x for x in *list if x > 0]         -- {9, 16}
+odds = [i for i = 1, 9 unless i % 2 == 0]         -- {1, 3, 5, 7, 9}
+lookup = {k, true for k in *{'a', 'b'}}           -- {a: true, b: true}
+inverse = {v, k for k, v in pairs({x: 1, y: 2})}  -- {'x', 'y'}: 1 maps to 'x', 2 to 'y'
+pairs_table = {unpack(p) for p in *{{'a', 1}, {'b', 2}}}  -- {a: 1, b: 2}
 ```
 
 - **List:** `[expr for ...]` collects the values of `expr` into a list.
@@ -572,6 +894,15 @@ pairs_table = {unpack(p) for p in *list_of_pairs}
   [loop](#loops) forms, including slices. An `if` or `unless` after it skips values.
   A second `for` or filter is an error: nest `for` loops to go over several lists, and
   combine conditions with `and`.
+
+```howl
+cells = [{x, y} for x in *xs for y in *ys]  -- error: a comprehension takes a single 'for'; ...
+
+cells = {}
+for x in *xs
+  for y in *ys
+    cells[#cells + 1] = {x, y}
+```
 
 Comprehension variables follow the shadowing rule (see [Scope](#scope)). A
 comprehension used as a statement is an error, since its table is thrown away.
@@ -584,6 +915,7 @@ class Inventory
     @items = {}
   add: (name) =>
     @items[#@items + 1] = name
+  describe: => "#{#@items} of #{@size}"
 
 class BackPack extends Inventory
   @count: 0                  -- a class variable
@@ -599,6 +931,13 @@ class BackPack extends Inventory
   property weight => #@items
   __tostring: => "BackPack(#{@size})"
   @sizes = {'small', 'large'}  -- class body code runs with self = the class
+
+pack = BackPack(1)           -- size 2, as BackPack's new doubles it
+pack:add('map')
+print(pack.weight)           -- 1, through the property
+print(pack:describe())       -- 'a backpack, 1 of 2'
+print(pack)                  -- 'BackPack(2)', through __tostring
+print(BackPack.count)        -- 1
 ```
 
 - **Declaring:** `class Name` or `class Name extends parent` declares the local
@@ -622,9 +961,43 @@ class BackPack extends Inventory
 - **`__inherited`:** a parent's `__inherited(parent, child)` is called when it's
   extended.
 
+The forms of `super`:
+
+```howl
+class Shape
+  @create: (kind) => "shape #{kind}"
+  area: => 0
+  name: 'shape'
+
+class Square extends Shape
+  @create: (kind) => super(kind) .. '!'  -- Square:create('x') is 'shape x!'
+  new: (@side) =>
+  area: => @side * @side + super()       -- Shape's area, on self
+  describe: => "#{super.name}, #{super:area()}"   -- 'shape, 0'
+```
+
+`__inherited` is a class method of the parent, so it runs with the parent as `self`:
+
+```howl
+class Plugin
+  @registry: {}
+  @__inherited: (child) => @registry[#@registry + 1] = child.__name
+
+class Spell extends Plugin
+print(Plugin.registry[1])    -- 'Spell'
+```
+
 **A class body runs top to bottom.** The class is created at the `class` line, and
 its members and statements then run in order. Members are added with `rawset`, since
 the parent's base may already have a `__newindex`.
+
+```howl
+class Config
+  defaults = {width: 80}
+  width: defaults.width      -- 80, as defaults is already assigned
+```
+
+MoonScript adds the members first, so there `defaults` is still nil at that point.
 
 ### Properties
 
@@ -638,6 +1011,12 @@ class Chunk
     get: => @buffer:sub(@start_pos, @end_pos)
     set: (text) =>
       @buffer:replace(@start_pos, @end_pos, text)
+
+chunk = Chunk(buffer, 1, 5)
+print(chunk.empty)    -- false, from the getter
+print(chunk.text)     -- the text from 1 to 5, from the getter
+chunk.text = 'howdy'  -- replaces it, through the setter
+chunk.empty = true    -- fails when it runs: property 'empty' is read-only
 ```
 
 - **Read-only:** `property name => body` declares a property with a getter. The
@@ -664,6 +1043,21 @@ class Chunk
     Elsewhere it's an ordinary name, so `property: value` and `@property(...)`
     still work.
 
+```howl
+class Named
+  new: (name) => @name = name
+  property name
+    get: => @_name
+    set: (name) => @_name = name
+
+class Shouting extends Named
+  property name
+    get: => super():upper()             -- the parent's getter
+    set: (name) => super("<#{name}>")   -- the parent's setter
+
+print(Shouting('ann').name)             -- '<ANN>'
+```
+
 ### Metamethods
 
 Members named after Lua's metamethods are metamethods of the instances: `__tostring`,
@@ -671,6 +1065,21 @@ Members named after Lua's metamethods are metamethods of the instances: `__tostr
 `__mul`, `__div`, `__mod`, `__pow`, `__pairs`, `__ipairs`, `__mode` and `__gc`.
 Subclasses inherit them. A subclass's copy is the same function, so an `__eq`
 compares the instances of a class and its subclasses.
+
+```howl
+class Vec
+  new: (@x, @y) =>
+  __add: (other) => Vec(@x + other.x, @y + other.y)
+  __eq: (other) => @x == other.x and @y == other.y
+  __tostring: => "(#{@x}, #{@y})"
+
+class Vec3 extends Vec
+  new: (x, y, @z = 0) => super(x, y)
+
+print(Vec(1, 2) + Vec(3, 4))      -- '(4, 6)'
+print(Vec3(1, 2))                 -- '(1, 2)', as Vec3 inherits __tostring
+print(Vec3(1, 2) == Vec(1, 2))    -- true, as both have the same __eq
+```
 
 `__index:` and `__newindex:` are fallbacks:
 
@@ -691,6 +1100,10 @@ class Window
   new: (win) => rawset(self, 'win', win)
   property title => @win.title
   __index: (key) => @win[key]
+
+w = Window({title: 'Notes', width: 80})
+print(w.title)          -- 'Notes', through the property
+print(w.width)          -- 80, through the fallback
 ```
 
 ### Layout
@@ -761,8 +1174,10 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | `import`, `from`, `using` and `extends` are reserved | They're ordinary names; `extends` only means something after a class name. |
 These MoonScript 0.5.0 bugs are fixed:
 
-- **Update operators:** `t[f()] += 1` and `f().n += 1` call `f` twice.
+- **Update operators:** `t[f()] += 1` and `f().n += 1` call `f` twice. Howlscript
+  calls it once.
 - **Destructuring among other targets:** in `a, {:b}, c = f()`, `b` and `c` get nil.
+  In Howlscript, `b` is read from `f`'s second value, and `c` is its third value.
 - **Lua keywords as method names:** `obj\end!` and `@end` compile to invalid Lua.
 
 Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complaint:
@@ -798,11 +1213,22 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
 
 ### New
 
-- **`++` and `--`:** `x++` and `t.count--` add or subtract 1, as statements.
-- **`local a = value`:** MoonScript's `local` only declares.
-- **Destructured parameters:** `({:width, :height}) -> width * height`. MoonScript
-  0.5.0 reads this as a call.
-- **Destructuring by string and expression keys:** `{'a b': x, [k]: y} = t`.
+- **`++` and `--`:** `x++` and `t.count--` add or subtract 1. They're statements, so
+  `y = x++` is an error.
+- **`local a = value`:** declares and assigns. MoonScript's `local` only declares, and
+  `local a = 1` doesn't parse.
+- **Destructured parameters:** a parameter can be a pattern that takes its argument
+  apart, as in `area = ({:width, :height}) -> width * height` (see
+  [Destructured parameters](#destructured-parameters)). MoonScript 0.5.0 has no such
+  parameters. It reads `({:width, :height})` as a table in parentheses, called with the
+  function `-> width * height`, so the line fails when it runs instead of defining a
+  function:
+
+  ```lua
+  local area = ({width = width, height = height})(function()
+    return width * height
+  end)
+  ```
 - **Properties:** `property name => @x`, or with a block of `get:` and `set:`, in a
   class body (see [Properties](#properties)).
 - **Numbers:** all of LuaJIT's forms, where MoonScript 0.5.0 lacks `0XFF`, `1e+2`,
