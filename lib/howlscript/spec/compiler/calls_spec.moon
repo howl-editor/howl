@@ -208,6 +208,84 @@ describe 'calls', ->
       assert.match compile_error('if f x then y()'), "expected 'then' or an indented block, found 'x'"
       assert.match compile_error('for x in pairs t do y()'), "expected 'do' or an indented block, found 't'"
 
+  describe 'with a table as the only argument', ->
+    it 'need no parentheses, with or without a space', ->
+      assert.same {{1}, {2}, {k: 3}}, {run [[
+        id = (t) -> t
+        return id {1}, id{2}, id {k: 3}
+      ]]}
+
+    it 'can be used anywhere a value can', ->
+      assert.same {{{1}, 'x'}, {{2}}, 3, 9, {{6}}}, {run [[
+        args = (...) -> {...}
+        id = (t) -> t
+        a = args(id {1}, 'x')
+        b = {id {2}}
+        n = 0
+        n += v for v in *id {4, 5}
+        local got
+        if id {true}
+          got = args(id{6})
+        return a, b, #id {1, 2, 3}, n, got
+      ]]}
+
+    it 'can be in the arguments of a call without parentheses', ->
+      assert.same {1, {2}}, run [[
+        args = nil
+        f = (...) -> args = {...}
+        id = (t) -> t
+        f 1, id {2}
+        args
+      ]]
+
+    it 'can be method calls, also on self and super', ->
+      assert.same {{1}, {2}, {3}, {4}}, {run [[
+        class Base
+          m: (t) => t
+        class Derived extends Base
+          m: (t) => super {t[1] + 2}
+          own: (t) => t
+          both: => @own {4}
+        obj = {m: (t) => t}
+        return obj:m {1}, obj:m{2}, Derived():m({1}), Derived():both()
+      ]]}
+
+    it 'continue after the table', ->
+      assert.same {'v', 'V'}, {run [[
+        id = (t) -> t
+        return id {k: 'v'}.k, id{k: 'v'}.k:upper()
+      ]]}
+
+    it 'take a table as comprehension as well', ->
+      assert.same {a: true}, run [[
+        id = (t) -> t
+        x = id {k, true for k in *{'a'}}
+        x
+      ]]
+
+    it 'start arguments without parentheses at the start of a statement', ->
+      assert.same {{1}, 2}, run [[
+        args = nil
+        f = (...) -> args = {...}
+        f {1}, 2
+        args
+      ]]
+
+    it 'pass only the table elsewhere, as in Lua', ->
+      assert.same {{1}, 2}, {run [[
+        id = (t) -> t
+        a, b = id {1}, 2
+        return a, b
+      ]]}
+
+    it 'do not take a table from the next line', ->
+      assert.same {'g', {1}}, run [[
+        args = (...) -> {...}
+        g = 'g'
+        args(g
+          {1})
+      ]]
+
   describe 'implicit tables', ->
     it 'collect trailing key: value arguments into a last table argument', ->
       assert.same {1, {a: 2, b: 3}}, {run [[

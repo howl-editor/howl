@@ -945,8 +945,9 @@ function Parser:self_ref()
   return node(t.v == '@' and 'Self' or 'ClassRef', t), false
 end
 
--- the arguments of a method call: `(...)`, a single touching string or, when
--- `at_start` of a statement, arguments without parentheses
+-- the arguments of a method call: `(...)`, a single touching string, a single table
+-- or, when `at_start` of a statement, arguments without parentheses. The second
+-- value is true for the last, which end the expression.
 function Parser:method_args(name, colon, at_start)
   local t = self.t
   if is_op(t, '(') and not t.sb then
@@ -954,29 +955,41 @@ function Parser:method_args(name, colon, at_start)
   elseif t.t == 'string' and not t.sb and t.q ~= '[' then
     self:advance()
     return { self:string(t) }
+  elseif self:table_arg(at_start) then
+    return { self:table() }
   elseif self:bare_call(at_start) then
-    return self:bare_args()
+    return self:bare_args(), true
   end
   self:error(string.format(
     "method reference without a call; wrap it in a function, as in (...) -> obj:%s(...), or add a space after ':' for a key",
     name), colon)
 end
 
+-- Whether the current token is a table literal that's the single argument of a call,
+-- as in Lua's `f {a: 1}` and `f{a: 1}`. At the start of a statement, a table after a
+-- space starts arguments without parentheses instead, so `f {a}, b` passes both.
+function Parser:table_arg(at_start)
+  local t = self.t
+  return is_op(t, '{') and not t.first and not (t.sb and at_start)
+end
+
 -- `.field`, `[index]`, `(call)`, `:method(call)` and `'string call'`, which all have
--- to touch what they apply to. `name_end` is set when the expression so far ends
--- with a name, which a touching string literal makes a call. When the expression
--- starts a statement (`at_start`), arguments without parentheses can end it.
+-- to touch what they apply to, and `{table call}`, which needn't. `name_end` is set
+-- when the expression so far ends with a name, which a touching string literal or a
+-- table makes a call. When the expression starts a statement (`at_start`), arguments
+-- without parentheses can end it.
 function Parser:postfix(e, name_end, at_start)
   while true do
     local t = self.t
-    if t.sb then
+    if (name_end or e.k == 'Super') and self:table_arg(at_start) then
+      e = node('Call', e, { fn = e, args = { self:table() } })
+      name_end = false
+    elseif t.sb then
       if (name_end or e.k == 'Super') and self:bare_call(at_start) then
         return node('Call', e, { fn = e, args = self:bare_args() })
       end
       break
-    end
-
-    if is_op(t, '.') then
+    elseif is_op(t, '.') then
       self:advance()
       local n = self.t
       if not is_name_like(n) or n.sb then
@@ -996,8 +1009,8 @@ function Parser:postfix(e, name_end, at_start)
       if t.sa or not is_name_like(n) or n.sb then break end
       self:advance()
       self:advance()
-      local bare = self.t.sb
-      e = node('MethodCall', e, { obj = e, name = n.v, args = self:method_args(n.v, t, at_start) })
+      local args, bare = self:method_args(n.v, t, at_start)
+      e = node('MethodCall', e, { obj = e, name = n.v, args = args })
       if bare then return e end
       name_end = false
     elseif t.t == 'string' and name_end and t.q ~= '[' then

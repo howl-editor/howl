@@ -579,6 +579,7 @@ print('a', 'b')
 obj:method(1)          -- `:` touches both sides
 r'\\s+':match(text)    -- a string touching a name is a one-argument call
 word = P'x' + S'abc'
+types = word {'int', 'char'}   -- so is a table after a name
 '%d items':format(n)   -- literals can be receivers
 obj:end()              -- method names can be keywords
 make()('a').value:upper()
@@ -587,8 +588,19 @@ make()('a').value:upper()
 - **Parentheses** must touch the function: `f(x)`, not `f (x)`. A call without
   arguments is `f()`.
 - **String calls:** a quoted string touching a name or field is a call with that one
-  argument, as in `P'x'` or `t.f"x"`. A long string or a table can't be used like
-  that: write `f([[x]])` and `f({a: 1})`, or `f [[x]]` and `f {a: 1}` as statements.
+  argument, as in `P'x'` or `t.f"x"`. A long string can't be used like that: write
+  `f([[x]])`, or `f [[x]]` as a statement.
+- **Table calls:** a table literal after a name, a field or a method name is a call
+  with that one argument, as in Lua, with or without a space: `word {'if', 'else'}`,
+  `t.f{a: 1}`, `obj:m {a: 1}`. The table must start on the same line. At the start
+  of a statement, a table after a space starts the arguments of a
+  [call without parentheses](#calls-without-parentheses) instead, so only there does
+  `f {a}, b` pass both values to `f`:
+
+  ```howl
+  f {a}, b          -- f({a}, b)
+  x = f {a}, b      -- x = f({a}), with b left over
+  ```
 - **Method calls:** `obj:m(args)`. A `:` is a method call when it touches both its
   receiver and the name, and a key separator when followed by a space.
 - **No method references:** `obj:m` without a call is an error. Wrap it in a function
@@ -646,14 +658,16 @@ describe 'Buffer', ->
 Only one call per line can do this. Calls in its arguments need their parentheses,
 and so do calls inside brackets and calls whose value is used. That way it's always
 clear which arguments belong to which call. A block opened on the following lines
-starts afresh, as in `describe` above.
+starts afresh, as in `describe` above. Calls with a table as their only argument
+are the exception, as their argument is always clear (see [Calls](#calls)).
 
 ```howl
 assert.equal 1, f(x)                -- not f x
 it 'works', -> assert.is_true(ok)   -- not assert.is_true ok
 foo(a, -> bar(b))                   -- not bar b
-buf = Buffer({})                    -- not Buffer {}
+buf = Buffer(mode)                  -- not Buffer mode
 return f(a)                         -- not f a
+assert.same {1}, f {1}              -- assert.same({1}, f({1}))
 ```
 
 The first argument must be on the same line, after a space. It must also start with
@@ -1148,7 +1162,7 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 |---|---|
 | `obj\method args` | `obj:method(args)`. Using `\` is an error. |
 | `f!` | `f()`. `!` is an error; negate with `not`. |
-| `print sum 10, 20`, `x = f a` | `print sum(10, 20)`, `x = f(a)`. Only a call that is a statement of its own can leave out its parentheses, and only one per line (see [Calls without parentheses](#calls-without-parentheses)). |
+| `print sum 10, 20`, `x = f a` | `print sum(10, 20)`, `x = f(a)`. Only a call that is a statement of its own can leave out its parentheses, and only one per line (see [Calls without parentheses](#calls-without-parentheses)). A call whose only argument is a table needs none anywhere, as in Lua. |
 | `f (a)` passes `(a)` | An error: the `(` must touch the function. `f (x) -> x` still passes a function. |
 | `x -1` calls `x(-1)` | A subtraction. |
 | Arguments continued on indented lines, nested by indentation | Inside parentheses, where line breaks are free. Without parentheses, arguments only continue after a trailing `,` and can't nest. |
@@ -1158,7 +1172,8 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | `@meta __tostring: => @x`, with Howl's `PropertyObject` | `__tostring: => @x`, a member (see [Metamethods](#metamethods)). |
 | A subclass doesn't inherit its parent's metamethods | It does. |
 | An `__index` member is ignored, as the base's `__index` is set to the base afterwards | `__index:` and `__newindex:` are fallbacks for keys the instance doesn't have (see [Metamethods](#metamethods)). |
-| `f{a: 1}` and `f[[text]]` call `f` | Errors: write `f({a: 1})` and `f([[text]])`, or leave out the parentheses with a space in a statement. |
+| `f[[text]]` calls `f` | An error: write `f([[text]])`, or `f [[text]]` in a statement. |
+| `x = f {a}, b` passes `{a}` and `b` to `f` | Passes only the table, as in Lua: `x = f({a}), b`. Only at the start of a statement does `f {a}, b` pass both. |
 | `x--note` is a comment | A decrement followed by `note`. Write `x -- note`. |
 | `unless a ... elseif b` | `unless` takes an `else` but no `elseif`. |
 | `if`, `unless` and `switch` are values: `label = if n == 1 then 'item' else 'items'`, `return if c then a else b` | Statements without a value, so using one as a value is an error. Assign or return in the branches. |

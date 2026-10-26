@@ -144,7 +144,7 @@ describe 'howlscript.parser', ->
       assert.match compile_error('obj\\m()'), "use ':', as in obj:method%(%)"
 
     it 'rejects calls without parentheses in an expression or nested in another', ->
-      assert.match compile_error('x = f {1}'), 'only a call that is a statement of its own'
+      assert.match compile_error('x = f 1'), 'only a call that is a statement of its own'
       assert.match compile_error("print 'x', f 1"), 'a call in the arguments of a call without parentheses'
 
     it 'rejects a space before the parentheses of a call', ->
