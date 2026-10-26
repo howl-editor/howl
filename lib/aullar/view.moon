@@ -436,24 +436,24 @@ View = {
     cur_y = 0
     return nil unless y >= cur_y
 
-    matched_line = nil
+    matched_line, matched_y = nil, nil
 
     for line_nr = @_first_visible_line, @last_visible_line + 1
       d_line = @display_lines[line_nr]
       break unless d_line
       end_y = cur_y + d_line.height
       if (y >= cur_y and y <= end_y)
-        matched_line = d_line
+        matched_line, matched_y = d_line, cur_y
         break
       elseif opts.fuzzy
-        matched_line = d_line
+        matched_line, matched_y = d_line, cur_y
 
       cur_y = end_y + 1
 
     if matched_line
       line = @_buffer\get_line(matched_line.nr)
       pango_x = (x - @base_x) * Pango.SCALE
-      line_y = max(0, min(y - cur_y, matched_line.text_height - 1)) * Pango.SCALE
+      line_y = max(0, min(y - matched_y, matched_line.text_height - 1)) * Pango.SCALE
       inside, index = matched_line.layout\xy_to_index pango_x, line_y
       if not inside
         -- left of the area, point it to first char in line
@@ -461,7 +461,8 @@ View = {
 
         -- right of the area, point to end
         if matched_line.is_wrapped
-          v_line = matched_line.lines\at_pixel_y(y - cur_y)
+          -- index is the last character of the visual line Pango picked
+          v_line = matched_line.lines\at index + 1
           return line.start_offset + v_line.line_end - 1
         else
           return line.start_offset + line.size

@@ -102,6 +102,23 @@ describe 'View', ->
             fuzzy: true
           )
 
+      context 'when the line is wrapped', ->
+        local d_line
+
+        before_each ->
+          view.config.view_line_wrap = 'char'
+          buffer.text = string.rep 'M', math.floor(1.5 * view.width / dim.width)
+          d_line = view.display_lines[1]
+          assert.equals 2, d_line.line_count
+
+        it 'returns the end of the visual line when outside to the right', ->
+          assert.equals d_line.lines[1].line_end, view\position_from_coordinates(view.width - 1, 0)
+          assert.equals buffer.size + 1, view\position_from_coordinates(view.width - 1, d_line.height)
+
+        it 'returns the end of the last visual line when below it with opts.fuzzy', ->
+          for y in *{d_line.height + 2, d_line.height * 3}
+            assert.equals buffer.size + 1, view\position_from_coordinates(view.width - 1, y, fuzzy: true)
+
   describe '(when text is inserted)', ->
     it 'moves the cursor down if the insertion is before or at the cursor', ->
       buffer\insert 1, '123'
