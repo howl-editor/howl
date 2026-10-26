@@ -209,10 +209,6 @@ function Parser:kind()
   return ctx[i].kind
 end
 
-function Parser:in_inline()
-  return self.ctx[#self.ctx].kind == 'inline'
-end
-
 -- Whether a closing bracket can end the current block: only inside brackets.
 function Parser:in_bracket()
   for i = #self.ctx, 1, -1 do
@@ -233,12 +229,10 @@ function Parser:ends_here()
 end
 
 -- Whether expression lists can continue past a ','. Inside call arguments and
--- tables it separates the entries, except in an inline body there, which takes the
--- rest of the line's entries, as in MoonScript: `f(-> a, b)` passes a function
--- returning a and b. A ',' ending a line ends the body though, leaving the next line
--- to the arguments or the table.
+-- tables it separates the entries, also after an inline body there, which it ends:
+-- `f(-> a, b)` passes a function returning a, and b. Unlike in MoonScript, where the
+-- body takes the rest of the line.
 function Parser:lists_allowed()
-  if self:in_inline() then return not self:peek(1).first end
   local k = self:kind()
   return k == 'block' or k == 'header' or k == 'group'
 end
@@ -314,7 +308,7 @@ function Parser:block(item)
 end
 
 -- A body on the same line: a single statement, which inside call arguments or a
--- table can take the rest of the line's entries (see lists_allowed).
+-- table ends at a ',' (see lists_allowed).
 function Parser:inline_body()
   local k = self.ctx[#self.ctx].kind
   if k ~= 'call' and k ~= 'table' and k ~= 'bare' then
@@ -323,11 +317,6 @@ function Parser:inline_body()
   self:push('inline')
   local stmt = self:statement()
   self:pop()
-  local t = self.t
-  if is_op(t, ':') and t.sa and is_name_like(self.toks[self.i - 1]) then
-    self:error('the inline body before this key takes the rest of the line, key included; put the key on a line of its own, or the function or block in parentheses',
-      self.toks[self.i - 1])
-  end
   return { stmt }
 end
 

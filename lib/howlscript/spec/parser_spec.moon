@@ -70,16 +70,34 @@ describe 'howlscript.parser', ->
         )
       ]]
 
-    it 'lets inline bodies inside arguments and tables take the rest of the line', ->
-      assert.same {1, 'z'}, {run [[
-        f = (fn) -> fn()
-        f(-> 1, 'z')
+    it 'ends inline bodies inside arguments and tables at a comma', ->
+      assert.same {'z', 'x'}, {run [[
+        call = (fn, x) -> fn(), x
+        call(-> 'z', 'x')
+      ]]}
+      assert.same {'z', 'x'}, {run [[
+        got = nil
+        call = (fn, x) -> got = {fn(), x}
+        call -> 'z', 'x'
+        unpack(got)
+      ]]}
+      assert.same {'f', 2}, {run [[
+        t = {f: -> 'f', g: 2}
+        t.f(), t.g
       ]]}
       t = run '{-> 1, 2}'
-      assert.same {1, {1, 2}}, {#t, {t[1]()}}
-      assert.same {1, 2}, {run [[
+      assert.same {2, 1, 2}, {#t, t[1](), t[2]}
+
+    it 'leaves several values to inline bodies in parentheses, and to block bodies', ->
+      assert.same {1, 2, 3, 4}, {run [[
         f = (fn) -> fn()
-        f -> 1, 2
+        a, b = f((-> 1, 2))
+        t = {
+          g: ->
+            3, 4
+        }
+        c, d = t.g()
+        a, b, c, d
       ]]}
 
     it 'ends inline bodies inside arguments and tables at a comma ending the line', ->
@@ -93,10 +111,6 @@ describe 'howlscript.parser', ->
           3)
         t.f(), t.g, h, x
       ]]}
-
-    it 'reports a key taken into an inline body', ->
-      assert.match compile_error('t = {f: -> 1, g: 2}'), 'the inline body before this key takes the rest of the line'
-      assert.match compile_error('f(a: (x) -> x, b: 2)'), '^spec:1:16:'
 
     it 'ends the arguments of a call without parentheses at the end of the line', ->
       assert.same {{1}, 2}, {run [[

@@ -186,25 +186,24 @@ foo(a, (x) ->
 A body can also follow on the same line, as in `-> x + 1`, `if c then a else b`,
 `for x in *t do f(x)`, `while c do f()`, `do f()`, `when 1 then a` and `else b`. Such
 a body is a statement, which runs to the end of the line and can be a list. So
-`f = -> 1, 2` returns two values. Inside call arguments or a table, too, it takes the
-rest of the line's entries:
+`f = -> 1, 2` returns two values. Inside call arguments, with or without
+parentheses, and in a table, a `,` ends it instead, as it separates the entries
+there:
 
 ```howl
-f(-> a, b)            -- passes one function, returning a and b
-f((-> a), b)          -- passes a function and b
+f(-> a, b)                        -- passes a function returning a, and b
+pcall((...) -> obj:m(...), res)   -- passes a function and res
+t = {f: -> 1, g: 2}               -- two keys
 ```
 
-A `,` that ends a line ends such a body, so the entries on the following lines stay
-entries. A key after an inline body on the same line, as in `{f: -> 1, g: 2}`, is an
-error: put it on a line of its own, or the function in parentheses.
+To return several values from a function there, put it in parentheses, or give it a
+block:
 
 ```howl
-f(-> a,
-  b)                  -- passes a function and b, as the , ends the line
-t = {f: -> 1, g: 2}   -- error: the inline body before this key takes the rest of the line, ...
+f((-> a, b))          -- passes one function, returning a and b
 t = {
-  f: -> 1
-  g: 2
+  f: ->
+    1, 2              -- t.f() returns 1 and 2
 }
 ```
 
@@ -1166,6 +1165,7 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | `f (a)` passes `(a)` | An error: the `(` must touch the function. `f (x) -> x` still passes a function. |
 | `x -1` calls `x(-1)` | A subtraction. |
 | Arguments continued on indented lines, nested by indentation | Inside parentheses, where line breaks are free. Without parentheses, arguments only continue after a trailing `,` and can't nest. |
+| An inline body in arguments or a table takes the rest of the line: `f(-> a, b)` passes one function returning `a` and `b` | A `,` ends it there, so `f(-> a, b)` passes a function returning `a`, and `b`. `f((-> a, b))` passes one function returning both (see [Layout](#layout)). |
 | `f a: 1, 2` | An error: positional arguments come first. |
 | `x = a: 1`, `return a: 1`, indented key blocks | `x = {a: 1}`. A table needs braces, except for the trailing named arguments of a call. |
 | `@property name: get: => @x`, with Howl's `PropertyObject` | `property name => @x` (see [Properties](#properties)). In a class still extending `PropertyObject`, `@property(name: {get: => @x})`, as a nested table needs its braces. |
