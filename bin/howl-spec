@@ -60,11 +60,15 @@ else
   OUT=
 fi
 
+# Matches _spec.moon and _spec.howl, since Lua patterns have no alternation, but not
+# stray _spec.bc files.
+PATTERN='_spec%.[hm]o[ow][nl]$'
+
 status=0
 for f in "$@"; do
   # Only label each run when there is more than one path to tell apart.
   [ $# -gt 1 ] && echo "$f"
-  "$HOWL" --spec $OUT --pattern=_spec.moon "$f" || status=1
+  "$HOWL" --spec $OUT --pattern="$PATTERN" "$f" || status=1
 done
 
 exit $status

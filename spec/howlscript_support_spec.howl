@@ -1,0 +1,78 @@
+-- Copyright 2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+{:File} = howl.io
+
+describe 'Howlscript support', ->
+  local dir
+
+  before_each ->
+    dir = File.tmpdir()
+
+  after_each ->
+    dir:rm_r()
+
+  describe 'loadfile(file, mode, env)', ->
+    it 'loads .howl files, given as paths or Files', ->
+      file = dir:join('mod.howl')
+      file.contents = 'return [x * 2 for x in *{1, 2}]'
+      assert.same {2, 4}, loadfile(file.path)()
+      assert.same {2, 4}, loadfile(file)()
+
+    it 'sets the environment when given one', ->
+      file = dir:join('env.howl')
+      file.contents = 'return value'
+      f = loadfile(file, nil, {value: 'from env'})
+      assert.equal 'from env', f()
+
+    it 'returns nil and the error with its position for a file that fails to compile', ->
+      file = dir:join('broken.howl')
+      file.contents = 'a = 1\nb = ('
+      f, err = loadfile(file)
+      assert.is_nil f
+      assert.includes err, "#{file.path}:2:"
+
+    it 'returns nil and an error for a missing file', ->
+      f, err = loadfile(dir:join('missing.howl'))
+      assert.is_nil f
+      assert.includes err, 'missing.howl'
+
+    it 'leaves Lua and MoonScript files to the other loaders', ->
+      dir:join('mod.lua').contents = "return 'lua'"
+      dir:join('mod.moon').contents = "'moon'"
+      assert.equal 'lua', loadfile(dir:join('mod.lua'))()
+      assert.equal 'moon', loadfile(dir:join('mod.moon'))()
+
+  describe 'require(name)', ->
+    local howlpath, moonpath
+
+    before_each ->
+      howlpath, moonpath = package.howlpath, package.moonpath
+      package.howlpath = "#{dir.path}/?.howl;#{dir.path}/?/init.howl"
+      package.moonpath = "#{dir.path}/?.moon"
+
+    after_each ->
+      package.howlpath, package.moonpath = howlpath, moonpath
+      package.loaded[name] = nil for name in *{'hs_mod', 'hs_pkg', 'hs_both'}
+
+    it 'loads modules from .howl files', ->
+      dir:join('hs_mod.howl').contents = 'return {loaded: true}'
+      assert.same {loaded: true}, require('hs_mod')
+
+    it 'loads the init.howl of a directory', ->
+      pkg = dir:join('hs_pkg')
+      pkg:mkdir()
+      pkg:join('init.howl').contents = "return 'init'"
+      assert.equal 'init', require('hs_pkg')
+
+    it 'prefers .howl files to .moon files', ->
+      dir:join('hs_both.howl').contents = "return 'howl'"
+      dir:join('hs_both.moon').contents = "'moon'"
+      assert.equal 'howl', require('hs_both')
+
+    it 'raises the compile error of a module that fails to compile', ->
+      dir:join('hs_broken.howl').contents = 'x = ('
+      assert.raises 'hs_broken%.howl:1:', -> require('hs_broken')
+
+    it 'still reports a missing module as not found', ->
+      assert.raises "module 'hs_missing' not found", -> require('hs_missing')

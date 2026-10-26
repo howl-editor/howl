@@ -13,17 +13,22 @@ Howl looks for a startup file in one of these locations:
 
 [XDG specification]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html
 
-Inside this _user directory_, it searches for either:
+Inside this _user directory_, it searches for one of:
 
 - `init.moon`, written in [Moonscript](http://moonscript.org)
 - `init.lua`, written in [Lua](http://www.lua.org)
+- `init.howl`, written in [Howlscript], the successor to Moonscript for Howl
+
+[Howlscript]: https://github.com/howl-editor/howl/blob/master/lib/howlscript/REFERENCE.md
 
 Which flavor to pick depends on your preference with regards to these languages.
+Should there be more than one, Howl loads `init.howl`, `init.lua` or `init.moon`,
+in that order of preference.
 
 Should a startup file be found, it is loaded after Howl is initialized
 which includes loading all available bundles.
 Howl does not have any special configuration format for use with the
-startup file, instead it's just plain Lua or Moonscript.
+startup file, instead it's just plain Lua, Moonscript or Howlscript.
 
 The startup file is typically used for various types of configuration, but
 there's no restriction to what you can do in it - you have access to the entire

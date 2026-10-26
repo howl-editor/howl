@@ -30,10 +30,13 @@ Howl directly from the checkout directory.
 
 Howl has a minimal C core, and has some dependencies written in C as well, all
 of which is compiled as you type `make`. Nearly all of Howl is actually written
-in Moonscript (and some Lua) however. While neither Moonscript or Lua is
-compiled in the traditional sense, for Howl they are both compiled down to
+in Moonscript (and some Lua) however, and code can also be written in
+[Howlscript], the successor to Moonscript for Howl. While none of these is
+compiled in the traditional sense, for Howl they are all compiled down to
 LuaJIT byte code. This is done for performance reasons, as we are mindful of the
 startup time for Howl.
+
+[Howlscript]: https://github.com/howl-editor/howl/blob/master/lib/howlscript/REFERENCE.md
 
 While the use of byte code does not present a problem for end users who simply
 install Howl once, it must be accounted for when making changes, or when trying
@@ -44,9 +47,9 @@ to the C core), it's also slow. For the typical workflow where you edit a source
 file and save it, only the byte code needs to be updated. Fortunately, Howl
 automatically updates this for you when it can, so it's something that you
 shouldn't have to consider. This will work out of the box as long as you run
-Howl directly from within the checkout directory - any Moonscript or Lua files
-below the checkout directoy will have their byte code versions updated
-automatically as you save them.
+Howl directly from within the checkout directory - any Moonscript, Howlscript or
+Lua files below the checkout directoy will have their byte code versions
+updated automatically as you save them.
 
 While the recommended way of developing for Howl is to simply run it from within
 the checkout directory, it's also possible to explicitly instruct Howl to update

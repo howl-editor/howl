@@ -67,8 +67,22 @@ type. `howlscript-print` shows the Lua for the buffer or selection, and
 
 **Generated names** start with `__hs`, a prefix reserved for the compiler.
 
-## Not yet supported
+## Loading in Howl
 
-Howl itself doesn't load `.howl` files yet: there's no `require` searcher,
-`bundle_load`, `--compile` or user init support. There's also no linter beyond the
-compile errors, and the existing MoonScript code hasn't been converted.
+Howl loads `.howl` files wherever it loads `.moon` and `.lua` ones:
+
+- **Loaders:** `require`, `bundle_load` (so a bundle's `init.howl` too), the user's
+  `init.howl` and `user_load`, and `--run` / `--run-async`.
+- **Tools:** `--compile` to `.bc`, specs (`*_spec.howl`), `bin/howl-eval --howl` and
+  the howl-dev bundle's compile on save.
+
+`lib/howl/howlscript_support.lua` does this, by hooking the global `loadfile` and
+adding a `require` searcher over `package.howlpath`. It loads the compiler with the
+first `.howl` file.
+
+When a module exists in more than one form, `.bc` wins, then `.howl`. `require` then
+tries `.moon` and `.lua`, while `bundle_load` and the user init try `.lua` before
+`.moon`.
+
+There's no Howlscript linter yet, so `--lint` only checks that a `.howl` file
+compiles. The existing MoonScript code hasn't been converted.

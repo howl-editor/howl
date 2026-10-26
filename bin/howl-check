@@ -14,35 +14,49 @@ cd "$ROOT" || exit 1
 
 if [ $# -eq 0 ]; then
   cat <<'EOF'
-Usage: howl-check <file.moon|file.lua>...
+Usage: howl-check <file.moon|file.howl|file.lua>...
 
-For each file: recompile it if it has a stale .bc, lint it (.moon only), and run
-its spec. Stops at the first failing step and reports which one it was.
+For each file: recompile it if it has a stale .bc, lint it (.moon and .howl only;
+a .howl file is only compiled), and run its spec. Stops at the first failing step
+and reports which one it was.
 
-  lib/howl/X.moon           -> spec/X_spec.moon
-  lib/aullar/X.moon         -> lib/aullar/spec/X_spec.moon
-  lib/ljglibs/X.moon        -> lib/ljglibs/spec/X_spec.moon
+  lib/howl/X.<ext>          -> spec/X_spec.<howl|moon>
+  lib/aullar/X.<ext>        -> lib/aullar/spec/X_spec.<howl|moon>
+  lib/ljglibs/X.<ext>       -> lib/ljglibs/spec/X_spec.<howl|moon>
   lib/howlscript/X.lua      -> lib/howlscript/spec (the whole suite)
-  bundles/<b>/<d>/X.moon    -> bundles/<b>/<d>/spec/X_spec.moon
-  *_spec.moon               -> itself
+  bundles/<b>/<d>/X.<ext>   -> bundles/<b>/<d>/spec/X_spec.<howl|moon>
+  *_spec.moon, *_spec.howl  -> itself
+
+where <ext> is moon, howl or lua, and X_spec.howl is used if it exists.
 EOF
   exit 1
 fi
 
+# Echoes the spec in directory $1 for the source $2, a path without its extension:
+# X_spec.howl if it exists, else X_spec.moon.
+spec_in() {
+  if [ -e "$1/$2_spec.howl" ]; then
+    printf '%s\n' "$1/$2_spec.howl"
+  else
+    printf '%s\n' "$1/$2_spec.moon"
+  fi
+}
+
 # Echoes the spec path for a source file, or nothing if there is no mapping.
 spec_for() {
   case "$1" in
-    *_spec.moon) printf '%s\n' "$1" ;;
-    lib/howl/*.moon)
-      base=${1#lib/howl/}; printf '%s\n' "spec/${base%.moon}_spec.moon" ;;
-    lib/aullar/*.moon)
-      base=${1#lib/aullar/}; printf '%s\n' "lib/aullar/spec/${base%.moon}_spec.moon" ;;
-    lib/ljglibs/*.moon)
-      base=${1#lib/ljglibs/}; printf '%s\n' "lib/ljglibs/spec/${base%.moon}_spec.moon" ;;
-    lib/howlscript/*.lua) printf '%s\n' "lib/howlscript/spec" ;;
-    bundles/*.moon)
-      dir=$(dirname "$1"); base=$(basename "$1" .moon)
-      printf '%s\n' "$dir/spec/${base}_spec.moon" ;;
+    *_spec.moon|*_spec.howl) printf '%s\n' "$1"; return ;;
+    lib/howlscript/*.lua) printf '%s\n' "lib/howlscript/spec"; return ;;
+    *.moon|*.howl|*.lua) ;;
+    *) return ;;
+  esac
+
+  src=${1%.*}
+  case "$src" in
+    lib/howl/*) spec_in spec "${src#lib/howl/}" ;;
+    lib/aullar/*) spec_in lib/aullar/spec "${src#lib/aullar/}" ;;
+    lib/ljglibs/*) spec_in lib/ljglibs/spec "${src#lib/ljglibs/}" ;;
+    bundles/*) spec_in "$(dirname "$src")/spec" "$(basename "$src")" ;;
   esac
 }
 
@@ -64,7 +78,7 @@ for f in "$@"; do
 
   bc="${f%.*}.bc"
   case "$f" in
-    *_spec.moon) ;;  # never compiled
+    *_spec.moon|*_spec.howl) ;;  # never compiled
     *)
       if [ -e "$bc" ] && [ "$f" -nt "$bc" ]; then
         "$HOWL" --compile "$f" || { echo "howl-check: compile failed" >&2; status=1; continue; }
@@ -73,7 +87,7 @@ for f in "$@"; do
   esac
 
   case "$f" in
-    *.moon)
+    *.moon|*.howl)
       "$ROOT/bin/howl-lint" "$f" || { echo "howl-check: lint failed" >&2; status=1; continue; }
       echo "   lint ok"
       ;;

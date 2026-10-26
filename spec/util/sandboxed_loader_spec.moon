@@ -19,28 +19,35 @@ describe 'SandboxedLoader', ->
         assert.equals dir\join('file.lua'), loader -> foo_file 'file.lua'
 
     describe '<name>_load(rel_basename)', ->
-      it 'loads relative bytecode, lua and moonscript files', ->
+      it 'loads relative bytecode, lua, moonscript and howlscript files', ->
         dir\join('aux_lua.lua').contents = '_G.loaded_lua = true'
         dir\join('aux_moon.moon').contents = '_G.loaded_moon = true'
+        dir\join('aux_howl.howl').contents = '_G.loaded_howl = true'
         dir\join('aux_bc.bc').contents = string.dump loadstring('_G.loaded_bc = true'), false
         loader ->
           foo_load 'aux_lua'
           foo_load 'aux_moon'
+          foo_load 'aux_howl'
           foo_load 'aux_bc'
 
         assert.is_true _G.loaded_lua
         assert.is_true _G.loaded_moon
+        assert.is_true _G.loaded_howl
         assert.is_true _G.loaded_bc
 
-      it 'prefers bytecode to Lua to Moonscript', ->
+      it 'prefers bytecode to Howlscript to Lua to Moonscript', ->
         dir\join('one.bc').contents = string.dump loadstring('return "bytecode"'), false
-        dir\join('one.lua').contents = 'return "lua"'
+        dir\join('one.howl').contents = 'return "howl"'
 
+        dir\join('two.howl').contents = 'return "howl"'
         dir\join('two.lua').contents = 'return "lua"'
-        dir\join('two.moon').contents = 'return "moon"'
+
+        dir\join('three.lua').contents = 'return "lua"'
+        dir\join('three.moon').contents = 'return "moon"'
 
         assert.equal 'bytecode', loader -> foo_load 'one'
-        assert.equal 'lua', loader -> foo_load 'two'
+        assert.equal 'howl', loader -> foo_load 'two'
+        assert.equal 'lua', loader -> foo_load 'three'
 
       it 'only loads each file once', ->
         dir\join('aux.lua').contents = [[

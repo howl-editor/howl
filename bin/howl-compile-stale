@@ -3,7 +3,7 @@
 # Copyright 2026 The Howl Developers
 # License: MIT (see LICENSE.md at the top-level directory of the distribution)
 #
-# Recompiles exactly those .moon and .lua files whose sibling .bc is out of date.
+# Recompiles exactly those .moon, .howl and .lua files whose sibling .bc is out of date.
 #
 # The .bc always wins over the source when a module is require'd, and staleness is
 # never checked anywhere (lib/howl/init.lua, lib/howl/util/sandboxed_loader.moon), so
@@ -25,12 +25,12 @@ while [ $# -gt 0 ]; do
       cat <<'EOF'
 Usage: howl-compile-stale [--prune] [<file>|<dir>...]
 
-Recompiles every .moon and .lua file that has a sibling .bc older than itself.
-With no arguments, sweeps lib/, bundles/ and spec/. Exits 0 when there was
+Recompiles every .moon, .howl and .lua file that has a sibling .bc older than
+itself. With no arguments, sweeps lib/, bundles/ and spec/. Exits 0 when there was
 nothing to do.
 
   --prune      also delete stray *_spec.bc files (harmless, since the spec runner
-               loadfile's the .moon, but noise)
+               loadfile's the source, but noise)
   -h, --help   this help
 EOF
       exit 0
@@ -53,7 +53,7 @@ trap 'rm -f "$STALE"' EXIT
 
 # -nt is not in POSIX but is supported by dash, bash, zsh and busybox ash; it beats
 # spawning a 'find -newer' per file across ~500 sources.
-find $PATHS \( -name '*.moon' -o -name '*.lua' \) ! -name '*_spec.*' -type f -print | while read -r src; do
+find $PATHS \( -name '*.moon' -o -name '*.howl' -o -name '*.lua' \) ! -name '*_spec.*' -type f -print | while read -r src; do
   bc="${src%.*}.bc"
   [ -e "$bc" ] || continue
   [ "$src" -nt "$bc" ] && printf '%s\n' "$src"

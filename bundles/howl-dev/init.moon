@@ -12,10 +12,12 @@ is_under_src_directory = (file) ->
 on_buffer_saved = (args) ->
   file = args.buffer.file
 
-  -- automatically update bytecode for howl files (never for spec files)
+  -- automatically update bytecode for Howl's source files (never for spec files, or
+  -- the examples in a bundle's misc/, which are never loaded)
   if file.extension and
-    file.extension\umatch(r'(lua|moon)') and
-    not file.basename\match('_spec%.moon$') and
+    file.extension\umatch(r'^(lua|moon|howl)$') and
+    not file.basename\umatch(r'_spec\\.(moon|howl)$') and
+    not file.path\match('/bundles/[^/]+/misc/') and
     is_under_src_directory(file)
 
     bc_file = File file.path\gsub "#{file.extension}$", 'bc'

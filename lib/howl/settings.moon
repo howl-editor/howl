@@ -57,7 +57,7 @@ class Settings
 
   load_user: =>
     return unless @dir
-    for ext in *{ 'bc', 'moon', 'lua' }
+    for ext in *{ 'bc', 'howl', 'moon', 'lua' }
       init = @dir\join "init.#{ext}"
       if init.exists
         loader = SandboxedLoader @dir, 'user', no_implicit_globals: true

@@ -119,7 +119,7 @@ end
 local function compile(args)
   for i = 2, #args do
     local file = args[i]
-    if file:match('_spec%.moon$') then
+    if file:match('_spec%.moon$') or file:match('_spec%.howl$') then
       print('Skipping spec file ' .. file .. ' (specs are never compiled)')
     else
       local target = file:gsub('%.%w+$', '.bc')
@@ -139,15 +139,20 @@ local function lint(args)
   local moonpick = require("moonpick")
   local errors = 0
   local paths = {}
-  local moon_filter = function(f)
-    return f.extension ~= 'moon' and not f.is_directory
+  local source_filter = function(f)
+    if f.is_directory then
+      -- a bundle's misc/ holds examples, which are never loaded and may not compile
+      local bundles_dir = f.basename == 'misc' and f.parent.parent
+      return bundles_dir and bundles_dir.basename == 'bundles' or false
+    end
+    return f.extension ~= 'moon' and f.extension ~= 'howl'
   end
 
   for i = 2, #args do
     local path = args[i]
     local file = howl.io.File(path)
     if file.is_directory then
-      local sub_files = file:find({filter = moon_filter})
+      local sub_files = file:find({filter = source_filter})
       for j = 1, #sub_files do
         if not sub_files[j].is_directory then
           paths[#paths + 1] = sub_files[j].path
@@ -160,14 +165,23 @@ local function lint(args)
 
   for i = 1, #paths do
     local path = paths[i]
-    local res, err = moonpick.lint_file(path, {lint_config = lint_config})
-    if res and #res > 0 then
-      io.stderr:write(path .. "\n\n")
-      io.stderr:write(moonpick.format_inspections(res) .. "\n\n")
-      errors = errors + 1
-    elseif err then
-      io.stderr:write(path .. "\n" .. err.. "\n\n")
-      errors = errors + 1
+    if path:match('%.howl$') then
+      -- there's no Howlscript linter yet, so only check that it compiles
+      local f, err = loadfile(path)
+      if not f then
+        io.stderr:write(err .. "\n\n")
+        errors = errors + 1
+      end
+    else
+      local res, err = moonpick.lint_file(path, {lint_config = lint_config})
+      if res and #res > 0 then
+        io.stderr:write(path .. "\n\n")
+        io.stderr:write(moonpick.format_inspections(res) .. "\n\n")
+        errors = errors + 1
+      elseif err then
+        io.stderr:write(path .. "\n" .. err.. "\n\n")
+        errors = errors + 1
+      end
     end
   end
 
@@ -177,6 +191,7 @@ end
 local function main()
   set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
   require 'howl.moonscript_support'
+  require 'howl.howlscript_support'
   table.insert(package.loaders, 2, bytecode_loader())
   require 'ljglibs.cdefs.glib'
 

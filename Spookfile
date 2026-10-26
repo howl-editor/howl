@@ -31,46 +31,55 @@ task_list = task_filter fs.is_present
 lint = command "./bin/howl-lint"
 spec = command "./bin/howl-spec"
 
+-- The spec for base, a path without its extension: base_spec.howl if it
+-- exists, else base_spec.moon.
+spec_for = (base) ->
+  howl_spec = "#{base}_spec.howl"
+  fs.is_present(howl_spec) and howl_spec or "#{base}_spec.moon"
+
 run_spec = (path, event) ->
   print "\027[1m\027[34m-> \027[22m(#{path}..)\027[0m"
-  if event.path\match '%.moon$'
+  if event.path\match('%.moon$') or event.path\match('%.howl$')
     notifies path, event,
       task_list(
         spec, path
         lint, event.path
       )
-  else -- moonpick only lints MoonScript
+  else -- Lua isn't linted
     notifies path, event, task_list(spec, path)
 
 watch "lib", "spec", ->
-  on_changed "_spec%.moon", (event) ->
-    run_spec event.path\match('(.+_spec%.moon)$'), event
+  for ext in *{'moon', 'howl'}
+    on_changed "_spec%.#{ext}$", (event) ->
+      run_spec event.path, event
 
-  on_changed "^lib/howl/.+%.moon$", (event) ->
-    base = event.path\match '^lib/howl/(.*)%.moon'
-    run_spec "spec/#{base}_spec.moon", event
+  for ext in *{'moon', 'howl', 'lua'}
+    on_changed "^lib/howl/.+%.#{ext}$", (event) ->
+      base = event.path\match "^lib/howl/(.*)%.#{ext}$"
+      run_spec spec_for("spec/#{base}"), event
 
-  on_changed "^lib/aullar/.+%.moon", (event) ->
-    base = event.path\match('^lib/aullar/(.*)%.moon')
-    run_spec "lib/aullar/spec/#{base}_spec.moon", event
+    on_changed "^lib/aullar/.+%.#{ext}$", (event) ->
+      base = event.path\match "^lib/aullar/(.*)%.#{ext}$"
+      run_spec spec_for("lib/aullar/spec/#{base}"), event
 
-  on_changed "^lib/ljglibs/.+%.moon", (event) ->
-    base = event.path\match('^lib/ljglibs/(.*)%.moon')
-    run_spec "lib/ljglibs/spec/#{base}_spec.moon", event
+    on_changed "^lib/ljglibs/.+%.#{ext}$", (event) ->
+      base = event.path\match "^lib/ljglibs/(.*)%.#{ext}$"
+      run_spec spec_for("lib/ljglibs/spec/#{base}"), event
 
   -- the compiler's parts all feed each other, so any change runs the whole suite
   on_changed "^lib/howlscript/.+%.lua$", (event) ->
     run_spec "lib/howlscript/spec", event
 
 watch "bundles", ->
-  on_changed "^(.+_spec%.moon)", (event) ->
-    base = event.path\match('^(.+_spec%.moon)')
-    run_spec base, event
+  for ext in *{'moon', 'howl'}
+    on_changed "_spec%.#{ext}$", (event) ->
+      run_spec event.path, event
 
-  on_changed "%.moon$", (event) ->
-    dir, base = event.path\match('^(.+)/(.+)%.moon')
-    unless base\find '_spec'
-      run_spec "#{dir}/spec/#{base}_spec.moon", event
+  for ext in *{'moon', 'howl', 'lua'}
+    on_changed "%.#{ext}$", (event) ->
+      dir, base = event.path\match "^(.+)/(.+)%.#{ext}$"
+      unless base\find '_spec'
+        run_spec spec_for("#{dir}/spec/#{base}"), event
 
 watch_file 'Spookfile', ->
   on_changed (event) ->

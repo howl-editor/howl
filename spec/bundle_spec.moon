@@ -73,6 +73,17 @@ describe 'bundle', ->
         bundle.load_from_dir dir
         bundle.load_from_dir dir
 
+    it 'loads bundles written in Howlscript', ->
+      with_bundle_dir 'howlish', (dir) ->
+        dir\join('aux.howl').contents = 'return "from aux"'
+        dir\join('init.howl').contents = trimmed_text [[
+          aux = bundle_load('aux')
+          unload = ->
+          return {info: {author: 'spec', description: 'desc', license: 'MIT'}, :unload, :aux}
+        ]]
+        bundle.load_from_dir dir
+        assert.equal 'from aux', _G.bundles.howlish.aux
+
     context 'exposed bundle helpers', ->
       it 'bundle_file provides access to bundle files', ->
         with_bundle_dir 'test', (dir) ->
@@ -104,6 +115,19 @@ describe 'bundle', ->
             bundle.load_from_dir dir
             assert.same {root: true}, require 'testmod'
             assert.same {other: true}, require 'testmod.other'
+
+        it 'provides Howlscript modules', ->
+          with_bundle_dir 'test', (dir) ->
+            mod = dir\join('howlmod')
+            mod\mkdir_p!
+            mod\join('init.howl').contents = 'return {root: true}'
+            mod\join('other.howl').contents = 'return {other: true}'
+            dir\join('init.lua').contents = bundle_init nil, {
+              code: 'provide_module("howlmod")'
+            }
+            bundle.load_from_dir dir
+            assert.same {root: true}, require 'howlmod'
+            assert.same {other: true}, require 'howlmod.other'
 
       describe 'require_bundle', ->
         it 'ensures the required bundle is loaded before the dependent one', ->

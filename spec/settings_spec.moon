@@ -97,6 +97,15 @@ describe 'Settings', ->
       assert.is_true _G.__init_lua
       assert.is_false _G.__init_moon
 
+    it 'evaluates init.howl ahead of init.lua and init.moon', ->
+      tmpdir\join('init.lua').contents = '_G.__init_lua = "lua"'
+      tmpdir\join('init.howl').contents = '_G.__init_howl = "howl"'
+      _G.__init_lua = nil
+
+      settings\load_user!
+      assert.equal 'howl', _G.__init_howl
+      assert.is_nil _G.__init_lua
+
     it 'does nothing if the directory is not set', ->
       assert.has.no_error -> Settings(tmpdir\join('sub', 'bar'))\load_user!
 
@@ -118,6 +127,13 @@ describe 'Settings', ->
       settings\load_user!
       assert.equal "more", _G.__loaded
       assert.equal "sub", _G.__loaded_sub
+
+    it 'user_load loads Howlscript files', ->
+      tmpdir\join('more.howl').contents = 'return "more howl"'
+      tmpdir\join('init.howl').contents = '_G.__loaded = user_load("more")'
+
+      settings\load_user!
+      assert.equal "more howl", _G.__loaded
 
   describe 'load_system(name)', ->
     it 'returns the decoded contents of the JSON file system/<name>.json', ->

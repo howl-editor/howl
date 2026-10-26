@@ -5,7 +5,7 @@
 {:Sandbox} = howl.util
 
 find_file = (dir, base) ->
-  for ext in *{'bc', 'lua', 'moon'}
+  for ext in *{'bc', 'howl', 'lua', 'moon'}
     path = dir\join "#{base}.#{ext}"
     return path if path.exists
 

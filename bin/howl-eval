@@ -3,14 +3,14 @@
 # Copyright 2026 The Howl Developers
 # License: MIT (see LICENSE.md at the top-level directory of the distribution)
 #
-# Runs a MoonScript snippet inside a live Howl context, without a window and without
-# having to create a scratch file first.
+# Runs a MoonScript or Howlscript snippet inside a live Howl context, without a window
+# and without having to create a scratch file first.
 
 . "$(dirname "$0")/_howl_env.sh"
 
 usage() {
   cat <<'EOF'
-Usage: howl-eval [-a] [-b] [--profile] (-e <code> | <file> | -) [-- <args>...]
+Usage: howl-eval [-a] [-b] [--profile] [--howl] (-e <code> | <file> | -) [-- <args>...]
 
 Runs MoonScript inside a live Howl context, with no window - howl.app.window and
 howl.app.editor are nil. The keymap and signals are set up, but bundles and the
@@ -18,6 +18,8 @@ built-in commands and interactions are not loaded unless you pass -b.
 
   -e, --eval <code>  the code to run; with no -e and no file, reads stdin
   -                  read the code from stdin
+  --howl             run -e or stdin code as Howlscript instead (a file runs as
+                     the language of its extension)
   -a, --async        run via --run-async, with the GLib main loop pumped
   -b, --bundles      load all bundles, plus core commands and interactions
                      (slower startup; without it only the default and curly_mode
@@ -37,10 +39,12 @@ Examples:
   howl-eval -b -e 'print howl.mode.for_file(howl.io.File("x.py")).name'
   howl-eval -a -e 'print howl.io.Process(cmd: "echo hi", read_stdout: true)\pump!'
   howl-eval script.moon -- some-arg
+  howl-eval --howl -e 'print(howl.io.File(".").path)'
 EOF
 }
 
 MODE=--run
+EXT=moon
 PROFILE=--no-profile
 BUNDLES=
 CODE=
@@ -54,6 +58,7 @@ while [ $# -gt 0 ]; do
     -b|--bundles) BUNDLES=--bundles ;;
     # The profile is only meaningful once bundles load, so opt into those as well.
     --profile) PROFILE=; BUNDLES=--bundles ;;
+    --howl) EXT=howl ;;
     -e|--eval)
       shift
       [ $# -gt 0 ] || { echo "howl-eval: -e requires an argument" >&2; exit 1; }
@@ -77,9 +82,10 @@ fi
 
 [ -n "$CODE" ] || CODE=$(cat)
 
-# The .moon extension is required: the loadfile hook in lib/howl/moonscript_support.lua
-# dispatches on it, and a temp file without it would be parsed as Lua.
-TMP=$(mktemp "${TMPDIR:-/tmp}/howl-eval-XXXXXX.moon") || exit 1
+# The extension is required: the loadfile hooks in lib/howl/moonscript_support.lua and
+# lib/howl/howlscript_support.lua dispatch on it, and a temp file without one would be
+# parsed as Lua.
+TMP=$(mktemp "${TMPDIR:-/tmp}/howl-eval-XXXXXX.$EXT") || exit 1
 printf '%s\n' "$CODE" > "$TMP"
 
 if [ "$ARGS_AFTER" = yes ]; then
