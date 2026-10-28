@@ -1,4 +1,4 @@
--- Copyright 2018 The Howl Developers
+-- Copyright 2018-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:bundle, :mode, :Buffer} = howl

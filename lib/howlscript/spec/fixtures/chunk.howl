@@ -1,3 +1,6 @@
+-- Copyright 2012-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 -- A Howlscript port of lib/howl/chunk.moon, run against its own spec by
 -- acceptance_spec.moon. Keep it in step when that module changes. It declares its
 -- properties and metamethods itself, where the original uses PropertyObject.

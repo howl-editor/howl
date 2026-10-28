@@ -1,3 +1,6 @@
+-- Copyright 2013-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 {:Buffer, :BufferContext} = howl
 {:ActionBuffer} = howl.ui
 
