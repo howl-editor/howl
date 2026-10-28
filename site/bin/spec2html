@@ -160,7 +160,7 @@ end
 ## main ##
 
 def input_files(input, pattern = '')
-  Pathname.glob("#{input}/**/*#{pattern}*_spec.moon")
+  Pathname.glob("#{input}/**/*#{pattern}*_spec.{moon,howl}")
 end
 
 def clean_output(dir)
@@ -171,6 +171,7 @@ def clean_output(dir)
 end
 
 formatter = Rouge::Formatters::HTML.new
+# Rouge has no Howlscript lexer, and MoonScript's highlights .howl specs well enough
 lexer = Rouge::Lexers::Moonscript.new
 code_formatter = -> (code) {
   %Q|<pre class="highlight moonscript"><code>#{formatter.format(lexer.lex(code))}</code></pre>|
@@ -185,7 +186,7 @@ clean_output output
 
 input_files(input, pattern).each do |file|
   rel_path = file.relative_path_from input
-  out = output.join rel_path.dirname, "#{rel_path.basename('.moon')}.html.erb"
+  out = output.join rel_path.dirname, "#{rel_path.basename(rel_path.extname)}.html.erb"
   out.parent.mkpath
   puts "Processing #{file}.."
   root = parse file
