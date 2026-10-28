@@ -4,13 +4,13 @@
 howl.util.lpeg_lexer ->
   c = capture
   ident = (alpha + '_')^1 * (alpha + digit + '_')^0
-  ws = c 'whitespace', S(' \t\r\n')
-  continuation_ws = c 'continue', S(' \t\r\n')
-  combining_ws = c 'combiner', S(' \t\r\n')^1
+  ws = c('whitespace', S(' \t\r\n'))
+  continuation_ws = c('continue', S(' \t\r\n'))
+  combining_ws = c('combiner', S(' \t\r\n')^1)
 
-  identifier = c 'identifier', ident
+  identifier = c('identifier', ident)
 
-  keyword = c 'keyword', word {
+  keyword = c('keyword', word {
     -- C++ keywords: todo, break out into separate mode later
     'alignas', 'alignof', 'and_eq', 'and', 'asm', 'bitand', 'bitor',
     'catch', 'class', 'compl', 'constexpr',
@@ -25,17 +25,17 @@ howl.util.lpeg_lexer ->
     'else', 'enum', 'extern', 'for', 'goto', 'if', '_Imaginary', 'inline',
     'register', 'restrict', 'return', 'signed', 'sizeof', 'static', 'struct',
     'switch', 'typedef', 'union', 'volatile', 'while'
-  }
+  })
 
-  type = c 'type', word {
+  type = c('type', word {
     'bool', 'char16_t', 'char32_t', 'char', '_Bool', 'double', 'float', 'int',
     'long', 'short', 'unsigned', 'void', 'wchar_t'
-  }
+  })
 
   attribute_spec = sequence {
-    c 'operator', '[['
-    c 'special', scan_until ']]'
-    c 'operator', ']]'
+    c('operator', '[[')
+    c('special', scan_until(']]'))
+    c('operator', ']]')
     ws^0
   }
 
@@ -70,39 +70,39 @@ howl.util.lpeg_lexer ->
     P(-1)
   }
 
-  operator = c 'operator', S'+-*/%=<>~&^|!(){}[];.,?:'
+  operator = c('operator', S'+-*/%=<>~&^|!(){}[];.,?:')
 
-  comment = c 'comment', any {
-    P'//' * scan_until eol,
-    span '/*', '*/'
-  }
+  comment = c('comment', any {
+    P'//' * scan_until(eol),
+    span('/*', '*/')
+  })
 
   char_constant = span("'", "'", '\\')
 
-  number = c 'number', any {
+  number = c('number', any {
     char_constant,
     float,
     hexadecimal_float,
     hexadecimal,
     octal,
     R'19' * digit^0,
-  }
+  })
 
-  special = c 'special', word {
+  special = c('special', word {
     'NULL', 'TRUE', 'FALSE', '__FILE__',
     '__LINE__', '__DATE__', '__TIME__', '__TIMESTAMP__',
     'true', 'false'
-  }
+  })
 
-  string = c 'string', span('"', '"', '\\')
+  string = c('string', span('"', '"', '\\'))
   raw_str_start = sequence {
     c('special', 'R'),
     c('string', '"' * Cg(scan_until('('), 'delim') * '(')
   }
-  raw_str_tail = c 'string', scan_to ')' * match_back('delim') * '"'
+  raw_str_tail = c('string', scan_to(')' * match_back('delim') * '"'))
   raw_string = raw_str_start * raw_str_tail
 
-  preproc = c 'preproc', '#' * complement(space)^1
+  preproc = c('preproc', '#' * complement(space)^1)
 
   include_stmt = sequence {
     c('preproc', '#include'),
@@ -112,7 +112,7 @@ howl.util.lpeg_lexer ->
     c('operator', '>'),
   }
 
-  constant = c 'constant', word any('_', upper)^1 * any('_', upper, digit)^0
+  constant = c('constant', word(any('_', upper)^1 * any('_', upper, digit)^0))
 
   P {
     'all'

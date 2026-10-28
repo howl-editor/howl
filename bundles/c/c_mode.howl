@@ -5,7 +5,7 @@ append = table.insert
 
 next_relevant_line = (line) ->
   l = line.next
-  while l and (l.is_blank or l\match('^%s*#'))
+  while l and (l.is_blank or l:match('^%s*#'))
     l = l.next
 
   l
@@ -41,35 +41,35 @@ next_relevant_line = (line) ->
     access_control_p = r("^\\s*(private|public|protected)\\s*:\\s*#{line_end}")
 
     is_declaration = (l) ->
-      (fdecl_p\test(l) and not control_stmt_p\test(l)) or
-        construct_decl_p\test(l)
+      (fdecl_p:test(l) and not control_stmt_p:test(l)) or
+        construct_decl_p:test(l)
 
     is_opening_decl = (l) ->
-      return true if opening_construct_p\test(l)
-      return false if control_stmt_p\test(l)
-      opening_decl_p\test(l) or -- ..(..)$
-      opening_decl_comma_p\test(l) -- ..(..,$
+      return true if opening_construct_p:test(l)
+      return false if control_stmt_p:test(l)
+      opening_decl_p:test(l) or -- ..(..)$
+        opening_decl_comma_p:test(l) -- ..(..,$
 
     while line
       text = line.text
 
       -- first check for any ready structure lines
       if not candidate
-        if is_declaration(text) or access_control_p\test(text)
-          append lines, line
+        if is_declaration(text) or access_control_p:test(text)
+          append(lines, line)
           candidate = nil
         -- else check for possible candidates: started but not finished
         elseif is_opening_decl(text)
           candidate = line
       else
         -- if we have a candidate already, check for closure or continuation
-        if closing_p\test(text)
-          append lines, candidate
+        if closing_p:test(text)
+          append(lines, candidate)
           candidate = nil
-        elseif not continuation_p\test(text)
+        elseif not continuation_p:test(text)
           candidate = nil
 
-      line = next_relevant_line line
+      line = next_relevant_line(line)
 
     lines
 }

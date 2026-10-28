@@ -1,0 +1,218 @@
+# Converting MoonScript to Howlscript
+
+How Howl's MoonScript is converted to Howlscript, collected from modules converted by
+hand. The converter will follow these rules, and the hand-converted modules will check
+it. [REFERENCE.md](REFERENCE.md) lists every difference between the two languages;
+this says what a converted file should look like.
+
+## Principles
+
+- **Mechanical:** a conversion changes only what Howlscript requires, so it reads
+  line by line against the original. Improvements, like `x = x or {}` to `x or= {}`,
+  are separate changes.
+- **In place:** the `.howl` file replaces the `.moon` file of the same name, which
+  `require` and `bundle_load` then find instead.
+
+## Rules
+
+### Imports
+
+`import a, b from t` becomes `{:a, :b} = t`.
+
+### Calls
+
+- `obj\m args` becomes `obj:m(args)`, and `f!` becomes `f()`.
+- **Parentheses:** every call gets them, in specs too, except:
+  - a call taking a function block;
+  - a call whose only argument is a table;
+  - in specs, statements calling busted's `describe`, `context`, `it`,
+    `before_each`, `after_each`, `setup`, `teardown` and `pending`, and assertions
+    (`assert.equal 'x', buffer.text`). A spec's own helpers get parentheses, as in
+    `assert_lines({...}, m:structure(editor))`.
+
+  ```moonscript
+  table.insert clips, 1, item
+  error "Unknown signal '#{name}'", 2 unless all[name]
+  system_clipboard\read_text_async (res) ->
+    ...
+  config.define {
+    name: 'clipboard_max_items'
+  }
+  ```
+
+  ```howl
+  table.insert(clips, 1, item)
+  error("Unknown signal '#{name}'", 2) unless all[name]
+  system_clipboard:read_text_async (res) ->
+    ...
+  config.define {
+    name: 'clipboard_max_items'
+  }
+  ```
+
+- **Calls in other calls' arguments and calls used as values** get parentheses
+  everywhere, also in the arguments of a spec call and in inline functions there, in
+  block headers and in interpolations:
+
+  ```moonscript
+  assert.raises 'none', -> signal.connect 'none', -> true
+  for handler in *handlers_for name
+  co = coroutine.create (...) -> handler ...
+  if first\match '%p'
+  "Context<#{tostring @buffer}>"
+  ```
+
+  ```howl
+  assert.raises 'none', -> signal.connect('none', -> true)
+  for handler in *handlers_for(name)
+  co = coroutine.create((...) -> handler(...))
+  if first:match('%p')
+  "Context<#{tostring(@buffer)}>"
+  ```
+
+- **A function block in arguments:** when a call with a function block is itself an
+  argument, the parentheses close on a line of their own after the block:
+
+  ```moonscript
+  system_cb\read_text_async async (res) ->
+    assert.equals 'global!', system_cb\read_text_finish(res)
+    done!
+  ```
+
+  ```howl
+  system_cb:read_text_async(async((res) ->
+    assert.equals 'global!', system_cb:read_text_finish(res)
+    done()
+  ))
+  ```
+
+- **A table as the only argument:** the call keeps its form anywhere, since
+  Howlscript takes a table after a name as its only argument, as Lua does. Other
+  arguments, a long string included, get parentheses as usual:
+
+  ```moonscript
+  primary = PropertyTable {
+    clear: -> system_primary\set_text ''
+  }
+  keyword = c 'keyword', word {
+    'auto', 'break'
+  }
+  buffer.text = trimmed_text [[
+    int main() {}
+  ]]
+  ```
+
+  ```howl
+  primary = PropertyTable {
+    clear: -> system_primary:set_text('')
+  }
+  keyword = c('keyword', word {
+    'auto', 'break'
+  })
+  buffer.text = trimmed_text([[
+    int main() {}
+  ]])
+  ```
+
+- **A module ending in a call** gets `return` and parentheses, so its value stands
+  out: `PropertyTable Clipboard` becomes `return PropertyTable(Clipboard)`. A call
+  taking a function block keeps its form, as lexers' `howl.util.lpeg_lexer ->` does.
+
+- **A comprehension as the first argument:** the call gets parentheses, since
+  `f [x]` reads as an index: `assert.same [a for a in *t], b` becomes
+  `assert.same([a for a in *t], b)`.
+- **Named arguments before positional ones** get braces:
+  `assert.same description: 'bar', x` becomes `assert.same {description: 'bar'}, x`.
+- **Function stubs:** `obj\m` becomes `(...) -> obj:m(...)`, so `pcall obj\m, res`
+  becomes `pcall((...) -> obj:m(...), res)`.
+- **Several values after an inline function** in arguments or a table: MoonScript
+  takes them into its body, where a `,` ends the body in Howlscript. So the function
+  gets parentheses: `spy.new -> 'r1', 'r2'` becomes `spy.new((-> 'r1', 'r2'))`. Howl
+  has 9 such places, one of them a mistake: in `spec/project_spec.moon`,
+  `paths: -> {}, files: -> {}` puts `files` in the body of `paths`.
+
+### Tables
+
+A table without braces gets them:
+
+- `return :a, :b` becomes `return {:a, :b}`, and `x = a: 1` becomes `x = {a: 1}`.
+- **A table nested under a key** gets braces with its entries on lines of their
+  own, whether it was an indented block or on the key's line:
+
+  ```moonscript
+  text:
+    set: (v) => ...
+    get: => ...
+  current: get: ->
+    clips[1]
+  clips: get: -> clips
+  ```
+
+  ```howl
+  text: {
+    set: (v) => ...
+    get: => ...
+  }
+  current: {
+    get: ->
+      clips[1]
+  }
+  clips: {
+    get: -> clips
+  }
+  ```
+
+### Layout
+
+A line continuing an expression is indented deeper than the line it continues, as
+Howlscript requires, so a continuation at the same indentation moves in:
+
+```moonscript
+opening_decl_p\test(l) or
+opening_decl_comma_p\test(l)
+```
+
+```howl
+opening_decl_p:test(l) or
+  opening_decl_comma_p:test(l)
+```
+
+### Control flow
+
+- `else if c then x` becomes `elseif c then x`.
+- A `when` filter in a comprehension or `for` modifier becomes `if`.
+- **`if` as a value:** the names are declared before the `if`, and each branch
+  assigns them:
+
+  ```moonscript
+  pfx_p, sfx_p = if first\match '%p'
+    '%p+$', '^%p+'
+  elseif first\match '%w'
+    '%w+$', '^%w+'
+  ```
+
+  ```howl
+  local pfx_p, sfx_p
+  if first:match('%p')
+    pfx_p, sfx_p = '%p+$', '^%p+'
+  elseif first:match('%w')
+    pfx_p, sfx_p = '%w+$', '^%w+'
+  ```
+
+### Classes
+
+A class extending `PropertyObject` loses its parent, and with it the `super!` in
+`new`:
+
+- `@property x: get: => e` becomes `property x => e`.
+- `@meta {...}` entries become members, as in `__tostring: => ...`.
+- Writing a read-only property now fails with `property 'x' is read-only`.
+
+## Converted by hand
+
+| Original | Converted |
+|---|---|
+| `lib/howl/signal.moon`, `spec/signal_spec.moon` | 2026-10-26 |
+| `lib/howl/buffer_context.moon`, `spec/buffer_context_spec.moon` | 2026-10-26 |
+| `lib/howl/clipboard.moon`, `spec/clipboard_spec.moon` | 2026-10-26 |
+| `bundles/c/` (`init`, `c_mode`, `c_lexer`, `spec/c_mode_spec`) | 2026-10-26 |

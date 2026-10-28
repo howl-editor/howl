@@ -1,16 +1,16 @@
-import Buffer, BufferContext from howl
-import ActionBuffer from howl.ui
+{:Buffer, :BufferContext} = howl
+{:ActionBuffer} = howl.ui
 
-require 'howl.variables.core_variables'
+require('howl.variables.core_variables')
 
 describe 'BufferContext', ->
   local b
 
   before_each ->
-    b = Buffer howl.mode.by_name 'default'
+    b = Buffer(howl.mode.by_name('default'))
     b.text = '"HƏllo", said Mr.Bačon'
 
-  context_at = (pos) -> BufferContext b, pos
+  context_at = (pos) -> BufferContext(b, pos)
 
   describe '.word', ->
     it 'holds the current word', ->
@@ -28,10 +28,10 @@ describe 'BufferContext', ->
       assert.equal 'first', context_at(1).word.text
 
     it "the word boundaries are determined using the mode variable word_pattern", ->
-      b.mode = word_pattern: r'[Əl]+'
+      b.mode = {word_pattern: r'[Əl]+'}
       assert.equal 'Əll', context_at(3).word.text
 
-      b.mode = word_pattern: r'["Ə\\w]+'
+      b.mode = {word_pattern: r'["Ə\\w]+'}
       assert.equal '"HƏllo"', context_at(3).word.text
       assert.equal '"HƏllo"', context_at(8).word.text -- after "
       assert.equal '', context_at(9).word.text -- after ','
@@ -82,10 +82,10 @@ describe 'BufferContext', ->
     assert.equal b.lines[1], context_at(1).line
 
   it '.style holds the style at point, if any', ->
-    buf = ActionBuffer!
-    buf\append '[', 'operator'
-    buf\append '"foo"', 'string'
-    buf\append ' normal'
+    buf = ActionBuffer()
+    buf:append('[', 'operator')
+    buf:append('"foo"', 'string')
+    buf:append(' normal')
     assert.equal 'operator', BufferContext(buf, 1).style
     assert.equal 'string', BufferContext(buf, 2).style
     assert.is_nil BufferContext(buf, 7).style
