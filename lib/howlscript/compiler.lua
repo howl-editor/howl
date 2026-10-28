@@ -368,10 +368,9 @@ function Compiler:tail(s, sink, wrap)
     return self:lower(s, sink)
   elseif k == 'Return' or k == 'Break' then
     return stmt_handlers[k](self, s, wrap)
-  elseif sink.k ~= 'discard' and (k == 'Class' or (k == 'Export' and s.class)) then
+  elseif sink.k ~= 'discard' and k == 'Class' then
     self:stmt(s)
-    local name = k == 'Class' and s.name or s.class.name
-    return self:apply(sink, { { k = 'Name', v = name } })
+    return self:apply(sink, { { k = 'Name', v = s.name } })
   end
   self:stmt(s)
 end
@@ -1036,29 +1035,6 @@ function Compiler:stmt_Local(s)
     self:expr_list(s.values)
   end
   self:declare_all(names, s.line)
-end
-
-function Compiler:stmt_Export(s)
-  if s.all then
-    self.scope.export_all = true
-    return
-  end
-  if s.class then
-    self.scope.exported[s.class.name] = true
-    return self:stmt_Class(s.class)
-  end
-
-  local names = {}
-  for i, n in ipairs(s.names) do
-    self:check_name(n.v, n)
-    self.scope.exported[n.v] = true
-    names[i] = n.v
-  end
-  if s.values then
-    self.E:stmt(s.line)
-    self.E:w(concat(names, ', ') .. ' = ')
-    self:expr_list(s.values)
-  end
 end
 
 function Compiler:stmt_With(s) self:lower_with(s, DISCARD) end

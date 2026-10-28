@@ -25,7 +25,7 @@
 -- Statements (With can also be a value):
 --   Assign{targets, values}, Update{target, op, value}, ExprStmt{exprs}
 --   Return{values}, Break, Continue
---   Local{names, values}, Export{names, values} / {all} / {class}
+--   Local{names, values}
 --   If{conds, bodies, else_body, unless, decorator}
 --   Switch{subject, clauses = {{values, body, line}}, else_body}
 --   With{target, body}, Do{body}, While{cond, body}
@@ -369,8 +369,6 @@ function Parser:statement()
       stmt = self:do_()
     elseif v == 'class' then
       stmt = self:class()
-    elseif v == 'export' then
-      stmt = self:export()
     elseif v == 'local' then
       stmt = self:local_()
     elseif v == 'return' then
@@ -754,23 +752,6 @@ function Parser:names(what)
     names[#names + 1] = n
   until not self:accept_op(',')
   return names
-end
-
-function Parser:export()
-  local t = self:advance()
-  if self:accept_op('*') then
-    return node('Export', t, { all = true })
-  end
-  if is_kw(self.t, 'class') then
-    return node('Export', t, { class = self:class() })
-  end
-  local names = self:names('export')
-  local values
-  if self:accept_op('=') then
-    self:continuation()
-    values = self:expr_list()
-  end
-  return node('Export', t, { names = names, values = values })
 end
 
 function Parser:local_()

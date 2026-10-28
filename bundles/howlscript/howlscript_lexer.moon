@@ -11,7 +11,7 @@ howl.util.lpeg_lexer ->
 
   -- a word that's the start of another comes after it, as with elseif and else
   keyword = c 'keyword', -after_access * word {
-    'and', 'break', 'class', 'continue', 'do', 'elseif', 'else', 'export', 'extends',
+    'and', 'break', 'class', 'continue', 'do', 'elseif', 'else', 'extends',
     'for', 'if', 'in', 'local', 'not', 'or', 'return', 'super', 'switch', 'then',
     'unless', 'when', 'while', 'with'
   }

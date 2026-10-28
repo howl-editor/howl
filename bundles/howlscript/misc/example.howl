@@ -110,9 +110,6 @@ class Inventory extends Container
   __tostring: => "Inventory(#{@size})"
   __index: (key) => @items[key]
 
-export class Exported
-export *
-
 -- errors
 function end goto = 1
 obj\method!

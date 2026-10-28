@@ -192,51 +192,27 @@ describe 'assignment', ->
         x
       ]]
 
-  describe 'export', ->
-    it 'makes assignments to the names global', ->
-      env = {}
-      run [[
-        export a, b
-        a = 1
-        f = -> b = 2
-        f()
-      ]], env
-      assert.same {1, 2}, {env.a, env.b}
+  it 'assigns globals only through _G, as a new name declares a local', ->
+    env = {}
+    env._G = env
+    run [[
+      _G.a = 1
+      b = 2
+      f = -> _G.c = 3
+      f()
+    ]], env
+    assert.same {1, 3}, {env.a, env.c}
+    assert.is_nil rawget(env, 'b')
 
-    it 'assigns directly with `export x = ...`', ->
-      env = {}
-      run 'export x, y = 1, 2', env
-      assert.same {1, 2}, {env.x, env.y}
-
-    it 'has no effect on a name that is already local', ->
-      env = {}
-      run [[
-        x = 1
-        export x
-        x = 2
-      ]], env
-      assert.is_nil rawget env, 'x'
-
-    it 'makes all new names in its scope global with `export *`', ->
-      env = {}
-      run [[
-        export *
-        a = 1
-        f = ->
-          inner = 2
-        f()
-      ]], env
-      assert.equals 1, env.a
-      assert.is_function env.f
-      assert.is_nil rawget env, 'inner'
-
-  it 'treats import, from, using and extends as ordinary names', ->
-    assert.same {1, 2, 3, 4}, {run [[
-      import, from, using, extends = 1, 2, 3, 4
-      import, from, using, extends
+  it 'treats import, from, using, extends and export as ordinary names', ->
+    assert.same {1, 2, 3, 4, 5}, {run [[
+      import, from, using, extends, export = 1, 2, 3, 4, 5
+      import, from, using, extends, export
     ]]}
     -- MoonScript's import is a call without parentheses here, with b from t nested
     assert.match compile_error('import a, b from t'), 'a call in the arguments of a call without parentheses'
+    -- and its export a call whose result can't be assigned to
+    assert.match compile_error('export x = 1'), "can't assign to the result of a call"
 
   it 'rejects Lua keywords as names', ->
     assert.match compile_error('end = 1'), "'end' is a Lua keyword"

@@ -193,7 +193,7 @@ describe 'calls', ->
       ]]
 
     it 'must be statements of their own', ->
-      for src in *{'x = f a', 'return f a', 'local x = f a', 'export x = f a', 'n = 1 + f a', 'not f a', 'x, f a', 'x = obj:m a'}
+      for src in *{'x = f a', 'return f a', 'local x = f a', 'n = 1 + f a', 'not f a', 'x, f a', 'x = obj:m a'}
         assert.match compile_error(src), 'only a call that is a statement of its own can leave out its parentheses'
 
     it 'must not be in the arguments of another on the same line', ->

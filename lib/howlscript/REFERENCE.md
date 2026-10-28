@@ -49,13 +49,13 @@ Names starting with `__hs` are reserved for the compiler.
 These are the keywords:
 
 ```
-and  break  class  continue  do  else  elseif  export  false  for  if  in  local
-nil  not  or  return  switch  then  true  unless  when  while  with
+and  break  class  continue  do  else  elseif  false  for  if  in  local  nil
+not  or  return  switch  then  true  unless  when  while  with
 ```
 
 - `extends` only means something after a class name, and `property` at the start of
   a class item (see [Properties](#properties)). Elsewhere they're ordinary names, and
-  so are `import`, `from` and `using`.
+  so are `import`, `from`, `using` and `export`.
 - `super` always refers to the parent class (see [Classes](#classes)), so it can't be
   assigned to.
 - `self` is an ordinary name, which `=>` declares as a method's first parameter.
@@ -271,8 +271,8 @@ a, b = b, a
 - **Update operators:** `+=` and the others, `++` and `--` work on a single target,
   and not on a pattern. They evaluate the target's object and key once. Like any
   first assignment, one on a new name declares a local: `count += 1` is
-  `local count = count + 1`, reading the global `count`. To update a global, `export`
-  its name first (see [Declarations](#declarations)).
+  `local count = count + 1`, reading the global `count`. To update a global, go
+  through `_G`, as in `_G.count += 1` (see [Globals](#globals)).
 - **A statement:** assignment is not an expression. `a = b = 1` is an error, and so is
   `if x = f()`.
 
@@ -324,21 +324,24 @@ print(status)           -- 'go'
 
 ### Declarations
 
-- **`local a, b`** declares names up front, for example for functions that call each
-  other. `local a, b = 1, 2` also assigns. It can shadow a visible local on purpose.
-- **`export a, b`** makes later assignments to those names global, in nested scopes
-  too. `export a, b = 1, 2` assigns right away.
-- **`export *`** makes every new name in its own scope global, and
-  **`export class Foo`** exports a class.
+`local a, b` declares names up front, for example for functions that call each other.
+`local a, b = 1, 2` also assigns. It can shadow a visible local on purpose.
 
 ```howl
 local is_even, is_odd           -- declared up front, so each can call the other
 is_even = (n) -> n == 0 or is_odd(n - 1)
 is_odd = (n) -> n != 0 and is_even(n - 1)
+```
 
-export VERSION = '1.0'          -- a global
-export setup
-setup = -> init()               -- assigns the global setup
+### Globals
+
+A name that isn't a visible local reads the global of that name, but assigning to it
+declares a local. So globals are only set through `_G`:
+
+```howl
+_G.VERSION = '1.0'      -- sets the global
+print(VERSION)          -- '1.0', reading the global
+VERSION = '2.0'         -- declares a local, leaving the global as it is
 ```
 
 ### Destructuring
@@ -1218,7 +1221,7 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
 | `(a using b) ->`, `(using nil) ->` | Parameters can't shadow locals, and `local x` declares a fresh local where one is needed. |
 | `local *`, `local ^` | `local a, b`, naming each. |
 | `(@@x) =>`, setting `self.__class.x` | `@@x = x` in the body. |
-| `export ^` | `export A, B`, naming each. |
+| `export x = v`, `export x`, `export *`, `export ^`, `export class Foo` | `_G.x = v`. Assigning to a name that isn't a visible local always declares a local, so globals are only set through `_G` (see [Globals](#globals)). `export` is an ordinary name. |
 | `x = class ...`, `class extends Base` (class expressions and anonymous classes) | A named class statement, then `x = Name`. |
 | `class a.B` | `class B`, then `a.B = B`. |
 | `if x = f()`, `elseif x = f()` | `x = f()` before the `if`. For `elseif`, nest an `if` in the `else`. |

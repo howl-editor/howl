@@ -362,11 +362,6 @@ describe 'classes', ->
   it 'are returned when last in a file', ->
     assert.equals 'Last', run('class Last').__name
 
-  it 'can be exported', ->
-    env = {}
-    run 'export class Global', env
-    assert.equals 'Global', env.Global.__name
-
   describe 'inheritance', ->
     hierarchy = [[
       class Inventory

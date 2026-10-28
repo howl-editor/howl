@@ -38,10 +38,9 @@ describe 'howlscript', ->
       assert.equals 'thing:2: boom', err
 
     it 'sets the environment when given', ->
-      env = {}
-      f = howlscript.loadstring 'export x = 1', nil, env
-      f!
-      assert.equals 1, env.x
+      env = {x: 1}
+      f = howlscript.loadstring 'return x', nil, env
+      assert.equals 1, f!
 
     it 'returns nil and an error for invalid source', ->
       f, err = howlscript.loadstring 'x = (', '=snippet'

@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 -- Lexical scopes, as the compiler walks the AST. A scope holds the locals declared
--- in it, and the names that `export` makes global.
+-- in it.
 
 jit.off(true, true) -- see the note in compiler.lua
 
@@ -13,8 +13,6 @@ local function new(parent)
   return setmetatable({
     parent = parent,
     names = {},
-    exported = {},
-    export_all = false,
   }, Scope)
 end
 
@@ -34,22 +32,10 @@ function Scope:lookup(name)
   end
 end
 
--- Whether assigning to `name`, when no local of that name is visible, assigns a
--- global. `export name` holds for nested scopes too, while `export *` only covers
--- the scope it's in.
-function Scope:is_exported(name)
-  if self.export_all then return true end
-  local scope = self
-  while scope do
-    if scope.exported[name] then return true end
-    scope = scope.parent
-  end
-  return false
-end
-
--- Whether an assignment to `name` declares a new local.
+-- Whether an assignment to `name` declares a new local: whenever no local of that
+-- name is visible, as globals are only assigned through _G.
 function Scope:is_fresh(name)
-  return not self:lookup(name) and not self:is_exported(name)
+  return not self:lookup(name)
 end
 
 return {
