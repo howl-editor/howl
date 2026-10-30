@@ -31,7 +31,10 @@ Howlscript has no `export`, so assigning to a name always declares a local unles
 is visible:
 
 - **Real globals** are set through `_G`: `export with_tmpdir = (f) -> ...` becomes
-  `_G.with_tmpdir = (f) -> ...`.
+  `_G.with_tmpdir = (f) -> ...`. A run of them goes in a `with _G` block, as for a
+  module table below. A name that `export *` made global only because it was in its
+  scope, and that nothing else uses, becomes a local instead, as `globals.moon`'s
+  `_orig_coro_create` and `_tracked_coroutines` did.
 - **A module that `setfenv`s to its own table and exports into it** drops the
   `setfenv`, and every exported name becomes a field of the table wherever it's
   defined, read or written, also in nested functions and when the module calls its
@@ -210,6 +213,21 @@ is visible:
   })
   ```
 
+- **Positional arguments continued after a trailing `,`** keep their lines inside
+  the parentheses, which close after the last one:
+
+  ```moonscript
+  t_handle.tag = C.g_idle_add_full C.G_PRIORITY_LOW,
+    timer_callback,
+    nil
+  ```
+
+  ```howl
+  t_handle.tag = C.g_idle_add_full(C.G_PRIORITY_LOW,
+    timer_callback,
+    nil)
+  ```
+
 - **`with` lines:** `\m args` becomes `:m(args)`, as `\indent!` becomes `:indent()`.
 
 ### Tables
@@ -283,6 +301,36 @@ opening_decl_p:test(l) or
     pfx_p, sfx_p = '%w+$', '^%w+'
   ```
 
+- **A function ending in an `if`, `unless` or `switch`:** where one of its bodies
+  ends in a value, a call or a `with` block, MoonScript returned that, so it gets a
+  `return`, also in nested `if`s:
+
+  ```moonscript
+  after = (seconds, f, ...) ->
+    if seconds != 0
+      after_approximately seconds, f, ...
+    else
+      after_exactly seconds, f, ...
+  ```
+
+  ```howl
+  after = (seconds, f, ...) ->
+    if seconds != 0
+      return after_approximately(seconds, f, ...)
+    else
+      return after_exactly(seconds, f, ...)
+  ```
+
+  A `with` block becomes `return with x`, as in `vi/state`'s `apply`.
+
+### Names
+
+- **Shadowing:** a parameter or loop variable that shadows a visible local gets
+  another name, as `op = (editor) -> ...` inside a function with an `editor`
+  parameter became `op = (ed) -> ...`.
+- **A local named like the module table** in a module that used `setfenv`, as with
+  `state` in `vi/state`'s `apply`, gets a name for what it holds (`snapshot`).
+
 ### Classes
 
 A class extending `PropertyObject` loses its parent, and with it the `super!` in
@@ -303,3 +351,6 @@ A class extending `PropertyObject` loses its parent, and with it the `super!` in
 | `lib/howl/log.moon`, `spec/log_spec.moon` | 2026-10-28 |
 | `lib/howl/editing/formatting.moon`, `spec/editing/formatting_spec.moon` | 2026-10-28 |
 | `lib/howl/util/dotenv.moon`, `spec/util/dotenv_spec.moon` | 2026-10-28 |
+| `lib/howl/globals.moon`, `spec/globals_spec.moon` | 2026-10-28 |
+| `lib/howl/timer.moon`, `spec/timer_spec.moon` | 2026-10-28 |
+| `bundles/vi/state.moon` | 2026-10-28 |

@@ -1,0 +1,128 @@
+-- Copyright 2012-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+{:bindings} = howl
+{:pairs, :callable, :tostring, :pcall, :error} = _G
+
+_G = _G
+state = {}
+
+local maps, last_op
+
+with state
+  .active, .executing = false, false
+
+  .has_modifier = -> .delete or .change or .yank or .go or .quitting
+
+  .reset = ->
+    .delete = false
+    .change = false
+    .yank = false
+    .count = nil
+    .go = nil
+    .quitting = nil
+    .executing = false
+    bindings.cancel_capture()
+
+  .execute = (f, ...) ->
+    .executing = true
+    status, ret = pcall(f, ...)
+    .reset()
+    unless status
+      return error(ret, 2)
+
+  .add_number = (number) ->
+    .count = .count or 0
+    .count = (.count * 10) + number
+
+  .change_mode = (editor, to, ...) ->
+    .map = maps[to]
+    error('Invalid mode "' .. to .. '"') if not .map
+
+    if editor
+      meta = .map.__meta
+      meta.on_enter(editor) if meta.on_enter
+      editor.indicator.vi.label = '-- ' .. meta.name .. ' --'
+      for k,v in pairs(meta.cursor_properties)
+        v = v() if callable(v)
+        editor.cursor[k] = v
+
+    .mode = to
+    bindings.pop() if .active
+    bindings.push(.map)
+    .map(editor, ...) if callable(.map)
+    true
+
+  .apply = (editor, f) ->
+    snapshot = {delete: .delete, change: .change, yank: .yank, quitting: .quitting, count: .count}
+    snapshot.has_modifier = .delete or .change or .yank
+
+    op = (ed) -> ed.buffer:as_one_undo ->
+      cursor = ed.cursor
+      start_pos = cursor.pos
+      for _ = 1, snapshot.count or 1
+        break if true == f(ed, snapshot) -- count handled by function
+      if snapshot.has_modifier
+        return with ed.selection
+          :set(start_pos, cursor.pos)
+          if snapshot.yank
+            :copy()
+            cursor.pos = start_pos
+          elseif snapshot.delete
+            :cut()
+          elseif snapshot.change
+            :cut()
+            state.change_mode(ed, 'insert')
+
+    .execute(op, editor)
+
+    if snapshot.delete or snapshot.change
+      last_op = op
+      .insert_edit = nil
+
+    if .map.__after_apply
+      return .map.__after_apply(editor)
+
+  .record = (editor, op) ->
+    .execute(op, editor)
+    last_op = op
+    .insert_edit = nil
+
+  .repeat_last = (editor) ->
+    .execute ->
+      if last_op
+        for _ = 1, .count or 1
+          last_op(editor)
+          if .insert_edit
+            .insert_edit(editor)
+            .change_mode(editor, 'command')
+
+  .init = (keymaps) ->
+    maps = keymaps
+
+  .activate = (editor) ->
+    unless .active
+      .change_mode(editor, 'command')
+      editor.selection.includes_cursor = true
+      .active = true
+
+  .deactivate = ->
+    if .active
+      bindings.pop()
+      .mode = nil
+      .map = nil
+      .active = false
+
+  .enter_edit_mode = (editor) ->
+    buffer = editor.buffer
+    if buffer.data.vi_orig_auto_pair != nil
+      buffer.config.auto_pair = buffer.data.vi_orig_auto_pair
+
+  .leave_edit_mode = (editor) ->
+    buffer = editor.buffer
+    if buffer.data.vi_orig_auto_pair == nil
+      buffer.data.vi_orig_auto_pair = buffer.config.auto_pair
+
+    buffer.config.auto_pair = false
+
+return state
