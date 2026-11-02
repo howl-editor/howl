@@ -235,6 +235,17 @@ is visible:
 A table without braces gets them:
 
 - `return :a, :b` becomes `return {:a, :b}`, and `x = a: 1` becomes `x = {a: 1}`.
+- **A table ending a function, below other statements,** gets braces with its
+  entries on lines of their own, as `complete: -> completions` did in
+  `completion_popup_spec`:
+
+  ```howl
+  (_, _, on_update) ->
+    notify = on_update
+    {
+      complete: -> completions
+    }
+  ```
 - **A table nested under a key** gets braces with its entries on lines of their
   own, whether it was an indented block or on the key's line. So does the table
   around it: `app.window = visible: true, status: [m]: method` becomes a table over
@@ -329,14 +340,19 @@ opening_decl_p:test(l) or
 
 - **Shadowing:** a parameter or loop variable that shadows a visible local gets
   another name, as `op = (editor) -> ...` inside a function with an `editor`
-  parameter became `op = (ed) -> ...`.
+  parameter became `op = (ed) -> ...`. A parameter named `self`, as in a keymap's
+  `on_unhandled: (event, source, translations, self) ->`, keeps its name, as `self`
+  is exempt.
 - **A local named like the module table** in a module that used `setfenv`, as with
   `state` in `vi/state`'s `apply`, gets a name for what it holds (`snapshot`).
 
 ### Classes
 
-A class extending `PropertyObject` loses its parent, and with it the `super!` in
-`new`:
+Howlscript code never uses `PropertyObject`, as its classes have properties of their
+own. A class extending it loses its parent, and with it the `super!` in `new`. A
+hierarchy built on it converts as a unit, its root with all its subclasses, so that no
+Howlscript class extends a `PropertyObject` class and no MoonScript class needs
+`@property` from a Howlscript parent, as the `Popup` chain did:
 
 - `@property x: get: => e` becomes `property x => e`.
 - A property with `get:` and `set:` becomes a `property x` block holding them:
@@ -376,3 +392,4 @@ A class extending `PropertyObject` loses its parent, and with it the `super!` in
 | `lib/howl/chunk.moon`, `spec/chunk_spec.moon` | 2026-10-30 |
 | `lib/howl/util/json.moon`, `spec/util/json_spec.moon` | 2026-10-30 |
 | `lib/howl/io/input_stream.moon`, `spec/io/input_stream_spec.moon` | 2026-10-30 |
+| The `Popup` chain: `lib/howl/ui/` `popup`, `buffer_popup`, `menu_popup` and `completion_popup`, with their specs | 2026-11-02 |

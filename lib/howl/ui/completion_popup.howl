@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:MenuPopup, :style} = howl.ui
@@ -6,7 +6,7 @@
 {:abs} = math
 
 is_character = (event) ->
-  event.text and event.text.ulen == 1 and event.text\umatch r'[\\pL_]'
+  event.text and event.text.ulen == 1 and event.text:umatch(r'[\\pL_]')
 
 class CompletionPopup extends MenuPopup
   -- completions are offered while typing, and shouldn't draw attention
@@ -16,48 +16,48 @@ class CompletionPopup extends MenuPopup
     error('Missing argument #1: editor', 3) if not editor
     @editor = editor
     @items = {}
-    super {}, @\_on_completed
+    super({}, (...) -> @_on_completed(...))
 
-  @property position: get: => @completer and @completer.start_pos or nil
-  @property empty: get: => #@items == 0
+  property position => @completer and @completer.start_pos or nil
+  property empty => #@items == 0
 
   complete: =>
     return if @showing
-    @_init_completer!
-    @_get_completions!
+    @_init_completer()
+    @_get_completions()
 
   close: =>
     @completer = nil
-    super!
+    super()
 
   on_insert_at_cursor: (editor, args) =>
     return unless @completer
-    unless is_character args
-      @close!
+    unless is_character(args)
+      @close()
       return
 
-    @_get_completions!
+    @_get_completions()
     @_insert_pos = editor.cursor.pos
 
     if #@items > 0
-      @resize!
+      return @resize()
     else
-      @close!
+      return @close()
 
   on_delete_back: (editor, args) =>
     return unless @completer
     if args.at_pos < @completer.start_pos or editor.current_line != @completer.line
-      @close!
+      @close()
       return
 
   on_pos_changed: (cursor) =>
     if abs(cursor.pos - @_insert_pos) > 1
-      @close!
+      return @close()
 
   _init_completer: =>
     @_insert_pos = @editor.cursor.pos
-    completer = Completer @editor.buffer, @_insert_pos
-    completer.on_update = -> @_on_completer_update completer
+    completer = Completer(@editor.buffer, @_insert_pos)
+    completer.on_update = -> @_on_completer_update(completer)
     @completer = completer
     comp_style = style.at_pos(@editor.buffer, @completer.start_pos) or 'default'
     @list.columns = { { style: comp_style } }
@@ -68,25 +68,25 @@ class CompletionPopup extends MenuPopup
     editor = @editor
     -- ignore the update if the cursor has since left the word being completed
     if completer.buffer != editor.buffer or
-        editor.buffer\context_at(editor.cursor.pos).word.start_pos != completer.start_pos
-      @close!
+        editor.buffer:context_at(editor.cursor.pos).word.start_pos != completer.start_pos
+      @close()
       return
 
-    @_get_completions!
+    @_get_completions()
     if @showing
       if #@items > 0
-        @resize!
+        return @resize()
       else
-        @close!
+        return @close()
     elseif #@items > 0
-      editor\show_completion_popup!
+      return editor:show_completion_popup()
 
   _get_completions: =>
-    @items, @highlight_matches_for = @completer\complete @editor.cursor.pos
-    @refresh!
+    @items, @highlight_matches_for = @completer:complete(@editor.cursor.pos)
+    @refresh()
 
   _on_completed: (item) =>
-    @editor.cursor.pos = @completer\accept item, @editor.cursor.pos
+    @editor.cursor.pos = @completer:accept(item, @editor.cursor.pos)
     true
 
 return CompletionPopup

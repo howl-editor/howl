@@ -1,12 +1,11 @@
--- Copyright 2012-2024 The Howl Developers
+-- Copyright 2012-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-Gtk = require 'ljglibs.gtk'
+Gtk = require('ljglibs.gtk')
 Popover = Gtk.Popover
-{:PropertyObject} = howl.util.moon
 {:floor} = math
 
-class Popup extends PropertyObject
+class Popup
   comfort_zone: 10
 
   new: (@child, opts = {}) =>
@@ -15,7 +14,7 @@ class Popup extends PropertyObject
       autohide: false,
       has_arrow: false
     }
-    for k, v in pairs opts
+    for k, v in pairs(opts)
       props[k] = v
     props.child = @child
     @width = props.width
@@ -24,12 +23,11 @@ class Popup extends PropertyObject
     props.width = nil
     props.height = nil
     props.css_class = nil
-    @popover = Popover props
+    @popover = Popover(props)
     -- added, as setting `css_classes` would drop the popover's own classes
-    @popover\add_css_class css_class if css_class
-    @_set_size @width, @height
+    @popover:add_css_class(css_class) if css_class
+    @_set_size(@width, @height)
     @showing = false
-    super!
 
   show: (widget, @show_options = {position: 'center'}) =>
     error('Missing argument #1: widget', 2) if not widget
@@ -38,28 +36,28 @@ class Popup extends PropertyObject
 
     if @popover.parent != widget
       if @popover.parent != nil
-        @popover\unparent!
+        @popover:unparent()
 
-      @popover\set_parent widget
+      @popover:set_parent(widget)
 
     @widget = widget
     @showing = true
 
     if show_options.pointing_to
-      @move_to show_options.pointing_to
+      @move_to(show_options.pointing_to)
     else
-      @center!
+      @center()
 
-    @popover\popup!
+    @popover:popup()
 
   close: =>
-    @popover\popdown!
+    @popover:popdown()
     @showing = false
     @widget = nil
 
   release: =>
-    @close!
-    @popover\unparent!
+    @close()
+    @popover:unparent()
     @child = nil
     @popover = nil
 
@@ -71,27 +69,27 @@ class Popup extends PropertyObject
     @popover.position = Gtk.POS_BOTTOM
     @pointing_to = pointing_to
     @popover.pointing_to = @pointing_to
-    @_set_offset @width
+    @_set_offset(@width)
 
   resize: (width, height) =>
     if not @showing
       @width = width
       @height = height
-      @_set_size width, height
+      @_set_size(width, height)
       return
 
     -- a centered popup has no position, and center clamps to the widget
     unless @x
       @width, @height = floor(width), floor(height)
-      @center!
+      @center()
       return
 
     -- keep within the monitor, which is only known once the window is mapped
-    native = @widget\get_native!
-    surface = native and native\get_surface!
-    monitor = surface != nil and @widget\get_display!\get_monitor_at_surface(surface)
+    native = @widget:get_native()
+    surface = native and native:get_surface()
+    monitor = surface != nil and @widget:get_display():get_monitor_at_surface(surface)
     if monitor and monitor != nil
-      geom = monitor\get_geometry!
+      geom = monitor:get_geometry()
 
       if @x + width > (geom.width - @comfort_zone)
         width = geom.width - @x - @comfort_zone
@@ -101,8 +99,8 @@ class Popup extends PropertyObject
 
     width, height = floor(width), floor(height)
     @width, @height = width, height
-    @_set_offset width
-    @_set_size width, height
+    @_set_offset(width)
+    @_set_size(width, height)
 
   center: =>
     error('Attempt to center a closed popup', 2) if not @showing
@@ -121,7 +119,7 @@ class Popup extends PropertyObject
     if w_height > comfort and height + comfort > w_height
       height = w_height - comfort
 
-    @_set_size width, height
+    @_set_size(width, height)
 
     -- we're small enough size wise, let's place us where we should be
     x = (w_width / 2) - (width / 2)
@@ -130,15 +128,15 @@ class Popup extends PropertyObject
     @popover.position = Gtk.POS_BOTTOM
     @pointing_to = {:x, :y, width: 1, height: 1}
     @popover.pointing_to = @pointing_to
-    @popover\set_offset(width / 2, 0)
+    @popover:set_offset(width / 2, 0)
 
   -- the size is requested for the child, as the popover adds the padding and
   -- border of the theme's popover contents around it
   _set_size: (width, height) =>
-    @child\set_size_request width or -1, height or -1
+    @child:set_size_request(width or -1, height or -1)
 
   _set_offset: (width) =>
-    x_off = floor width / 2
-    @popover\set_offset x_off, 0
+    x_off = floor(width / 2)
+    @popover:set_offset(x_off, 0)
 
 return Popup
