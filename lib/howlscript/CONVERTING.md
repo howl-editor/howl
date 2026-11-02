@@ -284,7 +284,9 @@ opening_decl_p:test(l) or
 - `else if c then x` becomes `elseif c then x`.
 - A `when` filter in a comprehension or `for` modifier becomes `if`.
 - **`if` as a value:** the names are declared before the `if`, and each branch
-  assigns them:
+  assigns them. A field needs no declaration, and a branch already ending in an
+  assignment keeps it, as MoonScript drops the outer one there (`Chunk`'s
+  `styles`):
 
   ```moonscript
   pfx_p, sfx_p = if first\match '%p'
@@ -337,8 +339,25 @@ A class extending `PropertyObject` loses its parent, and with it the `super!` in
 `new`:
 
 - `@property x: get: => e` becomes `property x => e`.
+- A property with `get:` and `set:` becomes a `property x` block holding them:
+
+  ```moonscript
+  @property text:
+    get: => @_text
+    set: (text) => @buffer\replace text
+  ```
+
+  ```howl
+  property text
+    get: => @_text
+    set: (text) => @buffer:replace(text)
+  ```
+
 - `@meta {...}` entries become members, as in `__tostring: => ...`.
 - Writing a read-only property now fails with `property 'x' is read-only`.
+- A class or module with a Howlscript port in `lib/howlscript/spec/fixtures/` drops
+  the port and its line in `acceptance_spec.moon`, as its own spec now runs against
+  the real thing.
 
 ## Converted by hand
 
@@ -354,3 +373,6 @@ A class extending `PropertyObject` loses its parent, and with it the `super!` in
 | `lib/howl/globals.moon`, `spec/globals_spec.moon` | 2026-10-28 |
 | `lib/howl/timer.moon`, `spec/timer_spec.moon` | 2026-10-28 |
 | `bundles/vi/state.moon` | 2026-10-28 |
+| `lib/howl/chunk.moon`, `spec/chunk_spec.moon` | 2026-10-30 |
+| `lib/howl/util/json.moon`, `spec/util/json_spec.moon` | 2026-10-30 |
+| `lib/howl/io/input_stream.moon`, `spec/io/input_stream_spec.moon` | 2026-10-30 |

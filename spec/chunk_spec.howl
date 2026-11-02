@@ -1,4 +1,7 @@
-import Chunk, Buffer from howl
+-- Copyright 2012-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+{:Chunk, :Buffer} = howl
 
 describe 'Chunk', ->
 
@@ -47,7 +50,7 @@ describe 'Chunk', ->
   describe '.styles', ->
     it 'is a table of offsets and styles, { start, "style", end [,..]}', ->
       styles = { 1, 'keyword', 3 }
-      buffer._buffer.styling\apply 1, styles
+      buffer._buffer.styling:apply(1, styles)
       assert.same { 1, 'keyword', 2 }, Chunk(buffer, 2, 2).styles
 
     it 'is an empty table for an empty chunk', ->
@@ -56,13 +59,13 @@ describe 'Chunk', ->
 
   describe 'delete()', ->
     it 'deletes the chunk', ->
-      Chunk(buffer, 1, 5)\delete!
+      Chunk(buffer, 1, 5):delete()
       assert.equal '1 öf text', buffer.text
 
     it 'does nothing for an empty chunk', ->
       buffer.text = 'hello'
-      Chunk(buffer, 1, 0)\delete!
-      Chunk(buffer, 2, 1)\delete!
+      Chunk(buffer, 1, 0):delete()
+      Chunk(buffer, 2, 1):delete()
       assert.equal 'hello', buffer.text
 
   it 'tostring(chunk) returns .text', ->

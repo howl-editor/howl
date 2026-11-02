@@ -32,9 +32,6 @@ describe 'acceptance: lib/aullar/spec/gap_buffer_spec.moon against a Howlscript 
 describe 'acceptance: spec/util/matcher_spec.moon against a Howlscript Matcher', ->
   spec_against_port 'spec/util/matcher_spec.moon', 'howl.util.matcher', 'matcher.howl', {howl.util, 'Matcher'}
 
-describe 'acceptance: spec/chunk_spec.moon against a Howlscript Chunk', ->
-  spec_against_port 'spec/chunk_spec.moon', 'howl.chunk', 'chunk.howl', {howl, 'Chunk'}
-
 -- PropertyObject's spec (spec/util/moon/propertyobject_spec.moon) declares its
 -- classes in MoonScript, so it's translated here, with the classes in Howlscript.
 describe 'acceptance: PropertyObject in Howlscript', ->
