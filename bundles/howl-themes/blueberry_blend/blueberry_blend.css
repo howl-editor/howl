@@ -301,7 +301,7 @@ style.operator {
 }
 
 style.preproc {
-  color: var(--yellow);
+  color: var(--purple);
   font-style: italic;
 }
 

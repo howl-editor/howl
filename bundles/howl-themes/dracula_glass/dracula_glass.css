@@ -310,7 +310,7 @@ style.type {
 style.char { color: var(--green); }
 style.number { color: var(--purple); }
 style.operator { color: var(--magenta); }
-style.preproc { color: var(--aqua); }
+style.preproc { color: var(--orange); font-style: italic; }
 style.special { color: var(--purple); }
 style.tag { color: var(--purple); }
 style.member { color: var(--red); }

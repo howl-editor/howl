@@ -291,7 +291,7 @@ style.function {
 style.char { color: var(--green); }
 style.number { color: var(--orange); }
 style.operator { color: var(--aqua); }
-style.preproc { color: var(--aqua); }
+style.preproc { color: var(--orange); font-style: italic; }
 style.special { color: var(--purple); }
 style.tag { color: var(--purple); }
 style.type { color: var(--yellow); }
