@@ -42,12 +42,6 @@ describe 'scoping', ->
             h = (a) -> a
       ]]), "parameter 'a' shadows the local declared on line 1"
 
-    it 'is an error for @ parameters, which declare locals', ->
-      assert.match compile_error([[
-        x = 1
-        obj = {set: (@x) => 1}
-      ]]), "parameter 'x' shadows"
-
     it 'is an error for destructured parameters', ->
       assert.match compile_error([[
         name = 'x'

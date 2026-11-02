@@ -147,7 +147,9 @@ load_entries = (candidates) ->
 
 class Matcher
 
-  new: (@candidates, @options = {}) =>
+  new: (candidates, options = {}) =>
+    @candidates = candidates
+    @options = options
     @cache = {entries: {}, matches: {}}
     @entries = load_entries(candidates)
 

@@ -38,7 +38,8 @@ x -- a comment, not a decrement
 add = (a, b = 2, ...) -> a + b
 greet = -> print('hi')
 
-method = (@name, {:width, :height}) =>
+method = (name, {:width, :height}) =>
+  @name = name
   @@count += 1
   @width = width
 
@@ -95,7 +96,8 @@ class Inventory extends Container
   @count: 0
   helper = -> 'private'
 
-  new: (@size) =>
+  new: (size) =>
+    @size = size
     super()
 
   add: (name) =>

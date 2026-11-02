@@ -397,7 +397,7 @@ for i, {:name} in ipairs(people)
 
 ### Scope
 
-A function parameter (including destructured and `@x` ones), a `for` variable or a
+A function parameter (including destructured ones), a `for` variable or a
 comprehension variable may not shadow a local that's visible where it's declared:
 
 ```howl
@@ -434,11 +434,13 @@ noop = ->
 - **Parameters:** a parameter is one of these:
   - a name;
   - a destructuring pattern (see [Destructured parameters](#destructured-parameters));
-  - `@x` in a method, which sets `self.x` and also declares the local `x`;
   - `...`, which must be last.
+
+  There are no `@x` parameters: to set a field from a parameter, assign it in the
+  body, as in `new: (size) => @size = size`.
 - **Defaults:** any parameter except `...` can have a default, used when the argument
   is `nil`. Parameters are handled in the order they're written, so a default can use
-  earlier parameters, and `(@x, y = @x) =>` sees the new `@x`.
+  earlier parameters.
 - **`...`** is only available in functions that take it, not in functions nested in
   them, and at the top of a file.
 
@@ -555,7 +557,8 @@ table: `{:open, :close}`.
 ```howl
 class Counter
   @made: 0                -- a class variable, Counter.made
-  new: (@step = 1) =>     -- sets self.step, and declares the local step
+  new: (step = 1) =>
+    @step = step          -- self.step = step
     @@made += 1           -- self.__class.made
     @value = 0
   bump: => @value += @step
@@ -572,6 +575,7 @@ They need a `self`: using them outside a method is an error.
 
 ```howl
 f = -> @x                 -- error: '@' refers to self, but there's none here; methods are defined with '=>'
+g = (@x) => 1             -- error: Howlscript has no @ parameters; take a plain one and assign it in the body, ...
 ```
 
 ## Calls
@@ -927,7 +931,8 @@ comprehension used as a statement is an error, since its table is thrown away.
 
 ```howl
 class Inventory
-  new: (@size) =>
+  new: (size) =>
+    @size = size
     @items = {}
   add: (name) =>
     @items[#@items + 1] = name
@@ -987,7 +992,7 @@ class Shape
 
 class Square extends Shape
   @create: (kind) => super(kind) .. '!'  -- Square:create('x') is 'shape x!'
-  new: (@side) =>
+  new: (side) => @side = side
   area: => @side * @side + super()       -- Shape's area, on self
   describe: => "#{super.name}, #{super:area()}"   -- 'shape, 0'
 ```
@@ -1019,7 +1024,10 @@ MoonScript adds the members first, so there `defaults` is still nil at that poin
 
 ```howl
 class Chunk
-  new: (@buffer, @start_pos, @end_pos) =>
+  new: (buffer, start_pos, end_pos) =>
+    @buffer = buffer
+    @start_pos = start_pos
+    @end_pos = end_pos
 
   property empty => @end_pos < @start_pos
 
@@ -1042,8 +1050,8 @@ chunk.empty = true    -- fails when it runs: property 'empty' is read-only
   expression, normally a method: the getter takes no parameters, and the setter
   takes the value.
 - **Use:** reading a property calls its getter, and assigning to it calls its setter.
-  So `new: (@text) =>` goes through the setter too. Setters, like constructors,
-  return nothing.
+  So `@text = text` in `new` goes through the setter too. Setters, like
+  constructors, return nothing.
 - **Errors:** assigning to a property without a setter is an error,
   `property 'x' is read-only`. So is reading one without a getter,
   `property 'x' is write-only`. Both are reported where the property is used.
@@ -1084,13 +1092,17 @@ compares the instances of a class and its subclasses.
 
 ```howl
 class Vec
-  new: (@x, @y) =>
+  new: (x, y) =>
+    @x = x
+    @y = y
   __add: (other) => Vec(@x + other.x, @y + other.y)
   __eq: (other) => @x == other.x and @y == other.y
   __tostring: => "(#{@x}, #{@y})"
 
 class Vec3 extends Vec
-  new: (x, y, @z = 0) => super(x, y)
+  new: (x, y, z = 0) =>
+    super(x, y)
+    @z = z
 
 print(Vec(1, 2) + Vec(3, 4))      -- '(4, 6)'
 print(Vec3(1, 2))                 -- '(1, 2)', as Vec3 inherits __tostring
@@ -1185,7 +1197,6 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | Comprehensions and `for` modifiers filter with `when`: `[x for x in *t when x > 0]` | With `if` or `unless`: `[x for x in *t if x > 0]`. `when` there is an error; it only starts the cases of a `switch`. |
 | A comprehension takes several `for` and `when` clauses: `[{x, y} for x in *xs for y in *ys]` | A single `for`, with at most one filter. Nest `for` loops instead, and combine conditions with `and`. |
 | `x = do ...` gives the value of the block's last statement | An error: a `do` block is a statement. |
-| `(@x = 5, y = @x) =>` runs all defaults before setting `self.x`, so `y` gets the old `self.x` | Handles the parameters in order, so `y` gets 5. |
 | Parameters and loop variables can shadow locals | An error; rename one of them (see [Scope](#scope)). |
 | A class body adds all its members before running its other statements | It runs top to bottom (see [Classes](#classes)). |
 | `goto` can be a variable name | An error, like the other Lua keywords Howlscript doesn't use. |
@@ -1207,8 +1218,7 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
   that's compiled to a function, where MoonScript returns from the function it
   generates.
 - **`...`:** using `...` in a function that doesn't take it.
-- **`self`:** using `@` or `@@` with no `self` around, and `@x` parameters in a
-  function made with `->`.
+- **`self`:** using `@` or `@@` with no `self` around.
 - **`super`:** using `super` outside a class method, or in a class without a parent.
 
 ### Left out
@@ -1220,7 +1230,7 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
 | `obj\method` (a function stub) | `(...) -> obj:method(...)`. Stubs hide references and keep objects alive. |
 | `(a using b) ->`, `(using nil) ->` | Parameters can't shadow locals, and `local x` declares a fresh local where one is needed. |
 | `local *`, `local ^` | `local a, b`, naming each. |
-| `(@@x) =>`, setting `self.__class.x` | `@@x = x` in the body. |
+| `(@x) =>` and `(@@x) =>`, setting `self.x` or `self.__class.x` from a parameter | A plain parameter, assigned in the body: `(x) => @x = x`, or `@@x = x`. |
 | `export x = v`, `export x`, `export *`, `export ^`, `export class Foo` | `_G.x = v`. Assigning to a name that isn't a visible local always declares a local, so globals are only set through `_G` (see [Globals](#globals)). `export` is an ordinary name. |
 | `x = class ...`, `class extends Base` (class expressions and anonymous classes) | A named class statement, then `x = Name`. |
 | `class a.B` | `class B`, then `a.B = B`. |

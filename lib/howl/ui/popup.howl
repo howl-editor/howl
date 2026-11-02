@@ -8,7 +8,8 @@ Popover = Gtk.Popover
 class Popup
   comfort_zone: 10
 
-  new: (@child, opts = {}) =>
+  new: (child, opts = {}) =>
+    @child = child
     error('Missing argument #1: child', 3) if not child
     props = {
       autohide: false,
@@ -29,7 +30,8 @@ class Popup
     @_set_size(@width, @height)
     @showing = false
 
-  show: (widget, @show_options = {position: 'center'}) =>
+  show: (widget, show_options = {position: 'center'}) =>
+    @show_options = show_options
     error('Missing argument #1: widget', 2) if not widget
     if not (@width and @height)
       error("Can not show a popup without a size")

@@ -18,7 +18,8 @@ ffi.cdef([[
 GAP_SIZE = 100
 
 define_class({
-  new: (@type, size, opts = {}) =>
+  new: (type, size, opts = {}) =>
+    @type = type
     @default_gap_size = opts.gap_size or GAP_SIZE
     @type_size = ffi.sizeof(type)
     @arr_ptr = ffi.typeof("const #{type} *")

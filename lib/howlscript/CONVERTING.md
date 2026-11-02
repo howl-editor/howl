@@ -336,6 +336,26 @@ opening_decl_p:test(l) or
 
   A `with` block becomes `return with x`, as in `vi/state`'s `apply`.
 
+### Parameters
+
+Howlscript has no `@x` parameters. Each becomes a plain parameter, assigned to its
+field at the top of the body, one line each, in the order of the parameters:
+
+```moonscript
+new: (@buffer, @pos) =>
+show: (widget, @show_options = {position: 'center'}) =>
+  error('Missing argument #1: widget', 2) if not widget
+```
+
+```howl
+new: (buffer, pos) =>
+  @buffer = buffer
+  @pos = pos
+show: (widget, show_options = {position: 'center'}) =>
+  @show_options = show_options
+  error('Missing argument #1: widget', 2) if not widget
+```
+
 ### Names
 
 - **Shadowing:** a parameter or loop variable that shadows a visible local gets

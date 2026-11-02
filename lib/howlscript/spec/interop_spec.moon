@@ -29,7 +29,7 @@ describe 'interop with MoonScript classes', ->
   it 'lets a MoonScript class extend a Howlscript one', ->
     Animal = run [[
       class Animal
-        new: (@name) =>
+        new: (name) => @name = name
         speak: => "#{@name} makes a sound"
     ]]
     Dog = moon_run [[
@@ -66,7 +66,7 @@ describe 'interop with MoonScript classes', ->
       Base = run [[
         class Base
           @__inherited: (child) => @child = child.__name
-          new: (@_v = 'v') =>
+          new: (v = 'v') => @_v = v
           property value
             get: => @_v
             set: (v) => @_v = v:upper()
@@ -114,7 +114,8 @@ describe 'interop with MoonScript classes', ->
     before_each ->
       Buffer = run [[
         class Buffer extends PropertyObject
-          new: (@_text = '') =>
+          new: (text = '') =>
+            @_text = text
             super()
           @property(text: {
             get: => @_text

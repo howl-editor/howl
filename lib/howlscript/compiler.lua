@@ -1506,7 +1506,7 @@ function Compiler:e_Func(e)
 end
 
 -- Emits a function. Parameters are handled in the order they're written: defaults,
--- assignments to self for @x parameters, and destructuring.
+-- then destructuring.
 function Compiler:func(e, no_return)
   local E = self.E
   local names = {}
@@ -1521,9 +1521,6 @@ function Compiler:func(e, no_return)
       names[#names + 1] = p.lua_name
     else
       names[#names + 1] = p.name
-    end
-    if p.self_assign and not e.fat then
-      self:error("an @ parameter needs a method, defined with '=>'", p.tok)
     end
   end
 
@@ -1543,10 +1540,6 @@ function Compiler:func(e, no_return)
       E:w('if ' .. name .. ' == nil then ' .. name .. ' = ')
       self:expr(p.default)
       E:w(' end')
-    end
-    if p.self_assign then
-      E:stmt()
-      E:w('self' .. field(p.name) .. ' = ' .. p.name)
     end
     if p.pattern then
       self:bind_pattern(p.pattern, raw(p.lua_name), 'parameter')

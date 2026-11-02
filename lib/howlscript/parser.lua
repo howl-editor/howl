@@ -15,8 +15,7 @@
 --   Unop{op, e}, Binop{op, l, r}, Paren{e}
 --   Table{entries, implicit}: entries are {k = 'pos', v}, {k = 'named', key, v} or
 --     {k = 'expr', key, v}, where `key` is a string or, for 'expr', an expression
---   Func{params, body, fat}: params are {name, tok, default, self_assign, pattern,
---     vararg}
+--   Func{params, body, fat}: params are {name, tok, default, pattern, vararg}
 --   Comprehension{kind = 'list', expr, clauses} or {kind = 'table', kexpr, vexpr,
 --     clauses}: clauses are a For or ForIn node without a body, optionally followed
 --     by {k = 'filter', cond, unless} for `if cond` or `unless cond`
@@ -1348,16 +1347,8 @@ function Parser:params()
     if is_op(t, '...') then
       self:advance()
       p.vararg = true
-    elseif is_op(t, '@') then
-      local n = self:peek(1)
-      if n.t ~= 'name' or n.sb then
-        self:error("expected a name after '@'", n)
-      end
-      self:advance()
-      self:advance()
-      p.name = n.v
-      p.tok = n
-      p.self_assign = true
+    elseif is_op(t, '@') or is_op(t, '@@') then
+      self:error("Howlscript has no @ parameters; take a plain one and assign it in the body, as in (x) => @x = x", t)
     elseif t.t == 'name' then
       self:advance()
       p.name = t.v

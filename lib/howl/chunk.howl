@@ -2,7 +2,10 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 class Chunk
-  new: (@buffer, @start_pos, @end_pos) =>
+  new: (buffer, start_pos, end_pos) =>
+    @buffer = buffer
+    @start_pos = start_pos
+    @end_pos = end_pos
 
   property empty => @end_pos < @start_pos
 

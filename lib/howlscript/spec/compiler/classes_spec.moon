@@ -96,7 +96,7 @@ describe 'classes', ->
   it 'allow metamethods', ->
     assert.equals 'Point(1, 2)', run [[
       class Point
-        new: (@x, @y) =>
+        new: (x, y) => @x, @y = x, y
         __tostring: => "Point(#{@x}, #{@y})"
       tostring(Point(1, 2))
     ]]
@@ -112,7 +112,7 @@ describe 'classes', ->
   describe 'properties', ->
     range = [[
       class Range
-        new: (@first, @last) =>
+        new: (first, last) => @first, @last = first, last
         property empty => @last < @first
         property size =>
           return 0 if @empty
@@ -129,7 +129,7 @@ describe 'classes', ->
     it 'take get: and set: in a block', ->
       assert.same {'ab', 'CD', nil}, {run [[
         class Name
-          new: (@_v) =>
+          new: (v) => @_v = v
           property value
             get: => @_v
             set: (v) => @_v = v:upper()
@@ -180,10 +180,10 @@ describe 'classes', ->
         err
       ]]
 
-    it 'go through the setter for @x parameters', ->
+    it 'go through the setter for assignments in the constructor', ->
       assert.equals 'X', run [[
         class Name
-          new: (@value) =>
+          new: (value) => @value = value
           property value
             get: => @_v
             set: (v) => @_v = v:upper()
@@ -391,7 +391,8 @@ describe 'classes', ->
   describe 'inheritance', ->
     hierarchy = [[
       class Inventory
-        new: (@size) =>
+        new: (size) =>
+          @size = size
           @items = {}
         add_item: (name) =>
           @items[#@items + 1] = name
@@ -494,7 +495,7 @@ describe 'classes', ->
     it 'inherits metamethods, which subclasses can override', ->
       assert.same {'P3', 'P3', 'S3', 'P3'}, {run [[
         class Point
-          new: (@x) =>
+          new: (x) => @x = x
           __tostring: => "P#{@x}"
         class Sub extends Point
         class Other extends Sub
@@ -506,7 +507,7 @@ describe 'classes', ->
     it 'compares instances of a parent and a subclass with an inherited __eq', ->
       assert.same {true, false}, {run [[
         class Point
-          new: (@x) =>
+          new: (x) => @x = x
           __eq: (other) => @x == other.x
         class Sub extends Point
         Point(1) == Sub(1), Point(1) == Sub(2)

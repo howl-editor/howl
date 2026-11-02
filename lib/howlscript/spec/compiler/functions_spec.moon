@@ -117,22 +117,10 @@ describe 'functions', ->
         obj:add(5)
       ]]
 
-    it 'set fields of self from @ parameters, which also bind locals', ->
-      assert.same {1, 2, 3}, {run [[
-        obj = {init: (@a, @b) => a + b}
-        sum = obj:init(1, 2)
-        obj.a, obj.b, sum
-      ]]}
-
-    it 'handle @ parameters in written order, with defaults', ->
-      assert.same {5, 5}, {run [[
-        obj = {init: (@x = 5, y = @x) => y}
-        y = obj:init()
-        obj.x, y
-      ]]}
-
-    it 'reject @ parameters in thin arrows', ->
-      assert.match compile_error('f = (@x) -> 1'), "needs a method, defined with '=>'"
+  describe '@ parameters', ->
+    it 'are errors, with a hint to assign the field in the body', ->
+      for src in *{'f = (@x) => 1', 'f = (a, @x = 1) => 1', 'f = (@@x) => 1', 'f = (@x) -> 1'}
+        assert.match compile_error(src), 'Howlscript has no @ parameters; .* as in %(x%) => @x = x'
 
   describe '@ and @@', ->
     it 'refer to self and its class', ->

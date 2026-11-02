@@ -16,7 +16,9 @@ parser. Howlscript files use the extension `.howl`.
 {:File} = howl.io
 
 class Note
-  new: (@path, @tags = {}) =>
+  new: (path, tags = {}) =>
+    @path = path
+    @tags = tags
 
   property title => @path:match('[^/]+$')
 

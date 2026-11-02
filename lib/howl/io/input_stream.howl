@@ -7,7 +7,9 @@ glib = require('ljglibs.glib')
 append = table.insert
 
 class InputStream
-  new: (@stream, @priority = glib.PRIORITY_LOW) =>
+  new: (stream, priority = glib.PRIORITY_LOW) =>
+    @stream = stream
+    @priority = priority
     @stream = UnixInputStream(@stream) if type(@stream) == 'number'
 
   property is_closed => @stream.is_closed

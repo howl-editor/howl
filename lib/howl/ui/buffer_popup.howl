@@ -31,7 +31,8 @@ keymap = {
 
 class BufferPopup extends Popup
 
-  new: (buffer, @opts = {}) =>
+  new: (buffer, opts = {}) =>
+    @opts = opts
     error('Missing argument #1: buffer', 3) if not buffer
     @_buffer = buffer
     @default_style = style.popup and style.popup.background and 'popup' or 'default'

@@ -5,7 +5,9 @@
 {:style} = howl.ui
 
 class Context
-  new: (@buffer, @pos) =>
+  new: (buffer, pos) =>
+    @buffer = buffer
+    @pos = pos
 
   property word =>
     return @_word if @_word

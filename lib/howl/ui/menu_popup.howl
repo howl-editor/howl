@@ -23,7 +23,9 @@ class MenuPopup extends Popup
   -- the flair for the text of the selected item, not including its icon
   selection_flair: 'menu_selection'
 
-  new: (@items, @callback, opts = {}) =>
+  new: (items, callback, opts = {}) =>
+    @items = items
+    @callback = callback
     error('Missing argument #1: items', 3) if not @items
     error('Missing argument #2: callback', 3) if not @callback
 

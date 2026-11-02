@@ -120,7 +120,7 @@ describe 'Howlscript lexer', ->
     assert.same { '\\', '!', ';' }, result "obj\\m!; x != y", 'error'
 
   it 'lexes function definitions', ->
-    assert.same { 'f', 'g', 'm' }, result "f = (a, b = 1) ->\ng = ->\nm = (@x, {:y}) =>", 'fdecl'
+    assert.same { 'f', 'g', 'm' }, result "f = (a, b = 1) ->\ng = ->\nm = (x, {:y}) =>", 'fdecl'
 
   it 'does sub-lexing within string interpolations', ->
     assert.same { '#', '{', '+', '}', '#', '{', '/', '}', ',' }, result '"#{x + y} +var+ #{z/0}", trailing', 'operator'

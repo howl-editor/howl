@@ -138,7 +138,7 @@ describe 'calls', ->
       ]]
       assert.same {'base 2', 'x'}, {run [[
         class Base
-          new: (@v) =>
+          new: (v) => @v = v
           show: (n) => "base #{n}"
         class Derived extends Base
           new: (v) =>
