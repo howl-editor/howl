@@ -52,9 +52,10 @@ howl.util.lpeg_lexer ->
     c('type_def', upper^1 * (alpha + digit + '_')^0)
   }
 
-  -- `property name =>`, or `property name` ending its line, declares a property
+  -- `property name =>`, or `property name` ending its line, declares a property. The
+  -- word is styled like a decorator, apart from keywords and keys.
   property_def = sequence {
-    c('keyword', -after_access * word('property')),
+    c('preproc', -after_access * word('property')),
     c('whitespace', blank^1),
     c('key', ident),
     #(blank^0 * (P'=>' + eol + P(-1)))

@@ -90,12 +90,12 @@ describe 'Howlscript lexer', ->
     assert.same { 'Foo' }, result "class Foo extends Bar", 'type_def'
 
   describe 'property declarations', ->
-    it 'lex property as a keyword and the name as a key', ->
-      assert.same { 'property', 'size' }, result "  property size => 1", 'keyword', 'key'
-      assert.same { 'property', 'text', 'get:' }, result "  property text\n    get: => 1", 'keyword', 'key'
+    it 'lex property as preproc and the name as a key', ->
+      assert.same { 'property', 'size' }, result "  property size => 1", 'preproc', 'key'
+      assert.same { 'property', 'text', 'get:' }, result "  property text\n    get: => 1", 'preproc', 'key'
 
     it 'leave other uses of property alone', ->
-      assert.same {}, result "@property(x: 1)\nproperty = 1\nf(property, x)\nproperty x, y", 'keyword'
+      assert.same {}, result "@property(x: 1)\nproperty = 1\nf(property, x)\nproperty x, y", 'preproc', 'keyword'
 
   describe 'keys', ->
     it 'are names, strings and :names followed by a colon and a space', ->
