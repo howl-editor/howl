@@ -36,6 +36,15 @@ describe 'conditionals', ->
       f(1), f(2), f(3), g()
     ]]}
 
+  it 'take assignments after then and else on one line, ending at the else', ->
+    assert.same {'a', 'b'}, {run [[
+      pick = (c) ->
+        local x
+        if c then x = 'a' else x = 'b'
+        x
+      pick(true), pick(false)
+    ]]}
+
   it 'take the else on a line aligned with the if', ->
     assert.equals 'outer else', run [[
       f = (a, b) ->

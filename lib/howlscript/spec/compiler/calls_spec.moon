@@ -107,6 +107,17 @@ describe 'calls', ->
     it 'do not start with a minus, which subtracts', ->
       assert.equals 2, run 'f = 3\nf -1'
 
+    it 'can take a table over several lines, and then a function and its block', ->
+      assert.same {'t', 'f'}, run [[
+        got = nil
+        with_options = (opts, fn) -> got = {opts.title, fn()}
+        with_options {
+          title: 't',
+        }, ->
+          'f'
+        got
+      ]]
+
     it 'can end with a function and its block, where they can be used again', ->
       assert.same {'outer', 'inner', 'body'}, run [[
         log = {}
