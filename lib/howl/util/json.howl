@@ -58,11 +58,16 @@ encode_table = (t, indent, seen, out) ->
 
 encode_value = (v, indent, seen, out) ->
   switch type(v)
-    when 'table' then return encode_table(v, indent, seen, out)
-    when 'number' then return append(out, format_number(v))
-    when 'string', 'boolean' then return append(out, lunajson.encode(v))
-    when 'nil' then return append(out, 'null')
-    else return error("Cannot encode a #{type(v)} as JSON", 0)
+    when 'table'
+      return encode_table(v, indent, seen, out)
+    when 'number'
+      return append(out, format_number(v))
+    when 'string', 'boolean'
+      return append(out, lunajson.encode(v))
+    when 'nil'
+      return append(out, 'null')
+    else
+      return error("Cannot encode a #{type(v)} as JSON", 0)
 
 -- returns value as JSON text, without a trailing newline. Empty tables are
 -- encoded as `{}`.

@@ -35,6 +35,11 @@ is visible:
   module table below. A name that `export *` made global only because it was in its
   scope, and that nothing else uses, becomes a local instead, as `globals.moon`'s
   `_orig_coro_create` and `_tracked_coroutines` did.
+- **Writing a global through the function's environment,** as code run in a
+  `Sandbox` does, can't be written in Howlscript, since `_G.x` bypasses the
+  environment. Code that needs it is Lua, as `sandbox_spec` loads it with
+  `loadstring("frob = 'bar!'")`. Bundles and user init files run with
+  `no_implicit_globals`, so they never need it.
 - **A module that `setfenv`s to its own table and exports into it** drops the
   `setfenv`, and every exported name becomes a field of the table wherever it's
   defined, read or written, also in nested functions and when the module calls its
@@ -290,6 +295,23 @@ opening_decl_p:test(l) or
   opening_decl_comma_p:test(l)
 ```
 
+A body after `then`, `do` or `else` on the same line, as in `if c then x = 1 else
+x = 2` or `when 'nil' then append(out, 'null')`, moves to lines of its own. The
+language allows it, but the user prefers the block. Statement modifiers (`x = 1 if c`)
+stay as they are.
+
+```moonscript
+if not index or index > #list + 1 then index = #list + 1
+elseif index < 1 then index = 1
+```
+
+```howl
+if not index or index > #list + 1
+  index = #list + 1
+elseif index < 1
+  index = 1
+```
+
 ### Control flow
 
 - `else if c then x` becomes `elseif c then x`.
@@ -313,6 +335,43 @@ opening_decl_p:test(l) or
   elseif first:match('%w')
     pfx_p, sfx_p = '%w+$', '^%w+'
   ```
+
+  An `if` value on one line becomes an `if` statement over several lines too (see
+  [Layout](#layout)):
+
+  ```moonscript
+  env = if options.env then moon.copy options.env else {}
+  ```
+
+  ```howl
+  local env
+  if options.env
+    env = moon.copy(options.env)
+  else
+    env = {}
+  ```
+
+- **A loop as a value** collects into a new local list, which is then returned or
+  assigned, unless a comprehension can do it. The list's name mustn't be a visible
+  local, as `vc`'s `files` function ruled out `files`:
+
+  ```moonscript
+  return for i = 1, #paths
+    path = paths[i]
+    File groot\get_child(path)
+  ```
+
+  ```howl
+  result = {}
+  for i = 1, #paths
+    path = paths[i]
+    result[#result + 1] = File(groot:get_child(path))
+  return result
+  ```
+
+- **A `for` modifier in an inline function inside brackets** gets a block body, as
+  a `for` there starts a comprehension: `put: (t) => rawset env, k, v for k,v in pairs t`
+  becomes `put: (t) =>` with `rawset(env, k, v) for k,v in pairs(t)` on the next line.
 
 - **A function ending in an `if`, `unless` or `switch`:** where one of its bodies
   ends in a value, a call or a `with` block, MoonScript returned that, so it gets a
@@ -413,3 +472,6 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
 | `lib/howl/util/json.moon`, `spec/util/json_spec.moon` | 2026-10-30 |
 | `lib/howl/io/input_stream.moon`, `spec/io/input_stream_spec.moon` | 2026-10-30 |
 | The `Popup` chain: `lib/howl/ui/` `popup`, `buffer_popup`, `menu_popup` and `completion_popup`, with their specs | 2026-11-02 |
+| `lib/howl/util/sandbox.moon`, `spec/util/sandbox_spec.moon` | 2026-11-02 |
+| `lib/howl/vc.moon`, `spec/vc_spec.moon` | 2026-11-02 |
+| `bundles/ruby/ruby_inspector.moon` | 2026-11-02 |

@@ -1,0 +1,36 @@
+-- Copyright 2012-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+sand_box = (options = {}) ->
+  local env, chain
+  if options.env
+    env = moon.copy(options.env)
+  else
+    env = {}
+  if options.no_globals
+    chain = nil
+  else
+    chain = _G
+  exports = {}
+  setmetatable(env, {
+    __index: chain
+    __newindex: (t, k, v) ->
+      if options.no_implicit_globals
+        return error('Disallowed implicit global write to "' .. k .. '"')
+      else
+        exports[k] = v
+        return rawset(t, k, v)
+  })
+
+  setmetatable({
+    :exports
+    put: (t) =>
+      rawset(env, k, v) for k,v in pairs(t)
+  }, {
+    __type: 'Sandbox'
+    __call: (f, ...) =>
+      setfenv(f, env)
+      f(...)
+  })
+
+return setmetatable({}, __call: (_, options) -> sand_box(options))

@@ -1,21 +1,21 @@
--- Copyright 2016 The Howl Developers
+-- Copyright 2016-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-util = bundle_load 'util'
+util = bundle_load('util')
 
 (buffer) ->
   path = buffer.file or buffer.directory
-  ruby_cmd = util.ruby_command_for path
+  ruby_cmd = util.ruby_command_for(path)
 
   {
     cmd: "#{ruby_cmd} -w -c"
 
-    is_available: -> ruby_cmd != nil, "`ruby` command not found"
+    is_available: (-> ruby_cmd != nil, "`ruby` command not found")
 
     post_parse: (inspections) ->
       for i in *inspections
         unless i.search
-          search = i.message\match 'variable %- (.+)$'
-          search or= i.message\match "`([^']+)'"
+          search = i.message:match('variable %- (.+)$')
+          search or= i.message:match("`([^']+)'")
           i.search = search
   }

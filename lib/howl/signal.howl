@@ -39,8 +39,10 @@ connect = (name, handler, index) ->
   error("Unknown signal '#{name}'", 2) unless all[name]
 
   list = handlers_for(name)
-  if not index or index > #list + 1 then index = #list + 1
-  elseif index < 1 then index = 1
+  if not index or index > #list + 1
+    index = #list + 1
+  elseif index < 1
+    index = 1
   append(list, index, handler)
 
 disconnect = (name, handler) ->
