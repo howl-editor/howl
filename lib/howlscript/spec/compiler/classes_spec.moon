@@ -267,6 +267,32 @@ describe 'classes', ->
         Sub().description
       ]]
 
+    it 'work at the bottom of a chain whose other classes have none, with the methods inherited', ->
+      assert.same {'popup closed', 'empty'}, {run [[
+        class Popup
+          close: => @closed = true
+          describe: => 'popup'
+        class Menu extends Popup
+          choose: =>
+            @close()
+            @describe() .. (@closed and ' closed' or '')
+        class Completion extends Menu
+          new: => @items = {}
+          property state => #@items == 0 and 'empty' or 'full'
+        c = Completion()
+        c:choose(), c.state
+      ]]}
+
+    it "keep a subclass's member set to false over its parent's", ->
+      assert.same {false, 'menu'}, {run [[
+        class Menu
+          flair: 'menu'
+        class Completion extends Menu
+          flair: false
+          property empty => true
+        Completion().flair, Menu().flair
+      ]]}
+
     it 'leave property as an ordinary name elsewhere', ->
       assert.same {'member', 'called'}, {run [[
         class Thing
@@ -396,6 +422,15 @@ describe 'classes', ->
         ok, err = pcall(b.add_item, b, 'b')
         b.items[1], err:match('backpack is full')
       ]]}
+
+    it 'passes the arguments of super(...) on to the parent method', ->
+      assert.same {'a', 'b', 'c'}, run [[
+        class Base
+          show: (...) => {...}
+        class Sub extends Base
+          show: (...) => super(...)
+        Sub():show('a', 'b', 'c')
+      ]]
 
     it 'calls any parent method with super:method()', ->
       assert.equals 'backpack, a inventory', with_hierarchy [[
