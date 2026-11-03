@@ -183,6 +183,20 @@ describe 'loops', ->
         sum
       ]]
 
+    it 'end a one-line function in keyed entries, call arguments and parentheses', ->
+      assert.same {3, 3, 3}, {run [[
+        total = 0
+        box = {add: (t) -> total += x for x in *t}
+        box.add({1, 2})
+        a = total
+        call = (f) -> f({1, 2})
+        call((t) -> total += x for x in *t)
+        b = total - a
+        g = ((t) -> total += x for x in *t)
+        g({1, 2})
+        a, b, total - a - b
+      ]]}
+
     it 'filter with if and unless', ->
       assert.same {4, 5}, {run [[
         a, b = 0, 0

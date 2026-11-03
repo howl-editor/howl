@@ -39,11 +39,15 @@ describe 'comprehensions', ->
           if x != 2]
       ]]
 
-    it 'take a function ending at the for', ->
+    it 'take a function in parentheses', ->
       assert.equals 2, run [[
-        fs = [-> x for x in *{1, 2}]
+        fs = [(-> x) for x in *{1, 2}]
         fs[2]()
       ]]
+
+    it 'reject a one-line function directly followed by the for, as unclear', ->
+      for src in *{'fs = [-> x for x in *t]', 't = {(v) -> f(v) for v in *t}'}
+        assert.match compile_error(src), "a one%-line function followed by 'for' is unclear here; .* %[%(%-> x%) for x in %*t%]"
 
     it 'need a for clause', ->
       assert.match compile_error('x = [1, 2]'), "expected 'for'"

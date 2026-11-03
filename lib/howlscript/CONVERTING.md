@@ -369,9 +369,12 @@ elseif index < 1
   return result
   ```
 
-- **A `for` modifier in an inline function inside brackets** gets a block body, as
-  a `for` there starts a comprehension: `put: (t) => rawset env, k, v for k,v in pairs t`
-  becomes `put: (t) =>` with `rawset(env, k, v) for k,v in pairs(t)` on the next line.
+- **A one-line function ending in a `for` modifier, inside a table or call
+  arguments,** gets a block body, as the user prefers:
+  `put: (t) => rawset env, k, v for k,v in pairs t` becomes `put: (t) =>` with
+  `rawset(env, k, v) for k,v in pairs(t)` on the next line. The one-line form
+  compiles in keyed entries and call arguments, but not in `[ ]` or a table's
+  positional entries, where it would be unclear.
 
 - **A function ending in an `if`, `unless` or `switch`:** where one of its bodies
   ends in a value, a call or a `with` block, MoonScript returned that, so it gets a

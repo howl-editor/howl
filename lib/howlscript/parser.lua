@@ -200,12 +200,16 @@ function Parser:pop()
   self.ctx[#self.ctx] = nil
 end
 
--- The innermost context, apart from inline bodies.
-function Parser:kind()
+-- The innermost context, apart from inline bodies, and its kind.
+function Parser:outer()
   local ctx = self.ctx
   local i = #ctx
   while ctx[i].kind == 'inline' do i = i - 1 end
-  return ctx[i].kind
+  return ctx[i]
+end
+
+function Parser:kind()
+  return self:outer().kind
 end
 
 -- Whether a closing bracket can end the current block: only inside brackets.
@@ -307,10 +311,12 @@ function Parser:block(item)
 end
 
 -- A body on the same line: a single statement, which inside call arguments or a
--- table ends at a ',' (see lists_allowed).
+-- table ends at a ',' (see lists_allowed). Inside brackets and the arguments of a
+-- call without parentheses it's marked as an 'inline' context, which decorators
+-- checks for a `for` modifier.
 function Parser:inline_body()
   local k = self.ctx[#self.ctx].kind
-  if k ~= 'call' and k ~= 'table' and k ~= 'bare' then
+  if k == 'block' or k == 'header' or k == 'inline' then
     return { self:statement() }
   end
   self:push('inline')
@@ -384,6 +390,21 @@ function Parser:statement()
   return stmt
 end
 
+-- Whether the `for` at t is a modifier of the statement before it. Inside brackets
+-- that statement is the body of a one-line function, and where a comprehension is
+-- possible, in [] and a table's positional entries, the `for` could belong to
+-- either, so that's an error.
+function Parser:for_modifier_here(t)
+  local ctx = self:outer()
+  local k = ctx.kind
+  if k == 'block' or k == 'bare' then return true end
+  if self.ctx[#self.ctx].kind ~= 'inline' then return false end
+  if k == 'compr' or (k == 'table' and ctx.positional) then
+    self:error("a one-line function followed by 'for' is unclear here; put the function in parentheses for a list of functions, as in [(-> x) for x in *t], or give it a block if it should loop", t)
+  end
+  return true
+end
+
 -- Statement modifiers: `stmt if cond`, `stmt unless cond` and
 -- `stmt for x in xs [if cond]`, which the AST calls decorators
 function Parser:decorators(stmt)
@@ -399,7 +420,7 @@ function Parser:decorators(stmt)
       unless = t.v == 'unless',
       decorator = true,
     })
-  elseif is_kw(t, 'for') and (self:kind() == 'block' or self:kind() == 'bare') then
+  elseif is_kw(t, 'for') and self:for_modifier_here(t) then
     local head = self:for_head()
     local body = stmt
     local f = self:filter()
@@ -1226,7 +1247,7 @@ end
 
 function Parser:table()
   local open = self:advance()
-  self:push('table')
+  local ctx = self:push('table')
   local entries = {}
 
   while not is_op(self.t, '}') do
@@ -1237,6 +1258,7 @@ function Parser:table()
     local saved_ref = self.ref
     self.ref = t.indent
     local kind = self:entry_kind()
+    ctx.positional = kind == 'pos'
     if kind == 'pos' then
       entries[#entries + 1] = { k = 'pos', v = self:expr(), line = t.line }
     else
