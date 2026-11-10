@@ -183,10 +183,29 @@ is visible:
 - **A comprehension as the first argument:** the call gets parentheses, since
   `f [x]` reads as an index: `assert.same [a for a in *t], b` becomes
   `assert.same([a for a in *t], b)`.
+- **A space before parentheses:** MoonScript's `f (a)` passes `(a)`, while Howlscript
+  rejects the space. When the parentheses hold all the arguments, the space goes:
+  `DirectoryExplorer (tmp_root .. 'sub/')` becomes
+  `DirectoryExplorer(tmp_root .. 'sub/')`. Around a call or `...` they stay, as they
+  cut its values down to one: `f (g!)` becomes `f((g()))`. Otherwise the call gets
+  parentheses of its own around them, and an assertion gets them too, since its
+  argument can't start a call without them:
+
+  ```moonscript
+  DirectoryExplorer (@file / selection.path), @_copy_opts!
+  assert.is_nil ([b for b in *app.buffers when b.file == other])[1]
+  ```
+
+  ```howl
+  DirectoryExplorer((@file / selection.path), @_copy_opts())
+  assert.is_nil(([b for b in *app.buffers if b.file == other])[1])
+  ```
+
 - **Named arguments before positional ones** get braces:
   `assert.same description: 'bar', x` becomes `assert.same {description: 'bar'}, x`.
 - **Function stubs:** `obj\m` becomes `(...) -> obj:m(...)`, so `pcall obj\m, res`
-  becomes `pcall((...) -> obj:m(...), res)`.
+  becomes `pcall((...) -> obj:m(...), res)`. A stub on self becomes `(...) -> @m(...)`,
+  as `Selection`'s `on_selection_changed: @\_on_selection_changed` did.
 - **Several values after an inline function** in arguments or a table: MoonScript
   takes them into its body, where a `,` ends the body in Howlscript. So the function
   gets parentheses: `spy.new -> 'r1', 'r2'` becomes `spy.new((-> 'r1', 'r2'))`. Howl
@@ -245,6 +264,8 @@ is visible:
 A table without braces gets them:
 
 - `return :a, :b` becomes `return {:a, :b}`, and `x = a: 1` becomes `x = {a: 1}`.
+- **A key touching its value,** as in `sort:not x` or `text:remaining_text`, gets a
+  space after the `:`, since Howlscript reads `a:b` as a method call.
 - **A table ending a function, below other statements,** gets braces with its
   entries on lines of their own, as `complete: -> completions` did in
   `completion_popup_spec`:
@@ -302,8 +323,9 @@ opening_decl_p:test(l) or
 
 A body after `then`, `do` or `else` on the same line, as in `if c then x = 1 else
 x = 2` or `when 'nil' then append(out, 'null')`, moves to lines of its own. The
-language allows it, but the user prefers the block. Statement modifiers (`x = 1 if c`)
-stay as they are.
+language allows it, but the user prefers the block. So does a body that MoonScript
+takes without `then`, as in `preview: => if c return {`. Statement modifiers
+(`x = 1 if c`) stay as they are.
 
 ```moonscript
 if not index or index > #list + 1 then index = #list + 1
@@ -369,9 +391,29 @@ elseif index < 1
     left = before
   ```
 
+- **`switch` as a value** becomes a statement assigning in each case, as `if` does,
+  with its `when … then` bodies on lines of their own:
+
+  ```moonscript
+  absolute_path = switch @file.path
+    when File.separator then @file.path .. text
+    else @file.path .. File.separator .. text
+  ```
+
+  ```howl
+  local absolute_path
+  switch @file.path
+    when File.separator
+      absolute_path = @file.path .. text
+    else
+      absolute_path = @file.path .. File.separator .. text
+  ```
+
 - **A loop as a value** collects into a new local list, which is then returned or
-  assigned, unless a comprehension can do it. The list's name mustn't be a visible
-  local, as `vc`'s `files` function ruled out `files`:
+  assigned, unless a comprehension can do it. A loop assigned to a new name collects
+  straight into it, as `items = for i = 1, #paths` in `DirectoryExplorer` did. The
+  list's name mustn't be a visible local, as `vc`'s `files` function ruled out
+  `files`:
 
   ```moonscript
   return for i = 1, #paths
@@ -385,6 +427,22 @@ elseif index < 1
     path = paths[i]
     result[#result + 1] = File(groot:get_child(path))
   return result
+  ```
+
+- **A comprehension with two `for`s** becomes nested loops collecting into a new
+  local list, as a loop as a value does. Used as an argument, it's collected before
+  the statement, as in `lsp/rename`:
+
+  ```moonscript
+  locations = to_locations [{ uri: d.uri, range: e.range } for d in *docs for e in *d.edits], state.client.root
+  ```
+
+  ```howl
+  lsp_locations = {}
+  for d in *docs
+    for e in *d.edits
+      lsp_locations[#lsp_locations + 1] = { uri: d.uri, range: e.range }
+  locations = to_locations(lsp_locations, state.client.root)
   ```
 
 - **A one-line function ending in a `for` modifier, inside a table or call
@@ -454,9 +512,11 @@ hierarchy built on it converts as a unit, its root with all its subclasses, so t
 Howlscript class extends a `PropertyObject` class and no MoonScript class needs
 `@property` from a Howlscript parent, as the `Popup` chain did:
 
-- `@property x: get: => e` becomes `get x: => e`.
-- A property with `get:` and `set:` becomes a `get` and a `set`, the getter first,
-  keeping the lines between them:
+- `@property x: get: => e` becomes `get x: => e`, and a set-only
+  `@property x: set: (v) => ...` becomes `set x: (v) => ...`.
+- A property with `get:` and `set:` becomes a `get` and a `set`, the getter first. A
+  blank line between them stays, as in `Window`'s `fullscreen`, and they stay
+  together without one, as in `BufferPopup`'s `buffer`:
 
   ```moonscript
   @property text:
@@ -518,10 +578,33 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
     }
   ```
 
-- Writing a read-only property now fails with `property 'x' is read-only`.
+- **Errors:** writing a read-only property fails with `property 'x' is read-only`,
+  where PropertyObject's message was `Attempt to set read-only property "x"`. Reading
+  a set-only one fails with `property 'x' is write-only`, where PropertyObject went
+  on to the methods and returned nil. Howl's two set-only properties are never read.
+- **A module ending in a class** stays as it is, as Howlscript returns a class ending
+  a file, like MoonScript, so `directory_explorer` still returns `DirectoryExplorer`.
 - A class or module with a Howlscript port in `lib/howlscript/spec/fixtures/` drops
   the port and its line in `acceptance_spec.moon`, as its own spec now runs against
   the real thing.
+
+## To do
+
+What no conversion has met yet, with counts from a survey of Howl's MoonScript
+(2026-11-10). Each gets a rule above once a conversion settles it.
+
+- **`f -1`** (15) calls `f(-1)` in MoonScript, but subtracts in Howlscript. That's
+  only an error as a statement of its own before others, so the subtraction goes
+  unnoticed in a value or at the end of a function. Each gets its parentheses:
+  `f(-1)`.
+- **Inherited metamethods:** a subclass inherits its parent's metamethods in
+  Howlscript but not in MoonScript, so converting a class with metamethods changes
+  its subclasses. No converted class with metamethods has subclasses yet.
+- **PropertyObject's last users:** the `Buffer` chain (`Buffer`, `ActionBuffer` and
+  its four subclasses) and 12 other classes. Once they're converted,
+  `PropertyObject` goes with its spec, the `property_object.howl` fixture and its
+  acceptance block, the interop specs for it, and REFERENCE.md's notes on
+  `@property(...)`.
 
 ## Converted by hand
 
@@ -546,3 +629,6 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
 | `bundles/ruby/ruby_inspector.moon` | 2026-11-02 |
 | `lib/howl/ui/window.moon`, `spec/ui/window_spec.moon` | 2026-11-10 |
 | `lib/howl/bundle.moon`, `spec/bundle_spec.moon` | 2026-11-10 |
+| `lib/howl/lsp/rename.moon`, `spec/lsp/rename_spec.moon` | 2026-11-10 |
+| `lib/howl/ui/selection.moon`, `spec/ui/selection_spec.moon` | 2026-11-10 |
+| `lib/howl/explorers/directory_explorer.moon`, `spec/explorers/directory_explorer_spec.moon` | 2026-11-10 |

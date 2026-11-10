@@ -76,6 +76,14 @@ describe 'scoping', ->
         f(x)
       ]]
 
+    it 'does not apply to a comprehension in the header of a loop with the same variable', ->
+      assert.same {2, 3}, run [[
+        seen = {}
+        for b in *[b for b in *{1, 2, 3} if b > 1]
+          seen[#seen + 1] = b
+        seen
+      ]]
+
     it 'does not apply to the name being assigned', ->
       assert.same {'a'}, run [[
         opts = {a: 1}

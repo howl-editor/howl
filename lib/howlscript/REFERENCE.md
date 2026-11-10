@@ -542,7 +542,8 @@ and nothing otherwise (see [Statement modifiers](#statement-modifiers)).
 `return` alone returns nothing, and `return if c` returns nothing when `c` holds.
 
 A file returns the value of its last statement too, so a module can end with its
-table: `{:open, :close}`.
+table: `{:open, :close}`. A class ending a file or function gives the class, so a
+module can also end with its class.
 
 ### `@` and `@@`
 
