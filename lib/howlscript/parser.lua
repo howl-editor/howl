@@ -31,8 +31,9 @@
 --   For{var, var_tok, start, stop, step, body}
 --   ForIn{vars, exprs, body} or {vars, star, body} for `in *t`
 --   Class{name, parent, body}: the body holds statements and the items
---     {k = 'prop', key, value}, {k = 'classvar', key, value} and
---     {k = 'property', name, name_tok, get, set}, where get and set are expressions
+--     {k = 'prop', key, value}, {k = 'classvar', key, value},
+--     {k = 'property', name, name_tok, get, set}, where get and set are expressions,
+--     and {k = 'meta', entries}, with the entries of a Table
 --
 -- Assignment targets and loop variables can be Pattern{entries} for destructuring,
 -- with entries like a Table's, holding a `target` instead of `v`.
@@ -713,7 +714,29 @@ function Parser:class_item()
     return self:property()
   end
 
+  if t.t == 'name' and t.v == 'meta' and not n.first then
+    if is_op(n, '{') then
+      return self:meta()
+    end
+    -- as PropertyObject's `@meta __tostring: ...` did
+    local c = self:peek(2)
+    if is_name_like(n) and is_op(c, ':') and not c.sb and c.sa then
+      self:error("'meta' takes a table; write 'meta {" .. n.v .. ": ...}'", n)
+    end
+  end
+
   return self:statement()
+end
+
+-- `meta {...}` gives the metamethods of the instances. The compiler checks the keys.
+function Parser:meta()
+  local t = self:advance()
+  local open = self.t
+  local tbl = self:table()
+  if tbl.k ~= 'Table' then
+    self:error("'meta' takes a table of metamethods, as in 'meta {__tostring: => ...}'", open)
+  end
+  return { k = 'meta', entries = tbl.entries, line = t.line, col = t.col }
 end
 
 -- `property name => body` declares a read-only property, and `property name`
@@ -1097,7 +1120,7 @@ function Parser:entry(kind)
   if kind == 'shorthand' then
     self:advance()
     local n = self:advance()
-    return { k = 'named', key = n.v, v = node('Name', n, { v = n.v }), line = t.line }
+    return { k = 'named', key = n.v, v = node('Name', n, { v = n.v }), line = t.line, col = t.col }
   end
 
   local key
@@ -1122,9 +1145,9 @@ function Parser:entry(kind)
 
   local value = self:expr()
   if kind == 'named' then
-    return { k = 'named', key = key, v = value, line = t.line }
+    return { k = 'named', key = key, v = value, line = t.line, col = t.col }
   end
-  return { k = 'expr', key = key, v = value, line = t.line }
+  return { k = 'expr', key = key, v = value, line = t.line, col = t.col }
 end
 
 -- Consumes the separator after an entry in call arguments or a table: a ',' or a
@@ -1260,7 +1283,7 @@ function Parser:table()
     local kind = self:entry_kind()
     ctx.positional = kind == 'pos'
     if kind == 'pos' then
-      entries[#entries + 1] = { k = 'pos', v = self:expr(), line = t.line }
+      entries[#entries + 1] = { k = 'pos', v = self:expr(), line = t.line, col = t.col }
     else
       entries[#entries + 1] = self:entry(kind)
     end

@@ -35,7 +35,9 @@ class Chunk
 
   delete: => @buffer:delete(@start_pos, @end_pos) unless @empty
 
-  __tostring: => @text
-  __len: => (@end_pos - @start_pos) + 1
+  meta {
+    __tostring: => @text
+    __len: => (@end_pos - @start_pos) + 1
+  }
 
 return Chunk

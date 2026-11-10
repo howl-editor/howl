@@ -93,21 +93,74 @@ describe 'classes', ->
       Polite():greet()
     ]]
 
-  it 'allow metamethods', ->
-    assert.equals 'Point(1, 2)', run [[
-      class Point
-        new: (x, y) => @x, @y = x, y
-        __tostring: => "Point(#{@x}, #{@y})"
-      tostring(Point(1, 2))
-    ]]
+  describe 'metamethods', ->
+    it 'are given in meta, by their Lua names', ->
+      assert.same {'Point(1, 2)', 2}, {run [[
+        class Point
+          new: (x, y) => @x, @y = x, y
+          meta {
+            __tostring: => "Point(#{@x}, #{@y})"
+            __len: => 2
+          }
+        p = Point(1, 2)
+        tostring(p), #p
+      ]]}
 
-  it 'keep the base as the __index of a class without properties or fallbacks', ->
-    assert.same {true, true}, {run [[
-      class Point
-        __tostring: => 'point'
-      class Sub extends Point
-      Point.__base.__index == Point.__base, Sub.__base.__index == Sub.__base
-    ]]}
+    it 'keep the base as the __index of a class without properties or fallbacks', ->
+      assert.same {true, true}, {run [[
+        class Point
+          meta {__tostring: => 'point'}
+        class Sub extends Point
+        Point.__base.__index == Point.__base, Sub.__base.__index == Sub.__base
+      ]]}
+
+    it "call the parent's metamethod with super()", ->
+      assert.equals 'sub of base', run [[
+        class Base
+          meta {__tostring: => 'base'}
+        class Sub extends Base
+          meta {__tostring: => 'sub of ' .. super()}
+        tostring(Sub())
+      ]]
+
+    it 'leave meta as an ordinary name elsewhere', ->
+      assert.same {'member', 'called', 'call'}, {run [[
+        meta = (t) -> t.x
+        y = meta {x: 'call'}
+        class Thing
+          @meta: (t) => @log = t.name
+          @meta({name: 'called'})
+          meta: 'member'
+        Thing().meta, Thing.log, y
+      ]]}
+
+    it 'reject metamethods as members', ->
+      assert.match compile_error('class A\n  __tostring: => "a"'),
+        "'__tostring' is a metamethod; write 'meta {__tostring: ...}'"
+      assert.match compile_error("class A\n  '__index': => 1"), "'__index' is a metamethod"
+
+    it 'reject names that are not metamethods', ->
+      assert.match compile_error('class A\n  meta {__tostirng: => "a"}'),
+        "'__tostirng' isn't one of Lua's metamethods"
+      assert.match compile_error('class A\n  meta {tostring: => "a"}'), "'tostring' isn't one"
+
+    it 'reject entries without a name', ->
+      assert.match compile_error('class A\n  meta {[k]: 1}'), "'meta' takes metamethods by name"
+      assert.match compile_error('class A\n  meta {f}'), "'meta' takes metamethods by name"
+      assert.match compile_error('class A\n  meta {k, v for k, v in pairs(t)}'),
+        "'meta' takes a table of metamethods"
+
+    it 'reject a metamethod given twice', ->
+      assert.match compile_error('class A\n  meta {\n    __len: => 1\n    __len: => 2\n  }'),
+        "4:5: '__len' is given twice in 'meta'"
+
+    it 'reject a second meta in a class', ->
+      assert.match compile_error('class A\n  meta {__len: => 1}\n  meta {__eq: => true}'),
+        "3:3: 'meta' is already given on line 2 of this class"
+
+    it 'reject meta without braces', ->
+      assert.match compile_error('class A\n  meta __tostring: => "a"'),
+        "'meta' takes a table; write 'meta {__tostring: ...}'"
 
   describe 'properties', ->
     range = [[
@@ -173,7 +226,7 @@ describe 'classes', ->
         class Widget
           property height
             set: (h) =>
-          __index: (key) => 'fallback'
+          meta {__index: (key) => 'fallback'}
         ok, err = pcall(->
           Widget().height
         )
@@ -334,8 +387,10 @@ describe 'classes', ->
         new: (target) => rawset(self, 'target', target)
         property size => 1
         m: => 'm'
-        __index: (key) => @target[key]
-        __newindex: (key, value) => @target[key] = value
+        meta {
+          __index: (key) => @target[key]
+          __newindex: (key, value) => @target[key] = value
+        }
     ]]
 
     with_proxy = (src) -> run dedent(proxy) .. '\n' .. dedent(src)
@@ -360,8 +415,10 @@ describe 'classes', ->
       assert.same {'d', 'v'}, {run [[
         store = {}
         class Defaults
-          '__index': {color: 'd'}
-          __newindex: store
+          meta {
+            '__index': {color: 'd'}
+            __newindex: store
+          }
         d = Defaults()
         d.size = 'v'
         d.color, store.size
@@ -496,10 +553,10 @@ describe 'classes', ->
       assert.same {'P3', 'P3', 'S3', 'P3'}, {run [[
         class Point
           new: (x) => @x = x
-          __tostring: => "P#{@x}"
+          meta {__tostring: => "P#{@x}"}
         class Sub extends Point
         class Other extends Sub
-          __tostring: => "S#{@x}"
+          meta {__tostring: => "S#{@x}"}
         class Deeper extends Sub
         tostring(Point(3)), tostring(Sub(3)), tostring(Other(3)), tostring(Deeper(3))
       ]]}
@@ -508,7 +565,7 @@ describe 'classes', ->
       assert.same {true, false}, {run [[
         class Point
           new: (x) => @x = x
-          __eq: (other) => @x == other.x
+          meta {__eq: (other) => @x == other.x}
         class Sub extends Point
         Point(1) == Sub(1), Point(1) == Sub(2)
       ]]}

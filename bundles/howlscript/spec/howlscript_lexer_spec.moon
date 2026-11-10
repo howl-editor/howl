@@ -97,6 +97,14 @@ describe 'Howlscript lexer', ->
     it 'leave other uses of property alone', ->
       assert.same {}, result "@property(x: 1)\nproperty = 1\nf(property, x)\nproperty x, y", 'preproc', 'keyword'
 
+  describe 'meta', ->
+    it 'is lexed as preproc before a table', ->
+      assert.same { 'meta' }, result "  meta {__len: => 1}", 'preproc'
+      assert.same { 'meta' }, result "  meta {\n    __len: => 1\n  }", 'preproc'
+
+    it 'is left alone elsewhere', ->
+      assert.same {}, result "@meta({x: 1})\nmeta = 1\nf(meta, x)\nmeta: 1\nt.meta {}", 'preproc', 'keyword'
+
   describe 'keys', ->
     it 'are names, strings and :names followed by a colon and a space', ->
       assert.same { ':ref', 'plain:', "'string key':", 'end:' },

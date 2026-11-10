@@ -71,8 +71,10 @@ describe 'interop with MoonScript classes', ->
             get: => @_v
             set: (v) => @_v = v:upper()
           property size => #@_v
-          __tostring: => "Base(#{@_v})"
-          __index: (key) => "fallback #{key}"
+          meta {
+            __tostring: => "Base(#{@_v})"
+            __index: (key) => "fallback #{key}"
+          }
       ]]
 
     it 'get the properties, metamethods and fallbacks', ->

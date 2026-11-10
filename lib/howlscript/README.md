@@ -29,7 +29,9 @@ class Note
     file.contents = text unless file.exists
     signal.emit('note-saved', note: self, size: #text)
 
-  __tostring: => "Note(#{@title})"
+  meta {
+    __tostring: => "Note(#{@title})"
+  }
 
 count = 0
 count++

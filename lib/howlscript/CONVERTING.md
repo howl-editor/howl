@@ -469,13 +469,28 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
     set: (text) => @buffer:replace(text)
   ```
 
-- `@meta {...}` entries become members, as in `__tostring: => ...`.
+- **Metamethods** go in the class's `meta`, whether they were members or given to
+  `@meta {...}`. It stands where the first of them stood, with its braces on lines of
+  their own and an entry on each line:
+
+  ```moonscript
+  __tostring: => @text
+  __len: => (@end_pos - @start_pos) + 1
+  ```
+
+  ```howl
+  meta {
+    __tostring: => @text
+    __len: => (@end_pos - @start_pos) + 1
+  }
+  ```
+
 - **Delegation:** a class passing `super target` to `PropertyObject`, so that the
-  keys it lacks go to `target`, gets an `__index:` fallback instead. It reads the
-  target with `rawget`, since reading `@win` before `new` sets it would run the
-  fallback again, and calls methods on the target. PropertyObject kept one target
-  per class, the last instance's, so every `Window` delegated to the newest Gtk
-  window; the fallback's is the instance's own:
+  keys it lacks go to `target`, gets an `__index` fallback in its `meta` instead. It
+  reads the target with `rawget`, since reading `@win` before `new` sets it would run
+  the fallback again, and calls methods on the target. PropertyObject kept one
+  target per class, the last instance's, so every `Window` delegated to the newest
+  Gtk window; the fallback's is the instance's own:
 
   ```moonscript
   class Window extends PropertyObject
@@ -489,12 +504,14 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
     new: =>
       @win = Gtk.Window()
 
-    __index: (key) =>
-      win = rawget(self, 'win')
-      return nil unless win
-      value = win[key]
-      return value unless callable(value)
-      (_, ...) -> value(win, ...)
+    meta {
+      __index: (key) =>
+        win = rawget(self, 'win')
+        return nil unless win
+        value = win[key]
+        return value unless callable(value)
+        (_, ...) -> value(win, ...)
+    }
   ```
 
 - Writing a read-only property now fails with `property 'x' is read-only`.

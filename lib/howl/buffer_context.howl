@@ -51,11 +51,13 @@ class Context
   property prev_char => @prefix[-1]
   property style => style.at_pos(@buffer, @pos)
 
-  __eq: (a, b) ->
-    t = typeof(a)
-    t == 'Context' and t == typeof(b) and a.buffer.id == b.buffer.id and a.pos == b.pos
+  meta {
+    __eq: (a, b) ->
+      t = typeof(a)
+      t == 'Context' and t == typeof(b) and a.buffer.id == b.buffer.id and a.pos == b.pos
 
-  __tostring: => "Context<#{tostring(@buffer)}@#{@pos}>"
+    __tostring: => "Context<#{tostring(@buffer)}@#{@pos}>"
+  }
 
   _get_word_boundaries: =>
     word_pattern = @buffer:mode_at(@pos).word_pattern

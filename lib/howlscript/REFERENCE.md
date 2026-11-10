@@ -53,9 +53,10 @@ and  break  class  continue  do  else  elseif  false  for  if  in  local  nil
 not  or  return  switch  then  true  unless  when  while  with
 ```
 
-- `extends` only means something after a class name, and `property` at the start of
-  a class item (see [Properties](#properties)). Elsewhere they're ordinary names, and
-  so are `import`, `from`, `using` and `export`.
+- `extends` only means something after a class name, and `property` and `meta` at
+  the start of a class item (see [Properties](#properties) and
+  [Metamethods](#metamethods)). Elsewhere they're ordinary names, and so are
+  `import`, `from`, `using` and `export`.
 - `super` always refers to the parent class (see [Classes](#classes)), so it can't be
   assigned to.
 - `self` is an ordinary name, which `=>` declares as a method's first parameter.
@@ -958,7 +959,7 @@ class BackPack extends Inventory
   describe: => 'a backpack, ' .. super:describe()
   :helper                    -- short for helper: helper
   property weight => #@items
-  __tostring: => "BackPack(#{@size})"
+  meta {__tostring: => "BackPack(#{@size})"}
   @sizes = {'small', 'large'}  -- class body code runs with self = the class
 
 pack = BackPack(1)           -- size 2, as BackPack's new doubles it
@@ -975,6 +976,8 @@ print(BackPack.count)        -- 1
 - **Members:** `name: value`, `'text': value` and `[expr]: value` add a member, and
   `:name` is short for `name: name`. `@name: value` sets a class variable, such as a
   class method.
+- **Metamethods:** `meta {...}` gives the metamethods of the instances (see
+  [Metamethods](#metamethods)).
 - **Constructor:** `new` is the constructor. A class without one calls its parent's.
 - **`super`:**
   - `super(...)` calls the parent's version of the current method: in `new` the
@@ -1092,20 +1095,22 @@ print(Shouting('ann').name)             -- '<ANN>'
 
 ### Metamethods
 
-Members named after Lua's metamethods are metamethods of the instances: `__tostring`,
-`__eq`, `__lt`, `__le`, `__len`, `__concat`, `__call`, `__unm`, `__add`, `__sub`,
-`__mul`, `__div`, `__mod`, `__pow`, `__pairs`, `__ipairs`, `__mode` and `__gc`.
-Subclasses inherit them. A subclass's copy is the same function, so an `__eq`
-compares the instances of a class and its subclasses.
+`meta` followed by a table gives the metamethods of the instances, by their Lua
+names: `__tostring`, `__eq`, `__lt`, `__le`, `__len`, `__concat`, `__call`, `__unm`,
+`__add`, `__sub`, `__mul`, `__div`, `__mod`, `__pow`, `__pairs`, `__ipairs`, `__mode`
+and `__gc`, and the fallbacks `__index` and `__newindex` (below).
 
 ```howl
 class Vec
   new: (x, y) =>
     @x = x
     @y = y
-  __add: (other) => Vec(@x + other.x, @y + other.y)
-  __eq: (other) => @x == other.x and @y == other.y
-  __tostring: => "(#{@x}, #{@y})"
+
+  meta {
+    __add: (other) => Vec(@x + other.x, @y + other.y)
+    __eq: (other) => @x == other.x and @y == other.y
+    __tostring: => "(#{@x}, #{@y})"
+  }
 
 class Vec3 extends Vec
   new: (x, y, z = 0) =>
@@ -1117,15 +1122,28 @@ print(Vec3(1, 2))                 -- '(1, 2)', as Vec3 inherits __tostring
 print(Vec3(1, 2) == Vec(1, 2))    -- true, as both have the same __eq
 ```
 
-`__index:` and `__newindex:` are fallbacks:
+- **Inheritance:** subclasses inherit the metamethods, and a subclass's own `meta`
+  replaces those it gives. The inherited copy is the same function, so an `__eq`
+  compares the instances of a class and its subclasses. In a metamethod, `super(...)`
+  calls the parent's.
+- **Keys:** they're names or plain strings. Any other key, an entry without a key, a
+  name that isn't one of the above and a name given twice are errors.
+- **Placement:** a class has at most one `meta`, anywhere in its body. Like a member,
+  it's added where it stands.
+- **Not members:** a member named after a metamethod, such as `__tostring: => @x`, is
+  an error, which suggests `meta`.
+- **Names:** `meta` only means this at the start of a class item, followed by `{`.
+  Elsewhere it's an ordinary name, so `meta: value` and `@meta(...)` still work.
 
-- **`__index:`** is called with the key, as in `(key) =>`, for a key that the
+`__index` and `__newindex` are fallbacks:
+
+- **`__index`** is called with the key, as in `(key) =>`, for a key that the
   instance doesn't have as a field, property or method.
-- **`__newindex:`** is called with the key and the value for an assignment to a key
+- **`__newindex`** is called with the key and the value for an assignment to a key
   that isn't a field of the instance or a property. Without it, the assignment sets
   a field.
 - **Tables:** either can be a table instead, which the key is read from or set in.
-- **New fields:** setting a new field in `new` goes through `__newindex:` too, so set
+- **New fields:** setting a new field in `new` goes through `__newindex` too, so set
   those with `rawset(self, key, value)`.
 - **Inheritance:** subclasses inherit the fallbacks.
 - **Metatable:** they're called by the base's real `__index` and `__newindex`
@@ -1135,7 +1153,7 @@ print(Vec3(1, 2) == Vec(1, 2))    -- true, as both have the same __eq
 class Window
   new: (win) => rawset(self, 'win', win)
   property title => @win.title
-  __index: (key) => @win[key]
+  meta {__index: (key) => @win[key]}
 
 w = Window({title: 'Notes', width: 80})
 print(w.title)          -- 'Notes', through the property
@@ -1168,7 +1186,8 @@ Properties and fallbacks extend this:
   `__inherited`. Classes with metamethods, properties or fallbacks wrap their
   `__inherited` to do that, and still call the one they had.
 - **PropertyObject:** a class extending a MoonScript class built on Howl's
-  `PropertyObject` uses `@property` and `@meta` instead. PropertyObject replaces the
+  `PropertyObject` uses its `@property(...)` and `@meta(...)` instead of `property`
+  and `meta`. PropertyObject replaces the
   base's `__index` and `__newindex` with its own.
 
 A class without a parent, properties, fallbacks or metamethods compiles to exactly
@@ -1192,9 +1211,10 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | `f a: 1, 2` | An error: positional arguments come first. |
 | `x = a: 1`, `return a: 1`, indented key blocks | `x = {a: 1}`. A table needs braces, except for the trailing named arguments of a call. |
 | `@property name: get: => @x`, with Howl's `PropertyObject` | `property name => @x` (see [Properties](#properties)). In a class still extending `PropertyObject`, `@property(name: {get: => @x})`, as a nested table needs its braces. |
-| `@meta __tostring: => @x`, with Howl's `PropertyObject` | `__tostring: => @x`, a member (see [Metamethods](#metamethods)). |
+| `@meta __tostring: => @x`, with Howl's `PropertyObject` | `meta {__tostring: => @x}` (see [Metamethods](#metamethods)). |
+| A member named after a metamethod, as in `__tostring: => @x`, is one, since the base is the instances' metatable | An error: metamethods go in `meta {...}`. |
 | A subclass doesn't inherit its parent's metamethods | It does. |
-| An `__index` member is ignored, as the base's `__index` is set to the base afterwards | `__index:` and `__newindex:` are fallbacks for keys the instance doesn't have (see [Metamethods](#metamethods)). |
+| An `__index` member is ignored, as the base's `__index` is set to the base afterwards | `__index` and `__newindex` in `meta` are fallbacks for keys the instance doesn't have (see [Metamethods](#metamethods)). |
 | `f[[text]]` calls `f` | An error: write `f([[text]])`, or `f [[text]]` in a statement. |
 | `x = f {a}, b` passes `{a}` and `b` to `f` | Passes only the table, as in Lua: `x = f({a}), b`. Only at the start of a statement does `f {a}, b` pass both. |
 | `x--note` is a comment | A decrement followed by `note`. Write `x -- note`. |
@@ -1267,6 +1287,8 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
   ```
 - **Properties:** `property name => @x`, or with a block of `get:` and `set:`, in a
   class body (see [Properties](#properties)).
+- **Metamethods:** `meta {__tostring: => @x}` in a class body (see
+  [Metamethods](#metamethods)).
 - **Numbers:** all of LuaJIT's forms, where MoonScript 0.5.0 lacks `0XFF`, `1e+2`,
   hex floats such as `0x1p4`, and imaginary numbers such as `2i`.
 - **Hints:** errors for MoonScript habits like `\`, `!`, `f (x)`, braceless tables,

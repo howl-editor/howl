@@ -153,50 +153,52 @@ class Matcher
     @cache = {entries: {}, matches: {}}
     @entries = load_entries(candidates)
 
-  __call: (search) =>
-    return @candidates if not search or search.is_empty
+  meta {
+    __call: (search) =>
+      return @candidates if not search or search.is_empty
 
-    search = search.ulower
-    matches = @cache.matches[search]
-    if matches then return matches.items, {partial: matches.partial, positions: matches.positions}
-    matches = {}
+      search = search.ulower
+      matches = @cache.matches[search]
+      if matches then return matches.items, {partial: matches.partial, positions: matches.positions}
+      matches = {}
 
-    prev_search_part = search:usub(1, -2)
-    entries = @cache.entries[prev_search_part] or @entries
-    matching_entries = {}
-    matcher = create_matcher(search, @options.reverse)
-    partial = false
+      prev_search_part = search:usub(1, -2)
+      entries = @cache.entries[prev_search_part] or @entries
+      matching_entries = {}
+      matcher = create_matcher(search, @options.reverse)
+      partial = false
 
-    partial_limit = #@entries > 1100 and 1000 or 1100
+      partial_limit = #@entries > 1100 and 1000 or 1100
 
-    for entry in *entries
-      text = entry.text
-      continue if #text < #search
-      match_type, match = matcher(text, entry.case_text)
-      if match
-        if #matches >= partial_limit
-          partial = true
-          break
+      for entry in *entries
+        text = entry.text
+        continue if #text < #search
+        match_type, match = matcher(text, entry.case_text)
+        if match
+          if #matches >= partial_limit
+            partial = true
+            break
 
-        score = score_for(match, text, match_type, @options.reverse, @entries.base_score)
-        append(matches, {entry: entry, :score, how: match_type, positions: text:char_offset(match)})
-        append(matching_entries, entry)
+          score = score_for(match, text, match_type, @options.reverse, @entries.base_score)
+          append(matches, {entry: entry, :score, how: match_type, positions: text:char_offset(match)})
+          append(matching_entries, entry)
 
-    unless @options.preserve_order
-      table.sort(matches, (a ,b) -> a.score < b.score)
+      unless @options.preserve_order
+        table.sort(matches, (a ,b) -> a.score < b.score)
 
-    matching_candidates = [match.entry.candidate for match in *matches]
+      matching_candidates = [match.entry.candidate for match in *matches]
 
-    -- each position is a table {start_pos, end_pos} or {pos1, pos2, pos3, ...}
-    -- indicating what part of the candidate matched
-    positions = [match.positions for match in *matches]
+      -- each position is a table {start_pos, end_pos} or {pos1, pos2, pos3, ...}
+      -- indicating what part of the candidate matched
+      positions = [match.positions for match in *matches]
 
-    @cache.matches[search] = {items: matching_candidates, :partial, :positions}
+      @cache.matches[search] = {items: matching_candidates, :partial, :positions}
 
-    unless partial
-      @cache.entries[search] = matching_entries
+      unless partial
+        @cache.entries[search] = matching_entries
 
-    matching_candidates, {:partial, :positions}
+      matching_candidates, {:partial, :positions}
+  }
 
   explain: (search, text, options = {}) ->
     how, match = create_matcher(search, options.reverse)(text.ulower, text)

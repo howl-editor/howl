@@ -256,14 +256,16 @@ class Window
     native:get_renderer():render_texture(snapshot:to_node(),
       region.x * scale, region.y * scale, region.width * scale, region.height * scale)
 
-  -- keys that the window doesn't have go to its Gtk window, with its methods
-  -- called on that
-  __index: (key) =>
-    win = rawget(self, 'win')
-    return nil unless win
-    value = win[key]
-    return value unless callable(value)
-    (_, ...) -> value(win, ...)
+  meta {
+    -- keys that the window doesn't have go to its Gtk window, with its methods
+    -- called on that
+    __index: (key) =>
+      win = rawget(self, 'win')
+      return nil unless win
+      value = win[key]
+      return value unless callable(value)
+      (_, ...) -> value(win, ...)
+  }
 
   _view_from_gobject: (gobject) =>
     for v in *@_views

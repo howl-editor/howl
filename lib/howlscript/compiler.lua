@@ -1070,6 +1070,62 @@ local function key_name(key)
   end
 end
 
+local function is_fallback(name)
+  return name == '__index' or name == '__newindex'
+end
+
+-- The name of an entry in a class's `meta`, when it's keyed by a name or a string.
+local function meta_name(entry)
+  if entry.k == 'named' then return entry.key end
+  if entry.k == 'expr' then return key_name(entry.key) end
+end
+
+-- Checks a class's `meta`, returning whether it has fallbacks.
+function Compiler:check_meta(item)
+  local given, fallbacks = {}, false
+  for _, entry in ipairs(item.entries) do
+    local name = meta_name(entry)
+    if not name then
+      self:error("'meta' takes metamethods by name, as in 'meta {__tostring: => ...}'", entry)
+    end
+    if not (is_metamethod[name] or is_fallback(name)) then
+      self:error(format("'%s' isn't one of Lua's metamethods", name), entry, #name)
+    end
+    if given[name] then
+      self:error(format("'%s' is given twice in 'meta'", name), entry, #name)
+    end
+    given[name] = true
+    fallbacks = fallbacks or is_fallback(name)
+  end
+  return fallbacks
+end
+
+-- Writes a member of the class being compiled, keyed by a name or an expression.
+function Compiler:class_member(line, key, value)
+  local E, cls = self.E, self.cls
+  local c, b, p = cls.c, cls.b, cls.p
+  E:stmt(line)
+  local is_new = key == 'new'
+  if is_new then
+    E:w(c .. '.__init = ')
+  elseif type(key) == 'string' then
+    E:w(p and format('rawset(%s, %q, ', b, key) or (b .. field(key) .. ' = '))
+  else
+    E:w(p and ('rawset(' .. b .. ', ') or (b .. '['))
+    self:expr(key)
+    E:w(p and ', ' or '] = ')
+  end
+  cls.method = key
+  if value.k == 'Func' then
+    -- constructors return nothing
+    self:func(value, is_new)
+  else
+    self:expr(value)
+  end
+  cls.method = nil
+  if p and not is_new then E:w(')') end
+end
+
 -- Classes are laid out exactly as MoonScript lays them out, so that the two can
 -- extend each other. Unlike MoonScript, the body runs top to bottom, which keeps
 -- the lines aligned; since the base may then already have a parent with a
@@ -1087,15 +1143,21 @@ function Compiler:stmt_Class(s)
   -- own: whether the class has properties or fallbacks of its own, which make it
   -- dispatch even without a parent that does
   local own, has_properties, support = false, false, p ~= nil
+  local meta_line
   for _, item in ipairs(s.body) do
     if item.k == 'property' then
       own, has_properties = true, true
+    elseif item.k == 'meta' then
+      if meta_line then
+        self:error(format("'meta' is already given on line %d of this class", meta_line), item, 4)
+      end
+      meta_line = item.line
+      own = self:check_meta(item) or own
+      support = support or #item.entries > 0
     elseif item.k == 'prop' then
       local kn = key_name(item.key)
-      if kn == '__index' or kn == '__newindex' then
-        own = true
-      elseif is_metamethod[kn] then
-        support = true
+      if is_metamethod[kn] or is_fallback(kn) then
+        self:error(format("'%s' is a metamethod; write 'meta {%s: ...}'", kn, kn), item, #kn)
       end
     end
   end
@@ -1148,11 +1210,6 @@ function Compiler:stmt_Class(s)
   for _, item in ipairs(s.body) do
     if item.k == 'prop' then
       local kn = key_name(item.key)
-      local key = item.key
-      if kn == '__index' or kn == '__newindex' then
-        -- fallbacks, as the base's own __index and __newindex dispatch
-        key = '__hs_' .. string.sub(kn, 3)
-      end
       if kn then
         if properties[kn] then
           self:error(format("'%s' is already defined as a property on line %d of this class",
@@ -1160,26 +1217,15 @@ function Compiler:stmt_Class(s)
         end
         members[kn] = members[kn] or item.line
       end
-      E:stmt(item.line)
-      local is_new = key == 'new'
-      if is_new then
-        E:w(c .. '.__init = ')
-      elseif type(key) == 'string' then
-        E:w(p and format('rawset(%s, %q, ', b, key) or (b .. field(key) .. ' = '))
-      else
-        E:w(p and ('rawset(' .. b .. ', ') or (b .. '['))
-        self:expr(key)
-        E:w(p and ', ' or '] = ')
+      self:class_member(item.line, item.key, item.value)
+    elseif item.k == 'meta' then
+      for _, entry in ipairs(item.entries) do
+        local name = meta_name(entry)
+        -- the fallbacks get other names, as the base's own __index and __newindex
+        -- dispatch
+        if is_fallback(name) then name = '__hs_' .. string.sub(name, 3) end
+        self:class_member(entry.line, name, entry.v)
       end
-      self.cls.method = key
-      if item.value.k == 'Func' then
-        -- constructors return nothing
-        self:func(item.value, is_new)
-      else
-        self:expr(item.value)
-      end
-      self.cls.method = nil
-      if p and not is_new then E:w(')') end
     elseif item.k == 'property' then
       local pname = item.name
       local defined = properties[pname] or members[pname]

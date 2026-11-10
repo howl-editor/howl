@@ -61,6 +61,9 @@ howl.util.lpeg_lexer ->
     #(blank^0 * (P'=>' + eol + P(-1)))
   }
 
+  -- `meta {` gives a class's metamethods, styled like property
+  meta_def = c 'preproc', -after_access * word('meta') * #(blank^0 * P'{')
+
   sq_string = span("'", "'", '\\')
   dq_string = span('"', '"', P'\\')
   long_string = span('[[', ']]')
@@ -106,8 +109,8 @@ howl.util.lpeg_lexer ->
     'all'
     all: any {
       number, key, V'string', decrement, comment, long_string_level, operator, illegal,
-      special, type_def, property_def, keyword, member, type_name, lua_keyword, V'fdecl', cdef,
-      identifier
+      special, type_def, property_def, meta_def, keyword, member, type_name, lua_keyword,
+      V'fdecl', cdef, identifier
     }
     string: any {
       c 'string', any { sq_string, long_string }

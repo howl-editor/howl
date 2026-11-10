@@ -109,8 +109,10 @@ class Inventory extends Container
     get: => @_label
     set: (label) => @_label = label
 
-  __tostring: => "Inventory(#{@size})"
-  __index: (key) => @items[key]
+  meta {
+    __tostring: => "Inventory(#{@size})"
+    __index: (key) => @items[key]
+  }
 
 -- errors
 function end goto = 1

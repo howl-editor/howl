@@ -81,7 +81,7 @@ describe 'line alignment', ->
           get: =>
 
             @_t
-        __tostring: => 'a'
+        meta {__tostring: => 'a'}
       y = 1
     ]]
     assert.equals 2, line_of lua, 'return self.n'
@@ -91,6 +91,22 @@ describe 'line alignment', ->
     assert.equals 9, line_of lua, 'return self._t'
     assert.equals 10, line_of lua, '__hs_hook(' -- on the class's last line
     assert.equals 11, line_of lua, 'local y'
+
+  it 'keeps the lines of the metamethods in meta', ->
+    lua = compile [[
+      class A
+        meta {
+          __tostring: =>
+
+            @name
+          __index: (key) => @size
+        }
+      y = 1
+    ]]
+    assert.equals 3, line_of lua, '__tostring = function(self)'
+    assert.equals 5, line_of lua, 'return self.name'
+    assert.equals 6, line_of lua, '__hs_index = function(self, key) return self.size'
+    assert.equals 8, line_of lua, 'local y'
 
   it 'reports runtime errors in accessors on the source line', ->
     assert.equals 5, error_line [[
