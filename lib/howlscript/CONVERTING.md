@@ -10,6 +10,9 @@ this says what a converted file should look like.
 - **Mechanical:** a conversion changes only what Howlscript requires, so it reads
   line by line against the original. Improvements, like `x = x or {}` to `x or= {}`,
   are separate changes.
+- **Bugs found on the way** are fixed in the conversion and named in its commit, as
+  `window_spec`'s `assert.is_nil, win.current_view` was: a value list, not a call,
+  so it asserted nothing.
 - **In place:** the `.howl` file replaces the `.moon` file of the same name, which
   `require` and `bundle_load` then find instead.
 - **Copyright:** a copyright line's years end with the year of the conversion, so
@@ -127,8 +130,10 @@ is visible:
   "Context<#{tostring(@buffer)}>"
   ```
 
-- **A function block in arguments:** when a call with a function block is itself an
-  argument, the parentheses close on a line of their own after the block:
+- **A function block in arguments or a `return`:** when a call with a function block
+  is itself an argument, or gets a `return` (see [Control flow](#control-flow)), the
+  parentheses close on a line of their own after the block, as with `bundle`'s
+  `return lookup.loader(->`:
 
   ```moonscript
   system_cb\read_text_async async (res) ->
@@ -351,6 +356,19 @@ elseif index < 1
     env = {}
   ```
 
+  An `if` value without `else` is `nil` when nothing matches, so the `if` statement
+  gets an `else` assigning `nil`, unless the name is surely `nil` there already, as
+  the just declared `left` in `Window`'s `siblings` is:
+
+  ```moonscript
+  left = if before and before.y == current.y then before
+  ```
+
+  ```howl
+  if before and before.y == current.y
+    left = before
+  ```
+
 - **A loop as a value** collects into a new local list, which is then returned or
   assigned, unless a comprehension can do it. The list's name mustn't be a visible
   local, as `vc`'s `files` function ruled out `files`:
@@ -452,6 +470,33 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
   ```
 
 - `@meta {...}` entries become members, as in `__tostring: => ...`.
+- **Delegation:** a class passing `super target` to `PropertyObject`, so that the
+  keys it lacks go to `target`, gets an `__index:` fallback instead. It reads the
+  target with `rawget`, since reading `@win` before `new` sets it would run the
+  fallback again, and calls methods on the target. PropertyObject kept one target
+  per class, the last instance's, so every `Window` delegated to the newest Gtk
+  window; the fallback's is the instance's own:
+
+  ```moonscript
+  class Window extends PropertyObject
+    new: =>
+      @win = Gtk.Window!
+      super @win
+  ```
+
+  ```howl
+  class Window
+    new: =>
+      @win = Gtk.Window()
+
+    __index: (key) =>
+      win = rawget(self, 'win')
+      return nil unless win
+      value = win[key]
+      return value unless callable(value)
+      (_, ...) -> value(win, ...)
+  ```
+
 - Writing a read-only property now fails with `property 'x' is read-only`.
 - A class or module with a Howlscript port in `lib/howlscript/spec/fixtures/` drops
   the port and its line in `acceptance_spec.moon`, as its own spec now runs against
@@ -478,3 +523,5 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
 | `lib/howl/util/sandbox.moon`, `spec/util/sandbox_spec.moon` | 2026-11-02 |
 | `lib/howl/vc.moon`, `spec/vc_spec.moon` | 2026-11-02 |
 | `bundles/ruby/ruby_inspector.moon` | 2026-11-02 |
+| `lib/howl/ui/window.moon`, `spec/ui/window_spec.moon` | 2026-11-10 |
+| `lib/howl/bundle.moon`, `spec/bundle_spec.moon` | 2026-11-10 |
