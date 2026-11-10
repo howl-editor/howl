@@ -51,14 +51,19 @@ describe 'howlscript.parser', ->
       ]]
 
     it 'lets a block opened inside brackets end at the closing bracket', ->
-      assert.same {'a', 'b'}, {run [[
+      assert.same {'a', 'b', 'c'}, {run [[
         f = (fn, ...) -> fn(...)
         x = f((v) ->
           v
         , 'a')
         y = f(->
           'b')
-        x, y
+        g = (c) ->
+          if c
+            return f(->
+              c
+            )
+        x, y, g('c')
       ]]}
 
     it 'indents a block relative to the line its bracket entry starts on', ->
