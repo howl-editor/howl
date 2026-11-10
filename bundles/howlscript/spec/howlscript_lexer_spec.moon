@@ -1,4 +1,5 @@
 import mode, bundle from howl
+howlscript = require 'howlscript'
 append = table.insert
 
 describe 'Howlscript lexer', ->
@@ -144,3 +145,18 @@ describe 'Howlscript lexer', ->
         append strings, text\sub(tokens[i], tokens[i + 2] - 1)
     assert.same { '[[', ']]' }, strings
     assert.same { 'int x;' }, sub_lexed
+
+  describe 'the example in misc/', ->
+    -- what comes before the errors it ends with, which show how they're lexed
+    valid_part = ->
+      howl.app.root_dir\join('bundles/howlscript/misc/example.howl').contents\match '^(.-)\n%-%- errors\n'
+
+    it 'compiles, apart from its errors', ->
+      _, err = howlscript.to_lua valid_part!
+      assert.is_nil err
+
+    it 'lexes without errors, apart from its errors', ->
+      text = valid_part!
+      tokens = lexer text
+      errors = [text\sub(tokens[i], tokens[i + 2] - 1) for i = 1, #tokens, 3 when tokens[i + 1] == 'error']
+      assert.same {}, errors

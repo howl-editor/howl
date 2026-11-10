@@ -78,12 +78,12 @@ describe 'howlscript-mode', ->
         'with some.object',
         'when conditional',
       }
-      'blocks used as values': {
-        'foo = if bar and frob'
-        'foo = switch bar'
+      'with blocks used as values': {
         'foo = with Bar()'
-        'foo = for x in *list'
-        'foo = do'
+        'return with Bar()'
+      }
+      'a meta table': {
+        'meta {'
       }
     }
 
@@ -97,7 +97,7 @@ describe 'howlscript-mode', ->
       'loops with their body after do': {
         'for i = 1, 3 do sum += i'
         'while busy() do wait()'
-        'doubled = for x in *list do x * 2'
+        'for x in *list do total += x'
       }
       'decorated statements': {
         'foo() if bar',
@@ -161,7 +161,7 @@ describe 'howlscript-mode', ->
       assert.equal 2, editor.current_line.indentation
 
   describe 'structure(editor)', ->
-    it 'returns lines that match class, function and spec declarations', ->
+    it 'returns lines that match class, function, property, meta and spec declarations', ->
       buffer.text = [[
 bar = -> true
 foo = ->
@@ -177,6 +177,12 @@ class Foo
   property size => 1
   property text
     get: => 'text'
+  meta {
+    __index: defaults
+    __tostring: => 'foo'
+  }
+class Bar
+  meta {__index: defaults}
 describe('thing', ->
   it('works', ->
     assert.is_true(true)
@@ -193,6 +199,10 @@ class Foo
   property size => 1
   property text
     get: => 'text'
+  meta {
+    __tostring: => 'foo'
+class Bar
+  meta {__index: defaults}
 describe('thing', ->
   it('works', ->
 ]]

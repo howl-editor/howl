@@ -26,8 +26,7 @@ class HowlscriptMode
       { r'^\\s*\\b(for|while)\\b', '%sdo%s+%S' }, -- loops, unless the body follows 'do'
       { r'^\\s*\\b(elseif|if|unless)\\b', '%sthen%s*'}, -- conditionals
       '^%s*else%s*$',
-      { '=%s*if%s', '%sthen%s*'} -- 'if' used as a value
-      { r'=\\s*\\b(switch|with|for|while|do)\\b', '%sdo%s+%S' } -- other blocks as values
+      r'(=|\\breturn)\\s*\\bwith\\b' -- 'with' used as a value, the only block that can be
     }
 
     same_after: {
@@ -67,6 +66,7 @@ class HowlscriptMode
       '%s*class%s+%w'
       '^%s*property%s+[%w_]+%s*=>'
       '^%s*property%s+[%w_]+%s*$'
+      '^%s*meta%s*{'
       r'\\w\\s*[=:]\\s*(\\([^)]*\\))?\\s*[=-]>'
       r'(?:it|describe|context)\\(\\s*[\'"].+->\\s*$'
     }
