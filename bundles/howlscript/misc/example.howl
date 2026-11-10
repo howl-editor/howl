@@ -103,11 +103,10 @@ class Inventory extends Container
   add: (name) =>
     super:add(name)
 
-  property weight => #@items
+  get weight: => #@items
 
-  property label
-    get: => @_label
-    set: (label) => @_label = label
+  get label: => @_label
+  set label: (label) => @_label = label
 
   meta {
     __tostring: => "Inventory(#{@size})"

@@ -1145,7 +1145,7 @@ function Compiler:stmt_Class(s)
   local own, has_properties, support = false, false, p ~= nil
   local meta_line
   for _, item in ipairs(s.body) do
-    if item.k == 'property' then
+    if item.k == 'accessor' then
       own, has_properties = true, true
     elseif item.k == 'meta' then
       if meta_line then
@@ -1204,8 +1204,9 @@ function Compiler:stmt_Class(s)
   local saved_cls = self.cls
   self.cls = { c = c, b = b, p = p }
 
-  -- the lines of the properties, and of the members sharing a name with one
-  local properties, members = {}, {}
+  -- the lines of the properties, of their accessors (by 'get name' and 'set name'),
+  -- and of the members sharing a name with one
+  local properties, accessors, members = {}, {}, {}
 
   for _, item in ipairs(s.body) do
     if item.k == 'prop' then
@@ -1226,37 +1227,37 @@ function Compiler:stmt_Class(s)
         if is_fallback(name) then name = '__hs_' .. string.sub(name, 3) end
         self:class_member(entry.line, name, entry.v)
       end
-    elseif item.k == 'property' then
-      local pname = item.name
-      local defined = properties[pname] or members[pname]
-      if defined then
-        self:error(format("'%s' is already defined on line %d of this class", pname, defined),
-          item.name_tok, #pname)
+    elseif item.k == 'accessor' then
+      local pname, kind, value = item.name, item.kind, item.value
+      if members[pname] then
+        self:error(format("'%s' is already defined on line %d of this class", pname,
+          members[pname]), item.name_tok, #pname)
       end
-      properties[pname] = item.line
+      local given = kind .. ' ' .. pname
+      if accessors[given] then
+        self:error(format("'%s' is already given on line %d of this class", given,
+          accessors[given]), item.name_tok, #pname)
+      end
+      accessors[given] = item.line
+      local entry, first = props .. field(pname), not properties[pname]
+      properties[pname] = properties[pname] or item.line
       E:stmt(item.line)
-      E:w(props .. field(pname) .. ' = {')
-      local accessors = { { 'get', item.get }, { 'set', item.set } }
-      if not item.get or (item.set and item.set.line < item.get.line) then
-        accessors[1], accessors[2] = accessors[2], accessors[1]
+      if first then
+        -- a new entry, which keeps the other accessor of an inherited property
+        local other = kind == 'get' and 'set' or 'get'
+        E:w(format('%s = {%s = %s and %s.%s, %s = ', entry, other, entry, entry, other, kind))
+      else
+        E:w(entry .. '.' .. kind .. ' = ')
       end
-      for i, accessor in ipairs(accessors) do
-        local kind, value = accessor[1], accessor[2]
-        if value then
-          if i > 1 then E:w(', ') end
-          E:at(value.line)
-          E:w(kind .. ' = ')
-          self.cls.method, self.cls.accessor = pname, kind
-          if value.k == 'Func' then
-            -- like constructors, setters return nothing
-            self:func(value, kind == 'set')
-          else
-            self:expr(value)
-          end
-          self.cls.method, self.cls.accessor = nil, nil
-        end
+      self.cls.method, self.cls.accessor = pname, kind
+      if value.k == 'Func' then
+        -- like constructors, setters return nothing
+        self:func(value, kind == 'set')
+      else
+        self:expr(value)
       end
-      E:w('}')
+      self.cls.method, self.cls.accessor = nil, nil
+      if first then E:w('}') end
     elseif item.k == 'classvar' then
       E:stmt(item.line)
       E:w(c .. field(item.key) .. ' = ')

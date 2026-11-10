@@ -53,7 +53,7 @@ and  break  class  continue  do  else  elseif  false  for  if  in  local  nil
 not  or  return  switch  then  true  unless  when  while  with
 ```
 
-- `extends` only means something after a class name, and `property` and `meta` at
+- `extends` only means something after a class name, and `get`, `set` and `meta` at
   the start of a class item (see [Properties](#properties) and
   [Metamethods](#metamethods)). Elsewhere they're ordinary names, and so are
   `import`, `from`, `using` and `export`.
@@ -958,7 +958,7 @@ class BackPack extends Inventory
     super(name)
   describe: => 'a backpack, ' .. super:describe()
   :helper                    -- short for helper: helper
-  property weight => #@items
+  get weight: => #@items     -- a read-only property
   meta {__tostring: => "BackPack(#{@size})"}
   @sizes = {'small', 'large'}  -- class body code runs with self = the class
 
@@ -976,6 +976,8 @@ print(BackPack.count)        -- 1
 - **Members:** `name: value`, `'text': value` and `[expr]: value` add a member, and
   `:name` is short for `name: name`. `@name: value` sets a class variable, such as a
   class method.
+- **Properties:** `get name: value` and `set name: value` give the getter and the
+  setter of a property (see [Properties](#properties)).
 - **Metamethods:** `meta {...}` gives the metamethods of the instances (see
   [Metamethods](#metamethods)).
 - **Constructor:** `new` is the constructor. A class without one calls its parent's.
@@ -1040,12 +1042,11 @@ class Chunk
     @start_pos = start_pos
     @end_pos = end_pos
 
-  property empty => @end_pos < @start_pos
+  get empty: => @end_pos < @start_pos
 
-  property text
-    get: => @buffer:sub(@start_pos, @end_pos)
-    set: (text) =>
-      @buffer:replace(@start_pos, @end_pos, text)
+  get text: => @buffer:sub(@start_pos, @end_pos)
+  set text: (text) =>
+    @buffer:replace(@start_pos, @end_pos, text)
 
 chunk = Chunk(buffer, 1, 5)
 print(chunk.empty)    -- false, from the getter
@@ -1054,12 +1055,12 @@ chunk.text = 'howdy'  -- replaces it, through the setter
 chunk.empty = true    -- fails when it runs: property 'empty' is read-only
 ```
 
-- **Read-only:** `property name => body` declares a property with a getter. The
-  getter takes no parameters, and its body is inline or a block.
-- **With a block:** `property name` followed by an indented block declares a
-  property with `get:` and `set:`, either of which can be left out. Each takes an
-  expression, normally a method: the getter takes no parameters, and the setter
-  takes the value.
+- **Accessors:** `get name: value` gives the property `name` a getter, and
+  `set name: value` a setter. The value is an expression, normally a method: the
+  getter takes no parameters, and the setter takes the value. A property with only a
+  getter is read-only, and one with only a setter is set-only.
+- **Placement:** the getter and the setter are separate class items, given in either
+  order and each at most once. They normally go together, the getter first.
 - **Use:** reading a property calls its getter, and assigning to it calls its setter.
   So `@text = text` in `new` goes through the setter too. Setters, like
   constructors, return nothing.
@@ -1068,29 +1069,35 @@ chunk.empty = true    -- fails when it runs: property 'empty' is read-only
   `property 'x' is write-only`. Both are reported where the property is used.
 - **Inheritance:**
   - A subclass inherits its parent's properties.
-  - A property of the same name replaces the parent's, both accessors.
+  - An accessor in a subclass replaces the parent's of the same kind, and keeps the
+    other: a subclass that gives only a getter still has its parent's setter.
   - In an accessor, `super()` calls the parent's getter, and `super(value)` its
     setter.
 - **Names:**
   - A property wins over a method or member of the same name, also in a subclass.
   - Within one class, a name can't be both.
-  - `property` only means this at the start of a class item, followed by a name.
-    Elsewhere it's an ordinary name, so `property: value` and `@property(...)`
-    still work.
+  - `get` and `set` only mean this at the start of a class item, followed by a name
+    and a colon. Elsewhere they're ordinary names, so methods named `get:` and `set:`
+    still work. Leaving out the colon, as in `get name => ...`, is an error.
 
 ```howl
 class Named
   new: (name) => @name = name
-  property name
-    get: => @_name
-    set: (name) => @_name = name
+  get name: => @_name
+  set name: (name) => @_name = name
 
 class Shouting extends Named
-  property name
-    get: => super():upper()             -- the parent's getter
-    set: (name) => super("<#{name}>")   -- the parent's setter
+  get name: => super():upper()             -- the parent's getter
+  set name: (name) => super("<#{name}>")   -- the parent's setter
 
-print(Shouting('ann').name)             -- '<ANN>'
+print(Shouting('ann').name)                -- '<ANN>'
+
+class Quiet extends Named
+  get name: => @_name:lower()              -- keeps Named's setter
+
+quiet = Quiet('Ann')
+quiet.name = 'BOB'
+print(quiet.name)                          -- 'bob'
 ```
 
 ### Metamethods
@@ -1152,7 +1159,7 @@ print(Vec3(1, 2) == Vec(1, 2))    -- true, as both have the same __eq
 ```howl
 class Window
   new: (win) => rawset(self, 'win', win)
-  property title => @win.title
+  get title: => @win.title
   meta {__index: (key) => @win[key]}
 
 w = Window({title: 'Notes', width: 80})
@@ -1186,7 +1193,7 @@ Properties and fallbacks extend this:
   `__inherited`. Classes with metamethods, properties or fallbacks wrap their
   `__inherited` to do that, and still call the one they had.
 - **PropertyObject:** a class extending a MoonScript class built on Howl's
-  `PropertyObject` uses its `@property(...)` and `@meta(...)` instead of `property`
+  `PropertyObject` uses its `@property(...)` and `@meta(...)` instead of `get`, `set`
   and `meta`. PropertyObject replaces the
   base's `__index` and `__newindex` with its own.
 
@@ -1210,7 +1217,8 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | An inline body in arguments or a table takes the rest of the line: `f(-> a, b)` passes one function returning `a` and `b` | A `,` ends it there, so `f(-> a, b)` passes a function returning `a`, and `b`. `f((-> a, b))` passes one function returning both (see [Layout](#layout)). |
 | `f a: 1, 2` | An error: positional arguments come first. |
 | `x = a: 1`, `return a: 1`, indented key blocks | `x = {a: 1}`. A table needs braces, except for the trailing named arguments of a call. |
-| `@property name: get: => @x`, with Howl's `PropertyObject` | `property name => @x` (see [Properties](#properties)). In a class still extending `PropertyObject`, `@property(name: {get: => @x})`, as a nested table needs its braces. |
+| `@property name: get: => @x`, with Howl's `PropertyObject` | `get name: => @x`, and `set name: (v) => ...` for a setter (see [Properties](#properties)). In a class still extending `PropertyObject`, `@property(name: {get: => @x})`, as a nested table needs its braces. |
+| A PropertyObject subclass's `@property` replaces both of its parent's accessors | A subclass's `get` or `set` replaces only that accessor, and keeps the parent's other one. |
 | `@meta __tostring: => @x`, with Howl's `PropertyObject` | `meta {__tostring: => @x}` (see [Metamethods](#metamethods)). |
 | A member named after a metamethod, as in `__tostring: => @x`, is one, since the base is the instances' metatable | An error: metamethods go in `meta {...}`. |
 | A subclass doesn't inherit its parent's metamethods | It does. |
@@ -1285,8 +1293,8 @@ Howlscript also reports mistakes that MoonScript 0.5.0 compiles without complain
     return width * height
   end)
   ```
-- **Properties:** `property name => @x`, or with a block of `get:` and `set:`, in a
-  class body (see [Properties](#properties)).
+- **Properties:** `get name: => @x` and `set name: (v) => ...` in a class body (see
+  [Properties](#properties)).
 - **Metamethods:** `meta {__tostring: => @x}` in a class body (see
   [Metamethods](#metamethods)).
 - **Numbers:** all of LuaJIT's forms, where MoonScript 0.5.0 lacks `0XFF`, `1e+2`,

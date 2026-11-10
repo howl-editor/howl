@@ -9,13 +9,13 @@ class Context
     @buffer = buffer
     @pos = pos
 
-  property word =>
+  get word: =>
     return @_word if @_word
     start_pos, end_pos = @_get_word_boundaries()
     @_word = Chunk(@buffer, start_pos, end_pos - 1)
     @_word
 
-  property token =>
+  get token: =>
     suffix = @suffix
     prefix = @prefix
     first = suffix[1]
@@ -39,17 +39,17 @@ class Context
 
     Chunk(@buffer, start_pos, end_pos)
 
-  property line =>
+  get line: =>
     @_line or= @buffer.lines:at_pos(@pos)
     @_line
 
-  property word_prefix => @word.text:usub(1, @pos - @word.start_pos)
-  property word_suffix => @word.text:usub((@pos - @word.start_pos) + 1)
-  property prefix => @line:usub(1, (@pos - @line.start_pos))
-  property suffix => @line:usub((@pos - @line.start_pos) + 1)
-  property next_char => @suffix[1]
-  property prev_char => @prefix[-1]
-  property style => style.at_pos(@buffer, @pos)
+  get word_prefix: => @word.text:usub(1, @pos - @word.start_pos)
+  get word_suffix: => @word.text:usub((@pos - @word.start_pos) + 1)
+  get prefix: => @line:usub(1, (@pos - @line.start_pos))
+  get suffix: => @line:usub((@pos - @line.start_pos) + 1)
+  get next_char: => @suffix[1]
+  get prev_char: => @prefix[-1]
+  get style: => style.at_pos(@buffer, @pos)
 
   meta {
     __eq: (a, b) ->

@@ -52,18 +52,6 @@ howl.util.lpeg_lexer ->
     c('type_def', upper^1 * (alpha + digit + '_')^0)
   }
 
-  -- `property name =>`, or `property name` ending its line, declares a property. The
-  -- word is styled like a decorator, apart from keywords and keys.
-  property_def = sequence {
-    c('preproc', -after_access * word('property')),
-    c('whitespace', blank^1),
-    c('key', ident),
-    #(blank^0 * (P'=>' + eol + P(-1)))
-  }
-
-  -- `meta {` gives a class's metamethods, styled like property
-  meta_def = c 'preproc', -after_access * word('meta') * #(blank^0 * P'{')
-
   sq_string = span("'", "'", '\\')
   dq_string = span('"', '"', P'\\')
   long_string = span('[[', ']]')
@@ -77,6 +65,13 @@ howl.util.lpeg_lexer ->
     ident * key_end,
     (sq_string + dq_string) * key_end
   }
+
+  -- `get name:` and `set name:` give a property's accessors. The word is styled like
+  -- a decorator, apart from keywords and keys, and the name is a key.
+  accessor_def = c 'preproc', -after_access * word({'get', 'set'}) * #(blank^1 * ident * key_end)
+
+  -- `meta {` gives a class's metamethods, styled like get and set
+  meta_def = c 'preproc', -after_access * word('meta') * #(blank^0 * P'{')
 
   ws = c 'whitespace', blank^0
 
@@ -109,7 +104,7 @@ howl.util.lpeg_lexer ->
     'all'
     all: any {
       number, key, V'string', decrement, comment, long_string_level, operator, illegal,
-      special, type_def, property_def, meta_def, keyword, member, type_name, lua_keyword,
+      special, type_def, accessor_def, meta_def, keyword, member, type_name, lua_keyword,
       V'fdecl', cdef, identifier
     }
     string: any {

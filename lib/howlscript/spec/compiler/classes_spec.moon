@@ -166,55 +166,64 @@ describe 'classes', ->
     range = [[
       class Range
         new: (first, last) => @first, @last = first, last
-        property empty => @last < @first
-        property size =>
+        get empty: => @last < @first
+        get size: =>
           return 0 if @empty
           @last - @first + 1
     ]]
 
     with_range = (src) -> run dedent(range) .. '\n' .. dedent(src)
 
-    it 'are read-only when declared with property name =>', ->
+    it 'are read-only with only a getter', ->
       assert.same {true, 0, 3}, {with_range [[
         Range(2, 1).empty, Range(2, 1).size, Range(2, 4).size
       ]]}
 
-    it 'take get: and set: in a block', ->
+    it 'take a getter and a setter', ->
       assert.same {'ab', 'CD', nil}, {run [[
         class Name
           new: (v) => @_v = v
-          property value
-            get: => @_v
-            set: (v) => @_v = v:upper()
+          get value: => @_v
+          set value: (v) => @_v = v:upper()
         n = Name('ab')
         before = n.value
         n.value = 'cd'
         before, n.value, rawget(n, 'value')
       ]]}
 
+    it 'pair accessors given apart and in any order', ->
+      assert.same {'CD', 'm'}, {run [[
+        class Name
+          set value: (v) => @_v = v:upper()
+          m: => 'm'
+          get value: => @_v
+        n = Name()
+        n.value = 'cd'
+        n.value, n:m()
+      ]]}
+
     it 'can be set-only', ->
       assert.equals 5, run [[
         class Widget
-          property max_height
-            set: (h) => @_max_height = h
+          set max_height: (h) => @_max_height = h
         w = Widget()
         w.max_height = 5
         w._max_height
       ]]
 
     it 'take any expression as an accessor', ->
-      assert.equals 'got', run [[
+      assert.same {'got', 'arrow'}, {run [[
         getter = => 'got'
         class Thing
-          property value
-            get: getter
-        Thing().value
-      ]]
+          get value: getter
+          get other: -> 'arrow'
+        Thing().value, Thing().other
+      ]]}
 
     it 'raise an error when setting a read-only one, at the assignment', ->
       assert.equals "spec:4: property 'size' is read-only", run [[
         class Range
-          property size => 1
+          get size: => 1
         ok, err = pcall(->
           Range().size = 3
         )
@@ -222,10 +231,9 @@ describe 'classes', ->
       ]]
 
     it 'raise an error when reading a set-only one, at the read', ->
-      assert.equals "spec:6: property 'height' is write-only", run [[
+      assert.equals "spec:5: property 'height' is write-only", run [[
         class Widget
-          property height
-            set: (h) =>
+          set height: (h) =>
           meta {__index: (key) => 'fallback'}
         ok, err = pcall(->
           Widget().height
@@ -237,18 +245,16 @@ describe 'classes', ->
       assert.equals 'X', run [[
         class Name
           new: (value) => @value = value
-          property value
-            get: => @_v
-            set: (v) => @_v = v:upper()
+          get value: => @_v
+          set value: (v) => @_v = v:upper()
         Name('x')._v
       ]]
 
     it 'work in a constructor before super() is called', ->
       assert.equals 'x', run [[
         class Base
-          property name
-            get: => @_name
-            set: (n) => @_name = n
+          get name: => @_name
+          set name: (n) => @_name = n
         class Sub extends Base
           new: =>
             @name = 'x'
@@ -265,14 +271,38 @@ describe 'classes', ->
           Labeled.__base.__properties == Range.__base.__properties
       ]]}
 
-    it 'are replaced as a whole by a property of the same name in a subclass', ->
+    it "keep the parent's setter when a subclass gives only a getter", ->
+      assert.same {'<X>', 'X'}, {run [[
+        class Base
+          get value: => @_v
+          set value: (v) => @_v = v:upper()
+        class Sub extends Base
+          get value: => "<#{@_v}>"
+        s = Sub()
+        s.value = 'x'
+        s.value, s._v
+      ]]}
+
+    it "keep the parent's getter when a subclass gives only a setter", ->
+      assert.same {'X', 'base'}, {run [[
+        class Base
+          get value: => @_v
+          set value: (v) => @_v = v
+        class Sub extends Base
+          set value: (v) => @_v = v:upper()
+        s = Sub()
+        s.value = 'x'
+        b = Base()
+        b.value = 'base'
+        s.value, b.value
+      ]]}
+
+    it "keep a subclass's property read-only when its parent's is", ->
       assert.same {'sub', true}, {run [[
         class Base
-          property value
-            get: => 'base'
-            set: (v) =>
+          get value: => 'base'
         class Sub extends Base
-          property value => 'sub'
+          get value: => 'sub'
         s = Sub()
         ok, err = pcall(-> s.value = 1)
         s.value, err:match("property 'value' is read%-only") != nil
@@ -282,7 +312,7 @@ describe 'classes', ->
       assert.same {'a', nil, nil}, {run [[
         class Base
         class A extends Base
-          property name => 'a'
+          get name: => 'a'
         class B extends Base
         A().name, B().name, Base().name
       ]]}
@@ -290,7 +320,7 @@ describe 'classes', ->
     it 'win over members of the same name in subclasses', ->
       assert.equals 'property', run [[
         class Base
-          property value => 'property'
+          get value: => 'property'
         class Sub extends Base
           value: 'member'
         Sub().value
@@ -299,13 +329,11 @@ describe 'classes', ->
     it "call the parent's accessor with super()", ->
       assert.same {'<BASE>', 'BASE'}, {run [[
         class Base
-          property value
-            get: => @_v
-            set: (v) => @_v = v:upper()
+          get value: => @_v
+          set value: (v) => @_v = v:upper()
         class Sub extends Base
-          property value
-            get: => "<#{super()}>"
-            set: (v) => super(v)
+          get value: => "<#{super()}>"
+          set value: (v) => super(v)
         s = Sub()
         s.value = 'base'
         s.value, s._v
@@ -316,7 +344,7 @@ describe 'classes', ->
         class Base
           describe: => 'base'
         class Sub extends Base
-          property description => 'sub of ' .. super:describe()
+          get description: => 'sub of ' .. super:describe()
         Sub().description
       ]]
 
@@ -331,7 +359,7 @@ describe 'classes', ->
             @describe() .. (@closed and ' closed' or '')
         class Completion extends Menu
           new: => @items = {}
-          property state => #@items == 0 and 'empty' or 'full'
+          get state: => #@items == 0 and 'empty' or 'full'
         c = Completion()
         c:choose(), c.state
       ]]}
@@ -342,42 +370,39 @@ describe 'classes', ->
           flair: 'menu'
         class Completion extends Menu
           flair: false
-          property empty => true
+          get empty: => true
         Completion().flair, Menu().flair
       ]]}
 
-    it 'leave property as an ordinary name elsewhere', ->
-      assert.same {'member', 'called'}, {run [[
+    it 'leave get and set as ordinary names elsewhere', ->
+      assert.same {'got a', 'b set', 'called x', 'member'}, {run [[
+        get = (x) -> _G.called = "called #{x}"
         class Thing
-          @property: (t) => @log = t.name
-          @property(name: 'called')
+          get: (k) => "got #{k}"
+          set: (k) => "#{k} set"
+          @get: 'class'
+          get 'x'
           property: 'member'
-        Thing().property, Thing.log
+        t = Thing()
+        t:get('a'), t:set('b'), _G.called, t.property
       ]]}
 
-    it 'reject -> for accessors', ->
-      assert.match compile_error('class A\n  property x -> 1'), "use '=>'"
+    it 'reject parameters for a getter', ->
+      assert.match compile_error('class A\n  get x: (a) => a'), "2:11: a getter takes no parameters"
 
-    it 'reject parameters for the getter of a read-only property', ->
-      assert.match compile_error('class A\n  property x (a) => a'), 'takes no parameters'
-
-    it 'reject anything but get: and set: in the block', ->
-      assert.match compile_error('class A\n  property x\n    got: => 1'), "holds only 'get:' and 'set:'"
+    it 'reject an accessor without the colon', ->
+      assert.match compile_error('class A\n  get x => 1'), "2:9: an accessor's name takes a ':'; write 'get x: ...'"
+      assert.match compile_error('class A\n  set x (v) => v'), "write 'set x: ...'"
+      assert.match compile_error('class A\n  set x(v) -> v'), "write 'set x: ...'"
 
     it 'reject an accessor given twice', ->
-      assert.match compile_error('class A\n  property x\n    get: => 1\n    get: => 2'),
-        "'get:' is given twice for the property 'x'"
+      assert.match compile_error('class A\n  get x: => 1\n  set x: (v) =>\n  get x: => 2'),
+        "4:7: 'get x' is already given on line 2 of this class"
 
-    it 'reject a property without accessors', ->
-      assert.match compile_error('class A\n  property x\n  y: 1'), "expected '=>' or an indented block"
-      assert.match compile_error('class A\n  property x 1'), "expected '=>' or an indented block.*found '1'"
-
-    it 'reject a name defined twice in a class', ->
-      assert.match compile_error('class A\n  property x => 1\n  property x => 2'),
+    it 'reject a name both a property and a member in a class', ->
+      assert.match compile_error('class A\n  x: 1\n  get x: => 2'),
         "'x' is already defined on line 2 of this class"
-      assert.match compile_error('class A\n  x: 1\n  property x => 2'),
-        "'x' is already defined on line 2 of this class"
-      assert.match compile_error("class A\n  property x => 2\n  'x': 1"),
+      assert.match compile_error("class A\n  set x: (v) =>\n  'x': 1"),
         "'x' is already defined as a property on line 2 of this class"
 
   describe 'fallbacks', ->
@@ -385,7 +410,7 @@ describe 'classes', ->
     proxy = [[
       class Proxy
         new: (target) => rawset(self, 'target', target)
-        property size => 1
+        get size: => 1
         m: => 'm'
         meta {
           __index: (key) => @target[key]

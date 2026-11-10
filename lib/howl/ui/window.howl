@@ -89,7 +89,7 @@ class Window
 
     @data = {}
 
-  property views =>
+  get views: =>
     views = {}
 
     for c in *@grid.children
@@ -113,33 +113,31 @@ class Window
 
     views
 
-  property focus_child =>
+  get focus_child: =>
     fc = @grid.focus_child
     @data.focus_child = nil if fc
     fc or @data.focus_child
 
-  property current_view =>
+  get current_view: =>
     focused = @focus_child
     return nil unless focused
     @get_view(focused)
 
-  property fullscreen
-    get: => @win.fullscreened
+  get fullscreen: => @win.fullscreened
 
-    set: (state) =>
-      if state and not @fullscreen
-        return @win:fullscreen()
-      elseif not state and @fullscreen
-        return @win:unfullscreen()
+  set fullscreen: (state) =>
+    if state and not @fullscreen
+      return @win:fullscreen()
+    elseif not state and @fullscreen
+      return @win:unfullscreen()
 
-  property maximized
-    get: => @win.maximized
+  get maximized: => @win.maximized
 
-    set: (state) =>
-      if state and not @maximized
-        return @win:maximize()
-      elseif not state and @maximized
-        return @win:unmaximize()
+  set maximized: (state) =>
+    if state and not @maximized
+      return @win:maximize()
+    elseif not state and @maximized
+      return @win:unmaximize()
 
   add_widget: (widget) =>
     @widgets:append(widget)

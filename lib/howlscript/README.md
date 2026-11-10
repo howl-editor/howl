@@ -20,7 +20,7 @@ class Note
     @path = path
     @tags = tags
 
-  property title => @path:match('[^/]+$')
+  get title: => @path:match('[^/]+$')
 
   tagged: (tag) => [t for t in *@tags if t == tag]
 

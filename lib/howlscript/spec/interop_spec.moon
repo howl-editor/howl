@@ -67,10 +67,9 @@ describe 'interop with MoonScript classes', ->
         class Base
           @__inherited: (child) => @child = child.__name
           new: (v = 'v') => @_v = v
-          property value
-            get: => @_v
-            set: (v) => @_v = v:upper()
-          property size => #@_v
+          get value: => @_v
+          set value: (v) => @_v = v:upper()
+          get size: => #@_v
           meta {
             __tostring: => "Base(#{@_v})"
             __index: (key) => "fallback #{key}"

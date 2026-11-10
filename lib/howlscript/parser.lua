@@ -32,7 +32,7 @@
 --   ForIn{vars, exprs, body} or {vars, star, body} for `in *t`
 --   Class{name, parent, body}: the body holds statements and the items
 --     {k = 'prop', key, value}, {k = 'classvar', key, value},
---     {k = 'property', name, name_tok, get, set}, where get and set are expressions,
+--     {k = 'accessor', kind, name, name_tok, value}, where kind is 'get' or 'set',
 --     and {k = 'meta', entries}, with the entries of a Table
 --
 -- Assignment targets and loop variables can be Pattern{entries} for destructuring,
@@ -710,8 +710,17 @@ function Parser:class_item()
     return { k = 'prop', key = n.v, value = node('Name', n, { v = n.v }), line = t.line, col = t.col }
   end
 
-  if t.t == 'name' and t.v == 'property' and is_name_like(n) and n.sb and not n.first then
-    return self:property()
+  if t.t == 'name' and (t.v == 'get' or t.v == 'set') and is_name_like(n) and not n.first then
+    local c = self:peek(2)
+    if is_op(c, ':') and not c.sb and c.sa then
+      return self:accessor()
+    end
+    -- `get name => ...` and `set name (v) => ...`, without the colon
+    local close = is_op(c, '(') and self:matching(self.i + 2)
+    local after = close and self.toks[close + 1] or c
+    if is_op(after, '=>') or is_op(after, '->') then
+      self:error(string.format("an accessor's name takes a ':'; write '%s %s: ...'", t.v, n.v), c)
+    end
   end
 
   if t.t == 'name' and t.v == 'meta' and not n.first then
@@ -739,49 +748,18 @@ function Parser:meta()
   return { k = 'meta', entries = tbl.entries, line = t.line, col = t.col }
 end
 
--- `property name => body` declares a read-only property, and `property name`
--- followed by a block of `get:` and `set:` any property.
-function Parser:property()
+-- `get name: value` and `set name: value` give the getter and the setter of the
+-- property `name`. The compiler pairs them up.
+function Parser:accessor()
   local t = self:advance()
   local n = self:advance()
-  local item = { k = 'property', name = n.v, name_tok = n, line = t.line, col = t.col }
-  local a = self.t
-
-  if is_op(a, '=>') and not a.first then
-    item.get = self:func(nil, a)
-  elseif is_op(a, '->') and not a.first then
-    self:error("a property's accessors are methods; use '=>'", a)
-  elseif is_op(a, '(') and not a.first then
-    self:error("a read-only property's getter takes no parameters; write 'property " .. n.v ..
-      "' with a 'set:' in its block for a setter", a)
-  elseif a.first then
-    local items = self:block(self.property_item)
-    if not items then
-      self:error("expected '=>' or an indented block with 'get:' and 'set:' after 'property " ..
-        n.v .. "'", a)
-    end
-    for _, accessor in ipairs(items) do
-      if item[accessor.k] then
-        self:error(string.format("'%s:' is given twice for the property '%s'", accessor.k, n.v),
-          accessor.tok)
-      end
-      item[accessor.k] = accessor.value
-    end
-  else
-    self:error("expected '=>' or an indented block with 'get:' and 'set:' after 'property " ..
-      n.v .. "', found " .. describe(a), a)
+  self:advance()
+  local value = self:expr()
+  if t.v == 'get' and value.k == 'Func' and #value.params > 0 then
+    self:error('a getter takes no parameters', value.params[1].tok)
   end
-  return item
-end
-
-function Parser:property_item()
-  local t, n = self.t, self:peek(1)
-  if t.t == 'name' and (t.v == 'get' or t.v == 'set') and is_op(n, ':') and not n.sb and n.sa then
-    self:advance()
-    self:advance()
-    return { k = t.v, tok = t, value = self:expr() }
-  end
-  self:error("a property's block holds only 'get:' and 'set:'", t)
+  return { k = 'accessor', kind = t.v, name = n.v, name_tok = n, value = value,
+    line = t.line, col = t.col }
 end
 
 function Parser:names(what)

@@ -48,9 +48,9 @@ describe 'howlscript-mode', ->
         'class Frob',
         'class Frob extends Bar ',
       }
-      'pending property declarations': {
-        'property size =>',
-        'property text',
+      'pending accessors': {
+        'get size: =>',
+        'set text: (text) =>',
       }
       'hanging assignments': {
         'var = ',
@@ -112,7 +112,8 @@ describe 'howlscript-mode', ->
         'iffy()'
         'dojo_style(foo)'
         'one(for_two)'
-        'property size => @n'
+        'get size: => @n'
+        'set size: (n) => @n = n'
       }
     }
 
@@ -161,7 +162,7 @@ describe 'howlscript-mode', ->
       assert.equal 2, editor.current_line.indentation
 
   describe 'structure(editor)', ->
-    it 'returns lines that match class, function, property, meta and spec declarations', ->
+    it 'returns lines that match class, function, accessor, meta and spec declarations', ->
       buffer.text = [[
 bar = -> true
 foo = ->
@@ -174,9 +175,9 @@ class Foo
     nil
   other: =>
     'this one to'
-  property size => 1
-  property text
-    get: => 'text'
+  get size: => 1
+  set text: (text) =>
+    @_text = text
   meta {
     __index: defaults
     __tostring: => 'foo'
@@ -196,9 +197,8 @@ foo = ->
 class Foo
   new: (frob) =>
   other: =>
-  property size => 1
-  property text
-    get: => 'text'
+  get size: => 1
+  set text: (text) =>
   meta {
     __tostring: => 'foo'
 class Bar

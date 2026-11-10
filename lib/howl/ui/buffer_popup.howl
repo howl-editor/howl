@@ -62,15 +62,14 @@ class BufferPopup extends Popup
     popup_opts.css_class = opts.css_class
     super(@bin, popup_opts)
 
-  property buffer
-    get: => @_buffer
-    set: (b) =>
-      @_buffer._buffer:remove_listener(@_listener)
-      @_buffer = b
-      @view.buffer = b._buffer
-      b._buffer:add_listener(@_listener)
-      @_place_view()
-      @resize()
+  get buffer: => @_buffer
+  set buffer: (b) =>
+    @_buffer._buffer:remove_listener(@_listener)
+    @_buffer = b
+    @view.buffer = b._buffer
+    b._buffer:add_listener(@_listener)
+    @_place_view()
+    @resize()
 
   -- the buffer may have changed since the popup was created or last shown
   show: (...) =>

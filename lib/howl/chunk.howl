@@ -7,20 +7,19 @@ class Chunk
     @start_pos = start_pos
     @end_pos = end_pos
 
-  property empty => @end_pos < @start_pos
+  get empty: => @end_pos < @start_pos
 
-  property text
-    get: =>
-      @_text or= @buffer:sub(@start_pos, @end_pos)
-      @_text
+  get text: =>
+    @_text or= @buffer:sub(@start_pos, @end_pos)
+    @_text
 
-    set: (text) =>
-      @buffer:as_one_undo ->
-        @delete()
-        @buffer:insert(text, @start_pos)
-        @end_pos = @start_pos + tostring(text).ulen - 1
+  set text: (text) =>
+    @buffer:as_one_undo ->
+      @delete()
+      @buffer:insert(text, @start_pos)
+      @end_pos = @start_pos + tostring(text).ulen - 1
 
-  property styles =>
+  get styles: =>
     unless @_styles
       if @empty
         @_styles = {}

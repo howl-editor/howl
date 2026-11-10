@@ -12,7 +12,7 @@ class InputStream
     @priority = priority
     @stream = UnixInputStream(@stream) if type(@stream) == 'number'
 
-  property is_closed => @stream.is_closed
+  get is_closed: => @stream.is_closed
 
   read: (num = 4096) =>
     handle = dispatch.park('input-stream-read')

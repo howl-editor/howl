@@ -454,8 +454,9 @@ hierarchy built on it converts as a unit, its root with all its subclasses, so t
 Howlscript class extends a `PropertyObject` class and no MoonScript class needs
 `@property` from a Howlscript parent, as the `Popup` chain did:
 
-- `@property x: get: => e` becomes `property x => e`.
-- A property with `get:` and `set:` becomes a `property x` block holding them:
+- `@property x: get: => e` becomes `get x: => e`.
+- A property with `get:` and `set:` becomes a `get` and a `set`, the getter first,
+  keeping the lines between them:
 
   ```moonscript
   @property text:
@@ -464,10 +465,13 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
   ```
 
   ```howl
-  property text
-    get: => @_text
-    set: (text) => @buffer:replace(text)
+  get text: => @_text
+  set text: (text) => @buffer:replace(text)
   ```
+
+- **Overrides:** a subclass's `@property` replaced both of its parent's accessors,
+  while a `get` or `set` replaces only its own and keeps the parent's other one. Howl's
+  one override, `ActionBuffer`'s `modified`, gives both, so it converts as is.
 
 - **Metamethods** go in the class's `meta`, whether they were members or given to
   `@meta {...}`. It stands where the first of them stood, with its braces on lines of

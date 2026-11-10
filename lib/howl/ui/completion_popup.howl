@@ -18,8 +18,8 @@ class CompletionPopup extends MenuPopup
     @items = {}
     super({}, (...) -> @_on_completed(...))
 
-  property position => @completer and @completer.start_pos or nil
-  property empty => #@items == 0
+  get position: => @completer and @completer.start_pos or nil
+  get empty: => #@items == 0
 
   complete: =>
     return if @showing

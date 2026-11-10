@@ -90,13 +90,13 @@ describe 'Howlscript lexer', ->
   it 'lexes class definition names as type_def', ->
     assert.same { 'Foo' }, result "class Foo extends Bar", 'type_def'
 
-  describe 'property declarations', ->
-    it 'lex property as preproc and the name as a key', ->
-      assert.same { 'property', 'size' }, result "  property size => 1", 'preproc', 'key'
-      assert.same { 'property', 'text', 'get:' }, result "  property text\n    get: => 1", 'preproc', 'key'
+  describe 'accessors', ->
+    it 'lex get and set as preproc and the name as a key', ->
+      assert.same { 'get', 'size:' }, result "  get size: => 1", 'preproc', 'key'
+      assert.same { 'set', 'text:' }, result "  set text: (t) => @_t = t", 'preproc', 'key'
 
-    it 'leave other uses of property alone', ->
-      assert.same {}, result "@property(x: 1)\nproperty = 1\nf(property, x)\nproperty x, y", 'preproc', 'keyword'
+    it 'leave other uses of get and set alone', ->
+      assert.same {}, result "get: (k) => 1\n@set(x: 1)\nget = 1\nf(get, x)\nget x, y\nt.set x: 1\nset x:y()", 'preproc', 'keyword'
 
   describe 'meta', ->
     it 'is lexed as preproc before a table', ->
