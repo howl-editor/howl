@@ -440,11 +440,13 @@ describe 'convert', ->
         class X
           new:  => @y = f a , b,  c
           m: ->  x
+          n: (a,b = {},  ...) => a
         x  = 1
       ]], [[
         class X
           new: => @y = f(a, b, c)
           m: -> x
+          n: (a, b = {}, ...) => a
         x = 1
       ]])
 
@@ -457,6 +459,94 @@ describe 'convert', ->
         x = [a for a in *t if a > 0]
         print(a) for a in *t if a
       ]])
+
+    describe 'an if value whose then value cannot be false or nil', ->
+      it 'becomes and and or', ->
+        converts([[
+          x = if c then 'a' else f y
+          y = if a or b
+            1
+          else
+            {2}
+          z = unless a == b then "#{c}" else 'd'
+          w = if not a or b then 'e' else 'f'
+          f = -> return if c then 1 else 2
+        ]], [[
+          x = c and 'a' or f(y)
+          y = (a or b) and 1 or {2}
+          z = not (a == b) and "#{c}" or 'd'
+          w = (not a or b) and 'e' or 'f'
+          f = -> return c and 1 or 2
+        ]])
+
+      it 'becomes and and or inside an expression, in parentheses as an operand', ->
+        converts([[
+          t = {text: if c then 'a' else 'b'}
+          s = 'x' .. if c then 'a' else 'b'
+        ]], [[
+          t = {text: c and 'a' or 'b'}
+          s = 'x' .. (c and 'a' or 'b')
+        ]])
+
+      it 'becomes and and or ending a function, or returned from a branch', ->
+        converts([[
+          f = (c) ->
+            if c
+              'yes'
+            else
+              'no'
+          g = (c) ->
+            if c
+              if d then 1 else 2
+            else
+              h!
+        ]], [[
+          f = (c) ->
+            c and 'yes' or 'no'
+          g = (c) ->
+            if c
+              return d and 1 or 2
+            else
+              return h()
+        ]])
+
+      it 'stays an if when its then value may be false or nil, or it has comments', ->
+        converts([[
+          x = if c then f! else 'b'
+          y = if c
+            'a' -- why
+          else
+            'b'
+        ]], [[
+          local x
+          if c
+            x = f()
+          else
+            x = 'b'
+          local y
+          if c
+            y = 'a' -- why
+          else
+            y = 'b'
+        ]])
+
+      it 'stays an if without an else, or when the line would be over 100 columns', ->
+        converts([[
+          x = if c then 'a'
+          y = if c
+            'a long string, which with the else value below makes for a long line'
+          else
+            'and another long string'
+        ]], [[
+          local x
+          if c
+            x = 'a'
+          local y
+          if c
+            y = 'a long string, which with the else value below makes for a long line'
+          else
+            y = 'and another long string'
+        ]])
 
     it 'declares the names assigned an if value and assigns them in its branches', ->
       converts([[
@@ -650,6 +740,10 @@ describe 'convert', ->
         x = if a
           for y in *t
             y
+      ]])
+      assert.same {'a loop as a value'}, warnings_for([[
+        x = for y in *t
+          y
       ]])
       assert.same {'a loop returned as a value'}, warnings_for([[
         f = -> return for y in *t do y

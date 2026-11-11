@@ -380,6 +380,27 @@ A long string with a level becomes one without, `[==[text]==]` becoming
 
 - `else if c then x` becomes `elseif c then x`.
 - A `when` filter in a comprehension or `for` modifier becomes `if`.
+- **A simple `if` value becomes `and` and `or`** (decided 2026-11-11), wherever its
+  value is used: assigned, returned, ending a function, or inside an expression,
+  where it gets parentheses as an operand. That's an `if` or `unless` with an
+  `else` and no `elseif`, each branch a single expression on one line, whose `then`
+  value can't be false or nil, being a string, number, table or function literal,
+  arithmetic or `true`. The `c and a or b` it becomes must fit in 100 columns, and
+  the `if` must hold no comments. A condition with an `or` outside parentheses gets
+  them, as does an `unless` condition after its `not`:
+
+  ```moonscript
+  text: if l.nr == last_lnr then '·' else tostring l.nr
+  x = if not a or b then 'y' else z
+  ```
+
+  ```howl
+  text: l.nr == last_lnr and '·' or tostring(l.nr)
+  x = (not a or b) and 'y' or z
+  ```
+
+  Any other `if` value becomes an `if` statement, as below.
+
 - **`if` as a value:** the names are declared before the `if`, and each branch
   assigns them. A field needs no declaration, and a branch already ending in an
   assignment keeps it, as MoonScript drops the outer one there (`Chunk`'s
@@ -428,7 +449,7 @@ A long string with a level becomes one without, `[==[text]==]` becoming
     left = before
   ```
 
-  An `if` value inside an expression, as a table entry, an argument or a list
+  Any other `if` value inside an expression, as a table entry, an argument or a list
   element, goes into a local declared just before the statement and assigned in each
   branch, and the expression uses the local. It's named after the key it fills, as
   `:text` in `HelpContext`'s `add_section`, or the parameter it's passed for, unless
@@ -711,7 +732,8 @@ reports both:
 
 - `export`, and `setfenv` modules (see [Globals](#globals));
 - loops as values, warned about, and comprehensions with two `for`s;
-- `if` and `switch` values inside expressions, as in an argument;
+- `if` values inside expressions not simple enough for `and` and `or`, and `switch`
+  values inside expressions;
 - expressions kept for their effect;
 - parameters and loop variables shadowing a local;
 - assignments in `if` and `with` headers.

@@ -452,6 +452,7 @@ local STMT = { stmt = true }
 local VALUE = {}
 local LIST = { in_list = true }
 local ARG = { in_list = true, arg = true }
+local OPERAND = { operand = true }
 
 local Conv = {}
 Conv.__index = Conv
@@ -714,7 +715,11 @@ function Conv:splice(node, opts)
       pos = ke + 1
     end
   end
-  out[#out + 1] = self:gap(pos, e)
+  local rest = self:gap(pos, e)
+  if opts.list and #out > 0 then
+    rest = gsub(rest, '^[ \t]*,[ \t]*([^%s])', ', %1') -- as before a trailing ...
+  end
+  out[#out + 1] = rest
   return concat(out)
 end
 
@@ -808,11 +813,121 @@ local function tail_prefix(tail)
   return tail.targets .. ' = '
 end
 
+local ARITHMETIC = {
+  ['+'] = true, ['-'] = true, ['*'] = true, ['/'] = true, ['%'] = true,
+  ['^'] = true, ['..'] = true,
+}
+
+-- Whether an expression has an `or` outside parentheses, as Lua reads its text.
+-- MoonScript's tree puts `not` and unary minus around the whole of `a or b` in
+-- `not a or b`, which it writes out as it is, for Lua to read as `(not a) or b`.
+local function has_open_or(node)
+  if type(node) ~= 'table' then return false end
+  local kind = node[1]
+  if kind == 'exp' then
+    for i = 2, #node do
+      local part = node[i]
+      if part == 'or' or (i % 2 == 0 and has_open_or(part)) then return true end
+    end
+  elseif kind == 'not' or kind == 'minus' or kind == 'length' then
+    return has_open_or(node[2])
+  end
+  return false
+end
+
+-- whether a value can't be false or nil
+local function never_falsy(node)
+  if type(node) ~= 'table' or has_open_or(node) then return false end
+  local kind = node[1]
+  if kind == 'string' or kind == 'number' or kind == 'table' or kind == 'fndef'
+    or kind == 'comprehension' or kind == 'tblcomprehension' or kind == 'length'
+    or kind == 'minus'
+  then
+    return true
+  elseif kind == 'ref' then
+    return node[2] == 'true'
+  elseif kind == 'parens' then
+    return never_falsy(node[2])
+  elseif kind == 'exp' then
+    for i = 3, #node, 2 do
+      if not ARITHMETIC[node[i]] then return false end
+    end
+    return true
+  end
+  return false
+end
+
+-- the single expression on one line that a branch body consists of, or nil
+function Conv:branch_value(body)
+  local stmts = self:kids(body)
+  local value = stmts[1]
+  if #stmts ~= 1 or not VALUE_KINDS[value[1]] or value[1] == 'explist'
+    or value[1] == 'with'
+  then
+    return nil
+  end
+  local span = self.spans[value]
+  if not self:same_line(span[1], span[2]) then return nil end
+  return value
+end
+
+local MAX_LINE = 100
+
+-- An if value with a then branch whose value can't be false or nil and an else
+-- branch, each a single expression, as `c and a or b`, when that fits on its line.
+-- Returns nil for any other if.
+function Conv:and_or(node)
+  local else_branch = node[4]
+  if #node ~= 4 or else_branch[1] ~= 'else' then return nil end
+  local cond = node[2]
+  if type(cond) ~= 'table' or cond[1] == 'assign' then return nil end
+  local a = self:branch_value(node[3])
+  if not a or not never_falsy(a) then return nil end
+  local b = self:branch_value(else_branch[2])
+  if not b then return nil end
+  -- comments in it would be lost
+  local span = self.spans[node]
+  for i = span[1], span[2] do
+    if self.kinds[i] == 'c' then return nil end
+  end
+
+  local cond_text = self:render(cond)
+  if node[1] == 'unless' then
+    if cond[1] == 'exp' or cond[1] == 'not' then cond_text = '(' .. cond_text .. ')' end
+    cond_text = 'not ' .. cond_text
+  elseif has_open_or(cond) then
+    cond_text = '(' .. cond_text .. ')' -- as and binds tighter than or
+  end
+  local value_ctx = { after_prefix = true }
+  local text = cond_text .. ' and ' .. self:render(a, value_ctx) .. ' or '
+    .. self:render(b, value_ctx)
+
+  -- the line it ends up on: the code before the if on its first line, and after it
+  -- on its last
+  local before = span[1] - self.line_starts[self:line_of(span[1])]
+  local line_end = find(self.src, '\n', span[2], true) or #self.src + 1
+  if find(text, '\n') or before + #text + (line_end - 1 - span[2]) > MAX_LINE then
+    return nil
+  end
+  return text
+end
+
 -- Renders the last statement of a block whose value is returned or assigned.
 function Conv:render_tail(stmt, tail, stmt_ctx)
   local kind = stmt[1]
+  if kind == 'if' or kind == 'unless' then
+    local text = self:and_or(stmt)
+    if text then
+      -- the last statement of a function or file passes its value on as it is
+      if tail.kind == 'return' and tail.top then return text end
+      return tail_prefix(tail) .. text
+    end
+  end
   if kind == 'if' or kind == 'unless' or kind == 'switch' or kind == 'do' then
-    return self:render(stmt, { stmt = true, tail = tail })
+    -- a nested block ending in a value returns it explicitly
+    local inner = tail
+    if tail.top then inner = { kind = tail.kind } end
+    return self:render(stmt, { stmt = true, tail = inner })
   elseif kind == 'decorated' then
     local dkind = stmt[3][1]
     if (dkind == 'if' or dkind == 'unless') and VALUE_KINDS[stmt[2][1]] then
@@ -853,6 +968,16 @@ function Conv:keyword_end(pos)
 end
 
 handlers['if'] = function(self, node, ctx)
+  if not ctx.stmt then
+    -- an if value inside an expression, which is left to the compiler to reject
+    -- when it isn't simple enough for and and or
+    local text = self:and_or(node)
+    if text then
+      if ctx.operand then return '(' .. text .. ')' end
+      return text
+    end
+  end
+
   local tail = ctx.tail
   local branches = {}
 
@@ -1012,6 +1137,12 @@ handlers.tblcomprehension = check_clauses
 handlers.assign = function(self, node, ctx)
   local values = node[3]
   local value = values[1]
+  for _, v in ipairs(values) do
+    local kind = type(v) == 'table' and v[1]
+    if kind == 'for' or kind == 'foreach' or kind == 'while' then
+      self:warn(self.spans[node][1], 'a loop as a value')
+    end
+  end
   if #values == 1 and type(value) == 'table'
     and (value[1] == 'if' or value[1] == 'unless' or value[1] == 'switch')
   then
@@ -1020,6 +1151,8 @@ handlers.assign = function(self, node, ctx)
       return self:splice(node)
     end
     local targets = self:render(node[2])
+    local simple = value[1] ~= 'switch' and self:and_or(value)
+    if simple then return targets .. ' = ' .. simple end
     local new = self.new_names[node] or {}
     local nils = self.nil_names[node] or {}
     local declared, all_new = {}, true
@@ -1057,7 +1190,10 @@ handlers['return'] = function(self, node)
   if type(explist) == 'table' and #explist == 2 and type(explist[2]) == 'table' then
     local value = explist[2]
     local kind = value[1]
-    if kind == 'if' or kind == 'unless' or kind == 'switch' then
+    local simple = (kind == 'if' or kind == 'unless') and self:and_or(value)
+    if simple then
+      return 'return ' .. simple
+    elseif kind == 'if' or kind == 'unless' or kind == 'switch' then
       return self:render(value, { stmt = true, tail = { kind = 'return', explicit = true } })
     elseif kind == 'for' or kind == 'foreach' or kind == 'while' then
       self:warn(self.spans[node][1], 'a loop returned as a value')
@@ -1134,7 +1270,7 @@ handlers.fndef = function(self, node, ctx)
     to = arrow_end,
     render = function(kid)
       if kid == params then
-        return self:splice(params, { render = render_param })
+        return self:splice(params, { list = true, render = render_param })
       end
     end,
   })
@@ -1146,7 +1282,7 @@ handlers.fndef = function(self, node, ctx)
   local stmts = body_span and self:kids(body) or {}
   local last = stmts[#stmts]
   if last and COMPOUND[last[1]] and not is_new and not is_setter then
-    fn_opts.tail = { kind = 'return' }
+    fn_opts.tail = { kind = 'return', top = true }
   end
   if is_new and ctx.drop_super then fn_opts.drop = is_super_call end
 
@@ -1553,7 +1689,7 @@ handlers.exp = function(self, node)
       end
     end
     out[#out + 1] = gap
-    out[#out + 1] = self:render(kid)
+    out[#out + 1] = self:render(kid, OPERAND)
     pos = ke + 1
     prev_end = ke
   end
@@ -1774,7 +1910,7 @@ function Conv:render_file()
       opts.tail = { kind = 'return' }
     end
   elseif last and COMPOUND[last[1]] then
-    opts.tail = { kind = 'return' }
+    opts.tail = { kind = 'return', top = true }
   end
   local text = self:render_block(tree, opts)
   text = self:gap(1, self.spans[tree][1] - 1) .. text .. self:gap(self.spans[tree][2] + 1, #self.src)
