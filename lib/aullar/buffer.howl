@@ -5,7 +5,6 @@ ffi = require('ffi')
 bit = require('bit')
 ffi_string, ffi_copy = ffi.string, ffi.copy
 {:max, :min, :ceil} = math
-{:define_class} = require('aullar.util')
 Styling = require('aullar.styling')
 Offsets = require('aullar.offsets')
 Markers = require('aullar.markers')
@@ -102,7 +101,7 @@ change_sink = (start_offset, count) ->
       true
   }
 
-Buffer = {
+class Buffer
   new: (text = '') =>
     @listeners = setmetatable({}, __mode: 'v')
     @_style_listener = {on_changed: (...) -> self:_on_style_changed(...)}
@@ -116,70 +115,62 @@ Buffer = {
     @_collect_revisions = true
     @read_only = false
 
-  properties: {
-    size: => tonumber(@text_buffer.size)
-    length: => tonumber(@_length)
-    can_undo: => #@revisions > 0
-    collect_revisions: {
-      get: => @_collect_revisions
-      set: (v) =>
-        if v != @_collect_revisions
-          @_collect_revisions = v
-          return @revisions:clear() unless v
-    }
+  get size: => tonumber(@text_buffer.size)
+  get length: => tonumber(@_length)
+  get can_undo: => #@revisions > 0
+  get collect_revisions: => @_collect_revisions
+  set collect_revisions: (v) =>
+    if v != @_collect_revisions
+      @_collect_revisions = v
+      return @revisions:clear() unless v
 
-    nr_lines: =>
-      unless @_nr_lines
-        @_scan_lines_to {}
-        @_nr_lines = @_last_scanned_line
+  get nr_lines: =>
+    unless @_nr_lines
+      @_scan_lines_to {}
+      @_nr_lines = @_last_scanned_line
 
-      @_nr_lines
+    @_nr_lines
 
-    lexer: {
-      get: => @_lexer
-      set: (lexer) =>
-        @_lexer = lexer
-        @styling:invalidate_from(1)
-        last_viewable_line = @_get_last_viewable_line()
-        if last_viewable_line > 0
-          return @ensure_styled_to(line: last_viewable_line)
-    }
+  get lexer: => @_lexer
+  set lexer: (lexer) =>
+    @_lexer = lexer
+    @styling:invalidate_from(1)
+    last_viewable_line = @_get_last_viewable_line()
+    if last_viewable_line > 0
+      return @ensure_styled_to(line: last_viewable_line)
 
-    text: {
-      get: => @tostring()
-      set: (text) =>
-        @_ensure_writable()
-        old_text = @text_buffer and @tostring()
-        size = #text
-        -- +1 on styling size to account for dangling virtual line
-        if @text_buffer
-          @text_buffer:set(text, size)
-          @styling:reset(size + 1)
-        else
-          @text_buffer = GapBuffer('unsigned char', size, initial: text)
-          @styling = Styling(size + 1, @_style_listener)
+  get text: => @tostring()
+  set text: (text) =>
+    @_ensure_writable()
+    old_text = @text_buffer and @tostring()
+    size = #text
+    -- +1 on styling size to account for dangling virtual line
+    if @text_buffer
+      @text_buffer:set(text, size)
+      @styling:reset(size + 1)
+    else
+      @text_buffer = GapBuffer('unsigned char', size, initial: text)
+      @styling = Styling(size + 1, @_style_listener)
 
-        @markers:remove()
-        @_last_scanned_line = 0
-        @_lines = {}
-        @offsets = Offsets()
-        @_length = @offsets:char_offset(@text_buffer, @text_buffer.size)
-        @multibyte = @text_buffer.size != @_length
+    @markers:remove()
+    @_last_scanned_line = 0
+    @_lines = {}
+    @offsets = Offsets()
+    @_length = @offsets:char_offset(@text_buffer, @text_buffer.size)
+    @multibyte = @text_buffer.size != @_length
 
-        @as_one_undo ->
-          if old_text
-            @_on_modification('deleted', 1, {
-              text: old_text,
-              size: #old_text,
-              invalidate_offset: 1
-            })
-          @_on_modification('inserted', 1, {
-            text: text,
-            :size,
-            invalidate_offset: 1
-          })
-    }
-  }
+    @as_one_undo ->
+      if old_text
+        @_on_modification('deleted', 1, {
+          text: old_text,
+          size: #old_text,
+          invalidate_offset: 1
+        })
+      @_on_modification('inserted', 1, {
+        text: text,
+        :size,
+        invalidate_offset: 1
+      })
 
   add_listener: (listener) =>
     @_clean_listeners()
@@ -700,8 +691,4 @@ Buffer = {
     if @read_only
       return error("Attempt to modify read-only buffer", 2)
 
-}
-
-return define_class(Buffer, {
-  __tostring: (b) -> b:tostring()
-})
+  meta {__tostring: => @tostring()}

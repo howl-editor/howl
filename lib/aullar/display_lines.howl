@@ -2,7 +2,6 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 flair = require('aullar.flair')
-{:define_class} = require('aullar.util')
 styles = require('aullar.styles')
 Pango = require('ljglibs.pango')
 {:Layout, :AttrList, :SCALE} = Pango
@@ -208,7 +207,7 @@ LinesMt = {
     nil
 }
 
-DisplayLine = define_class {
+class DisplayLine
   new: (display_lines, view, buffer, pango_context, line, default_font_desc) =>
     @display_lines = display_lines
     @view = view
@@ -268,46 +267,44 @@ DisplayLine = define_class {
 
       @_full_background = full and range.end_offset > line.full_size
 
-  properties: {
-    block: =>
-      if not @_block and @_full_background
-        @_block = get_block(@display_lines, @)
+  get block: =>
+    if not @_block and @_full_background
+      @_block = get_block(@display_lines, @)
 
-      @_block
+    @_block
 
-    prev: =>
-      @nr > 1 and @display_lines[@nr - 1] or nil
+  get prev: =>
+    @nr > 1 and @display_lines[@nr - 1] or nil
 
-    next: =>
-      @display_lines[@nr + 1]
+  get next: =>
+    @display_lines[@nr + 1]
 
-    lines: =>
-      unless @_lines
-        @_lines = {}
-        iter = @layout.iter
-        nr = 1
-        while true
-          layout_line = iter.line_readonly
-          _, extents = layout_line:get_pixel_extents()
-          line_start = layout_line.start_index + 1
-          line_end = layout_line.length + line_start
-          line_end -= 1 unless iter.at_last_line
-          @_lines[#@_lines + 1] = {
-            :nr,
-            :line_start,
-            :line_end,
-            :extents,
-            baseline: iter.baseline / SCALE
-            height: layout_line:get_height() / SCALE
+  get lines: =>
+    unless @_lines
+      @_lines = {}
+      iter = @layout.iter
+      nr = 1
+      while true
+        layout_line = iter.line_readonly
+        _, extents = layout_line:get_pixel_extents()
+        line_start = layout_line.start_index + 1
+        line_end = layout_line.length + line_start
+        line_end -= 1 unless iter.at_last_line
+        @_lines[#@_lines + 1] = {
+          :nr,
+          :line_start,
+          :line_end,
+          :extents,
+          baseline: iter.baseline / SCALE
+          height: layout_line:get_height() / SCALE
 
-          }
-          nr += 1
-          break unless iter:next_line()
+        }
+        nr += 1
+        break unless iter:next_line()
 
-        setmetatable(@_lines, __index: LinesMt)
+      setmetatable(@_lines, __index: LinesMt)
 
-      @_lines
-  }
+    @_lines
 
   refresh: =>
     @_flairs = nil
@@ -367,7 +364,6 @@ DisplayLine = define_class {
       cr:restore()
 
     cr:restore() if base_x > 0
-}
 
 get_wrap_indicator = (pango_context, view) ->
   layout = Layout(pango_context)

@@ -2,7 +2,6 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 flair = require('aullar.flair')
-{:define_class} = require('aullar.util')
 
 flair.define('current_line', {
   type: flair.RECTANGLE,
@@ -15,7 +14,7 @@ flair.define('current_line_overlay', {
   foreground: '#a3a3a3'
 })
 
-CurrentLineMarker = {
+class CurrentLineMarker
   new: (view) =>
     @view = view
 
@@ -50,6 +49,3 @@ CurrentLineMarker = {
 
       for range in *bg_ranges
         flair.draw(overlay_flair, display_line, range.start_offset, range.end_offset, x, y, cr)
-}
-
-return define_class(CurrentLineMarker)

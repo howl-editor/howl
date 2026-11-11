@@ -2,7 +2,6 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require('ffi')
-{:define_class} = require('aullar.util')
 Pango = require('ljglibs.pango')
 {:RGBA} = require('ljglibs.gdk')
 Layout = Pango.Layout
@@ -13,8 +12,7 @@ ffi_cast = ffi.cast
 int_t = ffi.typeof('int')
 cairo_t = ffi.typeof('cairo_t *')
 
-return define_class {
-
+class Gutter
   new: (view, config) =>
     @view = view
     @number_chars = 0
@@ -25,15 +23,11 @@ return define_class {
     @reconfigure(config)
     @sync(view)
 
-  properties: {
-    visible: {
-      get: => @area.visible
-      set: (visible) => @area.visible = visible
-    }
+  get visible: => @area.visible
+  set visible: (visible) => @area.visible = visible
 
-    -- includes the theme's padding around the numbers
-    width: => @area:measure(Gtk.ORIENTATION_HORIZONTAL, -1).natural
-  }
+  -- includes the theme's padding around the numbers
+  get width: => @area:measure(Gtk.ORIENTATION_HORIZONTAL, -1).natural
 
   sync: =>
     return unless @area.visible
@@ -102,4 +96,3 @@ return define_class {
       cr:move_to(0, y + (line_height - text_height) / 2)
       pango_cairo.show_layout(cr, layout)
       y += total_height + 1
-}

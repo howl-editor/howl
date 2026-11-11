@@ -1,7 +1,6 @@
 -- Copyright 2015-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:define_class} = require('aullar.util')
 GapBuffer = require('aullar.gap_buffer')
 Markers = require('aullar.markers')
 append = table.insert
@@ -30,7 +29,7 @@ get_sub_style_end = (sub_start_offset, styling) ->
       sub_end = get_sub_style_end(sub_start_offset + styling[i - 2] - 1, styling[i - 1])
       return sub_end if sub_end
 
-return define_class {
+class Styling
   new: (size, listener) =>
     @listener = listener
     @style_buffer = GapBuffer('uint16_t', size)
@@ -213,4 +212,3 @@ return define_class {
 
     if end_offset and (end_offset <= 0 or end_offset > @style_buffer.size)
       return error("Styling: Illegal end_offset #{end_offset}", 3)
-}

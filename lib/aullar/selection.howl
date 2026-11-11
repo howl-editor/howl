@@ -2,7 +2,6 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:max, :min, :abs} = math
-{:define_class} = require('aullar.util')
 flair = require('aullar.flair')
 
 flair.define('selection', {
@@ -19,42 +18,36 @@ flair.define('selection_overlay', {
   min_width: 'letter'
 })
 
-Selection = {
+class Selection
   new: (view) =>
     @view = view
     @_anchor = nil
     @_end_pos = nil
     @persistent = false
 
-  properties: {
-    is_empty: => (@_anchor == nil) or (@_anchor == @_end_pos)
+  get is_empty: => (@_anchor == nil) or (@_anchor == @_end_pos)
 
-    size: =>
-      return 0 if @is_empty
-      abs(@_anchor - @_end_pos)
+  get size: =>
+    return 0 if @is_empty
+    abs(@_anchor - @_end_pos)
 
-    anchor: {
-      get: => @_anchor
-      set: (anchor) =>
-        return if anchor == @_anchor
+  get anchor: => @_anchor
+  set anchor: (anchor) =>
+    return if anchor == @_anchor
 
-        error("Can't set anchor when selection is empty", 2) if @is_empty
-        @_anchor = anchor
-        @_refresh_display()
-        @_notify_change()
-    }
+    error("Can't set anchor when selection is empty", 2) if @is_empty
+    @_anchor = anchor
+    @_refresh_display()
+    @_notify_change()
 
-    end_pos: {
-      get: => @_end_pos
-      set: (end_pos) =>
-        return if end_pos == @_end_pos
+  get end_pos: => @_end_pos
+  set end_pos: (end_pos) =>
+    return if end_pos == @_end_pos
 
-        error("Can't set end_pos when selection is empty", 2) if @is_empty
-        @_end_pos = end_pos
-        @_refresh_display()
-        @_notify_change()
-    }
-  }
+    error("Can't set end_pos when selection is empty", 2) if @is_empty
+    @_end_pos = end_pos
+    @_refresh_display()
+    @_notify_change()
 
   set: (anchor, end_pos) =>
     return if anchor == @_anchor and end_pos == @_end_pos
@@ -134,6 +127,3 @@ Selection = {
   _refresh_display: =>
     start_offset, end_offset = @range()
     @view:refresh_display(from_offset: start_offset or 1, to_offset: end_offset)
-}
-
-return define_class(Selection)

@@ -1,7 +1,6 @@
 -- Copyright 2014-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:define_class} = require('aullar.util')
 config = require('aullar.config')
 {:remove} = table
 {:max} = math
@@ -28,16 +27,14 @@ coalesce = (entry, prev) ->
 
 VALID_TYPES = {t,true for t in *{'inserted', 'deleted', 'changed'}}
 
-return define_class({
+class Revisions
   new: =>
     @clear()
     @processing = false
     @_revision_id = 0
 
-  properties: {
-    last: => @entries[@current]
-    revision_id: => @last and @last.revision_id or 0
-  }
+  get last: => @entries[@current]
+  get revision_id: => @last and @last.revision_id or 0
 
   push: (type, offset, text, opts = {}) =>
     unless VALID_TYPES[type]
@@ -156,6 +153,4 @@ return define_class({
 
       @count -= 1
 
-}, {
-  __len: => @count
-})
+  meta {__len: => @count}

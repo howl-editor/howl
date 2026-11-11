@@ -1,7 +1,6 @@
 -- Copyright 2015-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:define_class} = require('aullar.util')
 {:insert, :remove} = table
 
 selector_matches = (selector, marker) ->
@@ -12,7 +11,7 @@ selector_matches = (selector, marker) ->
 
   true
 
-return define_class {
+class Markers
   new: (listener) =>
     @listener = listener
     @markers = {}
@@ -119,5 +118,3 @@ return define_class {
     if @listener and #markers > 0
       handler = @listener["on_markers_#{what}"]
       return handler(@listener, markers) if handler
-
-}

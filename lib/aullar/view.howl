@@ -22,7 +22,6 @@ Gutter = require('aullar.gutter')
 CurrentLineMarker = require('aullar.current_line_marker')
 config = require('aullar.config')
 
-{:define_class} = require('aullar.util')
 {:construct_key_event} = require('ljglibs.util')
 {:max, :min, :floor} = math
 
@@ -53,7 +52,7 @@ translate_mouse_event = (g_click, n_press, x, y) ->
 
 text_cursor = Gdk.Cursor.new_from_name('text')
 
-View = {
+class View
   new: (buffer = Buffer(''), opts = {}) =>
     @opts = opts
     -- @debug = true
@@ -160,127 +159,110 @@ View = {
     @buffer = buffer
     @config:add_listener((...) -> self:_on_config_changed(...))
 
-  properties: {
+  get showing: => @height != nil
+  get has_focus: => @focus_controller.contains_focus
 
-    showing: => @height != nil
-    has_focus: => @focus_controller.contains_focus
+  get can_focus: => @d_area.can_focus
+  set can_focus: (v) =>
+    @d_area.can_focus = v
+    @d_area.focusable = v
 
-    can_focus: {
-      get: => @d_area.can_focus
-      set: (v) =>
-        @d_area.can_focus = v
-        @d_area.focusable = v
-    }
+  get gutter_width: => @config.view_show_line_numbers and @gutter.width or 0
 
-    gutter_width: => @config.view_show_line_numbers and @gutter.width or 0
+  get first_visible_line: => @_first_visible_line
+  set first_visible_line: (line) => @scroll_to(line)
 
-    first_visible_line: {
-      get: => @_first_visible_line
-      set: (line) => @scroll_to(line)
-    }
+  get middle_visible_line: =>
+    return @_first_visible_line unless @height
+    y = 0
+    middle = @height / 2
 
-    middle_visible_line: {
-      get: =>
-        return @_first_visible_line unless @height
-        y = 0
-        middle = @height / 2
+    for line = @_first_visible_line, @_last_visible_line
+      d_line = @display_lines[line]
+      y += d_line.height + 1
+      return line if y >= middle
 
-        for line = @_first_visible_line, @_last_visible_line
-          d_line = @display_lines[line]
-          y += d_line.height + 1
-          return line if y >= middle
+    @_last_visible_line
 
-        @_last_visible_line
+  set middle_visible_line: (line) =>
+    return unless @height
+    y = @height / 2
+    for nr = line, 1, -1
+      d_line = @display_lines[nr]
+      y -= d_line.height + 1
+      if y <= 0 or nr == 1
+        @first_visible_line = nr
+        break
 
-      set: (line) =>
-        return unless @height
-        y = @height / 2
-        for nr = line, 1, -1
-          d_line = @display_lines[nr]
-          y -= d_line.height + 1
-          if y <= 0 or nr == 1
-            @first_visible_line = nr
-            break
-    }
+  get last_visible_line: =>
+    unless @_last_visible_line
+      return @_first_visible_line unless @height
+      @_last_visible_line = 1
 
-    last_visible_line: {
-      get: =>
-        unless @_last_visible_line
-          return @_first_visible_line unless @height
-          @_last_visible_line = 1
+      y = 0
+      for line in @_buffer:lines(@_first_visible_line)
+        d_line = @display_lines[line.nr]
+        break if y + d_line.height + 1 > @height
+        @_last_visible_line = line.nr
+        y += d_line.height + 1
 
-          y = 0
-          for line in @_buffer:lines(@_first_visible_line)
-            d_line = @display_lines[line.nr]
-            break if y + d_line.height + 1 > @height
-            @_last_visible_line = line.nr
-            y += d_line.height + 1
+      -- +1 for last visible, since next line might be partially shown
+      @display_lines:set_window(@_first_visible_line, @_last_visible_line + 1)
 
-          -- +1 for last visible, since next line might be partially shown
-          @display_lines:set_window(@_first_visible_line, @_last_visible_line + 1)
+    @_last_visible_line
 
-        @_last_visible_line
+  set last_visible_line: (line) =>
+    return unless @showing
 
-      set: (line) =>
-        return unless @showing
+    last_line_height = @display_lines[line].height
+    available = @height - last_line_height
+    first_visible = line
 
-        last_line_height = @display_lines[line].height
-        available = @height - last_line_height
-        first_visible = line
+    while first_visible > 1
+      prev_d_line = @display_lines[first_visible - 1]
+      break if (available - prev_d_line.height) < 0
+      available -= prev_d_line.height + 1
+      first_visible -= 1
 
-        while first_visible > 1
-          prev_d_line = @display_lines[first_visible - 1]
-          break if (available - prev_d_line.height) < 0
-          available -= prev_d_line.height + 1
-          first_visible -= 1
+    @scroll_to(first_visible)
+    -- we don't actually set @_last_visible_line here as it
+    -- will be set by the actuall scrolling
 
-        @scroll_to(first_visible)
-        -- we don't actually set @_last_visible_line here as it
-        -- will be set by the actuall scrolling
-    }
+  get y_scroll_offset: => @_y_scroll_offset
+  set y_scroll_offset: (offset) =>
+    @_y_scroll_offset = offset
+    if @_y_scroll_offset < -1 or @_y_scroll_offset > 1
+      @first_visible_line = max(@first_visible_line + floor(@_y_scroll_offset), 1)
+      @_y_scroll_offset = 0
 
-    y_scroll_offset: {
-      get: => @_y_scroll_offset
-      set: (offset) =>
-        @_y_scroll_offset = offset
-        if @_y_scroll_offset < -1 or @_y_scroll_offset > 1
-          @first_visible_line = max(@first_visible_line + floor(@_y_scroll_offset), 1)
-          @_y_scroll_offset = 0
-    }
+  get lines_showing: =>
+    @last_visible_line - @first_visible_line + 1
 
-    lines_showing: =>
-      @last_visible_line - @first_visible_line + 1
+  get base_x: => @_base_x
+  set base_x: (x) =>
+    return if @width == 0
+    x = floor(max(0, x))
+    return if x == @_base_x
+    @_base_x = x
+    @_sync_scrollbars(horizontal: true)
+    @_draw()
 
-    base_x: {
-      get: => @_base_x
-      set: (x) =>
-        return if @width == 0
-        x = floor(max(0, x))
-        return if x == @_base_x
-        @_base_x = x
-        @_sync_scrollbars(horizontal: true)
-        @_draw()
-    }
+  get buffer: => @_buffer
+  set buffer: (buffer) =>
+    if @_buffer
+      @_buffer:remove_listener(@_buffer_listener)
+      @cursor.pos = 1
+      @selection:clear()
 
-    buffer: {
-      get: => @_buffer
-      set: (buffer) =>
-        if @_buffer
-          @_buffer:remove_listener(@_buffer_listener)
-          @cursor.pos = 1
-          @selection:clear()
+    @_buffer = buffer
+    buffer:add_listener(@_buffer_listener)
 
-        @_buffer = buffer
-        buffer:add_listener(@_buffer_listener)
-
-        @last_edit_pos = nil
-        @_first_visible_line = 1
-        @_base_x = 0
-        @_reset_display()
-        buffer:ensure_styled_to(line: @last_visible_line + 1)
-        @_draw()
-    }
-  }
+    @last_edit_pos = nil
+    @_first_visible_line = 1
+    @_base_x = 0
+    @_reset_display()
+    buffer:ensure_styled_to(line: @last_visible_line + 1)
+    @_draw()
 
   grab_focus: =>
     @d_area:grab_focus() if @d_area.can_focus
@@ -978,6 +960,3 @@ View = {
 
     elseif option:match('^view_')
       return @_reset_display()
-}
-
-return define_class(View)

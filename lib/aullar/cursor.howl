@@ -37,7 +37,6 @@ flair.define_default('inactive_cursor', {
 })
 
 {:max, :min, :abs} = math
-{:define_class} = require('aullar.util')
 
 timer_callback = callbacks.source_func
 
@@ -47,7 +46,7 @@ is_showing_line = (view, line) ->
 pos_is_in_line = (pos, line) ->
   pos >= line.start_offset and (pos <= line.end_offset or not line.has_eol)
 
-Cursor = {
+class Cursor
   new: (view, selection) =>
     @view = view
     @selection = selection
@@ -63,89 +62,75 @@ Cursor = {
     @_style = 'line'
     @_flair = 'cursor'
 
-  properties: {
-    display_line: => @view.display_lines[@line]
-    buffer_line: => @view.buffer:get_line(@line)
+  get display_line: => @view.display_lines[@line]
+  get buffer_line: => @view.buffer:get_line(@line)
 
-    style: {
-      get: => @_style
-      set: (style) =>
-        return if style == @_style
-        if style == 'block'
-          @_flair = 'block_cursor'
-        elseif style == 'line'
-          @_flair = 'cursor'
-        else
-          error('Invalid style ' .. style, 2)
+  get style: => @_style
+  set style: (style) =>
+    return if style == @_style
+    if style == 'block'
+      @_flair = 'block_cursor'
+    elseif style == 'line'
+      @_flair = 'cursor'
+    else
+      error('Invalid style ' .. style, 2)
 
-        @_style = style
-        @_refresh_current_line()
-    }
+    @_style = style
+    @_refresh_current_line()
 
-    blink_interval: {
-      get: => @_blink_interval
-      set: (interval) =>
-        @_disable_blink()
-        @_blink_interval = interval
+  get blink_interval: => @_blink_interval
+  set blink_interval: (interval) =>
+    @_disable_blink()
+    @_blink_interval = interval
+    @_showing = true
+    @_enable_blink() if interval > 0
+
+  get line: => @_line
+  set line: (line) => @move_to(:line)
+
+  get column: => (@pos - @buffer_line.start_offset) + 1
+  set column: (column) => @move_to(pos: @buffer_line.start_offset + column - 1)
+
+  get pos: => @_pos
+  set pos: (pos) => @move_to(:pos)
+
+  get active: => @_active
+  set active: (active) =>
+    return if active == @_active
+    if active
+      @_flair = @_prev_flair if @_prev_flair
+      @_enable_blink()
+      @_showing = true
+    else
+      @_disable_blink()
+
+      if @show_when_inactive
+        @_prev_flair = @_flair
+        @_flair = 'inactive_cursor'
         @_showing = true
-        @_enable_blink() if interval > 0
-    }
+      else
+        @_prev_flair = @_flair
+        @_showing = false
 
-    line: {
-      get: => @_line
-      set: (line) => @move_to(:line)
-    }
+    @_active = active
+    @_refresh_current_line()
 
-    column: {
-      get: => (@pos - @buffer_line.start_offset) + 1
-      set: (column) => @move_to(pos: @buffer_line.start_offset + column - 1)
-    }
+  get in_view: =>
+    @line >= @view.first_visible_line and @line <= @view.last_visible_line
 
-    pos: {
-      get: => @_pos
-      set: (pos) => @move_to(:pos)
-    }
+  get current_x: =>
+    d_line = @display_line
+    base = 0
+    cur_rect = d_line.layout:index_to_pos(@column - 1)
+    if d_line.is_wrapped and not @_navigate_visual
+      -- calculate the real x of the current visual line
+      v_line = d_line.lines:at(@column)
+      for nr = 1, v_line.nr - 1
+        base += (d_line.lines[nr].extents.width + 1) * SCALE
 
-    active: {
-      get: => @_active
-      set: (active) =>
-        return if active == @_active
-        if active
-          @_flair = @_prev_flair if @_prev_flair
-          @_enable_blink()
-          @_showing = true
-        else
-          @_disable_blink()
+    cur_rect.x + base
 
-          if @show_when_inactive
-            @_prev_flair = @_flair
-            @_flair = 'inactive_cursor'
-            @_showing = true
-          else
-            @_prev_flair = @_flair
-            @_showing = false
-
-        @_active = active
-        @_refresh_current_line()
-    }
-
-    in_view: =>
-      @line >= @view.first_visible_line and @line <= @view.last_visible_line
-
-    current_x: =>
-      d_line = @display_line
-      base = 0
-      cur_rect = d_line.layout:index_to_pos(@column - 1)
-      if d_line.is_wrapped and not @_navigate_visual
-        -- calculate the real x of the current visual line
-        v_line = d_line.lines:at(@column)
-        for nr = 1, v_line.nr - 1
-          base += (d_line.lines[nr].extents.width + 1) * SCALE
-
-      cur_rect.x + base
-
-    _navigate_visual: => @view.config.view_line_wrap_navigation == 'visual'
-  }
+  get _navigate_visual: => @view.config.view_line_wrap_navigation == 'visual'
 
   destroy: =>
     @_disable_blink()
@@ -440,6 +425,3 @@ Cursor = {
   _refresh_current_line: =>
     cur_line = @buffer_line
     @view:refresh_display(from_line: cur_line.nr, to_line: cur_line.nr)
-}
-
-return define_class(Cursor)
