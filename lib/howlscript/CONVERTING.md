@@ -763,3 +763,9 @@ without a rule, so the rest is converted in one go.
 | `lib/howl/ui/explorer_view.moon`, `spec/ui/explorer_view_spec.moon` | 2026-11-11 |
 | `lib/howl/ui/text_widget.moon`, `spec/ui/text_widget_spec.moon` | 2026-11-11 |
 | `lib/aullar/spec/display_lines_spec.moon` | 2026-11-11 |
+
+## Converted with the converter
+
+| Original | Converted | By hand |
+|---|---|---|
+| `lib/aullar/`, with its specs | 2026-11-11 | `view`'s two reads forcing a lazy computation, and a loop as a value in `buffer_spec` |

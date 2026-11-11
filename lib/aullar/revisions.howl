@@ -1,8 +1,8 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:define_class} = require 'aullar.util'
-config = require 'aullar.config'
+{:define_class} = require('aullar.util')
+config = require('aullar.config')
 {:remove} = table
 {:max} = math
 
@@ -28,9 +28,9 @@ coalesce = (entry, prev) ->
 
 VALID_TYPES = {t,true for t in *{'inserted', 'deleted', 'changed'}}
 
-define_class {
+return define_class({
   new: =>
-    @clear!
+    @clear()
     @processing = false
     @_revision_id = 0
 
@@ -41,11 +41,11 @@ define_class {
 
   push: (type, offset, text, opts = {}) =>
     unless VALID_TYPES[type]
-      error "Unknown revision type '#{type}'", 2
+      error("Unknown revision type '#{type}'", 2)
 
     return if @processing
     group = @grouping > 0 and @group_id or nil
-    entry =  {
+    entry = {
       :type,
       :offset,
       :text,
@@ -69,7 +69,7 @@ define_class {
 
     unless group
       @count += 1
-      @_prune!
+      @_prune()
 
     entry
 
@@ -79,12 +79,12 @@ define_class {
     @processing = true
 
     if entry.type == 'inserted'
-      buffer\delete entry.offset, #entry.text
+      buffer:delete(entry.offset, #entry.text)
     elseif entry.type == 'deleted'
-      buffer\insert entry.offset, entry.text
+      buffer:insert(entry.offset, entry.text)
     elseif entry.type == 'changed'
-      buffer\delete entry.offset, #entry.text
-      buffer\insert entry.offset, entry.prev_text
+      buffer:delete(entry.offset, #entry.text)
+      buffer:insert(entry.offset, entry.prev_text)
 
     @current -= 1
     @processing = false
@@ -102,12 +102,12 @@ define_class {
     @processing = true
 
     if entry.type == 'inserted'
-      buffer\insert entry.offset, entry.text
+      buffer:insert(entry.offset, entry.text)
     elseif entry.type == 'deleted'
-      buffer\delete entry.offset, #entry.text
+      buffer:delete(entry.offset, #entry.text)
     elseif entry.type == 'changed'
-      buffer\delete entry.offset, #entry.prev_text
-      buffer\insert entry.offset, entry.text
+      buffer:delete(entry.offset, #entry.prev_text)
+      buffer:insert(entry.offset, entry.text)
 
     @current += 1
     @processing = false
@@ -136,11 +136,11 @@ define_class {
     if @grouping == 0
       if @current > 0 and @entries[@current].group == @group_id
         @count += 1
-        @_prune!
+        return @_prune()
 
   _prune: =>
     limit = config.undo_limit
-    while @count > max limit, 1
+    while @count > max(limit, 1)
       idx = 1 -- remove this many entries
       rev = @entries[idx]
       if rev.group -- but if grouped, remove the entire group
@@ -151,11 +151,11 @@ define_class {
           rev = next
 
       for _ = 1, idx
-        remove @entries, 1
+        remove(@entries, 1)
         @current -= 1
 
       @count -= 1
 
 }, {
   __len: => @count
-}
+})

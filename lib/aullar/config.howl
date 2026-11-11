@@ -1,12 +1,12 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-GtkSettings = require 'ljglibs.gtk.settings'
-Pango = require 'ljglibs.pango'
+GtkSettings = require('ljglibs.gtk.settings')
+Pango = require('ljglibs.pango')
 
 define_options = ->
-  settings = GtkSettings.get_default!
-  gtk_font = Pango.FontDescription.from_string settings.gtk_font_name
+  settings = GtkSettings.get_default()
+  gtk_font = Pango.FontDescription.from_string(settings.gtk_font_name)
 
   {
     view_tab_size: {
@@ -118,9 +118,9 @@ define_options = ->
 
 notify_listeners = (listeners, k, new_v, old_v) ->
   for l in *listeners
-    status, ret = pcall l, k, new_v, old_v
+    status, ret = pcall(l, k, new_v, old_v)
     unless status
-      io.stderr\write "Error invoking listener for change (#{k}: #{old_v} -> #{new_v}): #{ret}\n"
+      io.stderr:write("Error invoking listener for change (#{k}: #{old_v} -> #{new_v}): #{ret}\n")
 
 get_value = (k, values, defs) ->
   v = values[k]
@@ -132,16 +132,16 @@ get_value = (k, values, defs) ->
 set_value = (t, k, v, values, defs, listeners) ->
   def = defs[k]
   error("Invalid option '#{k}'", 3) unless def
-  new_t = type v
+  new_t = type(v)
   if v != nil and def.type and def.type != new_t
-    error "Illegal type '#{new_t}' for #{k}", 3
+    error("Illegal type '#{new_t}' for #{k}", 3)
 
   old_v = t[k]
   values[k] = v
   new_v = t[k]
 
   if new_v != old_v
-    notify_listeners listeners, k, new_v, old_v
+    notify_listeners(listeners, k, new_v, old_v)
 
   new_v, old_v
 
@@ -149,57 +149,57 @@ add_listener = (listener, listeners) ->
   listeners[#listeners + 1] = listener
 
 remove_listener = (listener, listeners) ->
-  [l for l in *listeners when l != listener]
+  [l for l in *listeners if l != listener]
 
 values = {}
-defs = define_options!
+defs = define_options()
 listeners = {}
-proxies = setmetatable {}, __mode: 'v'
+proxies = setmetatable({}, __mode: 'v')
 
 clean_proxies = ->
-  proxies = setmetatable [p for _, p in pairs proxies when p], __mode: 'v'
+  proxies = setmetatable([p for _, p in pairs(proxies) if p], __mode: 'v')
 
-setmetatable {
-  add_listener: (listener) -> add_listener listener, listeners
-  remove_listener: (listener) -> listeners = remove_listener listener, listeners
+return setmetatable({
+  add_listener: (listener) -> add_listener(listener, listeners)
+  remove_listener: (listener) -> listeners = remove_listener(listener, listeners)
   definition_for: (option) -> defs[option]
 
   local_proxy: ->
-    proxy = setmetatable {
+    proxy = setmetatable({
       values: {},
       listeners: {}
 
       add_listener: (listener) =>
-        add_listener listener, @listeners
+        add_listener(listener, @listeners)
 
       remove_listener: (listener) =>
-        @listeners = remove_listener listener, @listeners
+        @listeners = remove_listener(listener, @listeners)
 
       detach: =>
-        proxies = setmetatable [p for _, p in pairs proxies when p != @], __mode: 'v'
+        proxies = setmetatable([p for _, p in pairs(proxies) if p != @], __mode: 'v')
 
-     }, {
+    }, {
       __index: (k) =>
         v = @values[k]
         return v if v != nil
         get_value(k, values, defs)
 
       __newindex: (k, v) =>
-        set_value @, k, v, @values, defs, @listeners
-    }
-    clean_proxies!
+        set_value(@, k, v, @values, defs, @listeners)
+     })
+    clean_proxies()
     proxies[#proxies + 1] = proxy
     proxy
 
 }, {
-  __index: (t, k) -> get_value k, values, defs
+  __index: (t, k) -> get_value(k, values, defs)
   __newindex: (t, k, v) ->
-    new_v, old_v = set_value t, k, v, values, defs, listeners
+    new_v, old_v = set_value(t, k, v, values, defs, listeners)
     return if new_v == old_v
 
     -- bubble up notification to local proxies. `proxies` is weak, so collected
     -- entries leave holes - iterate with pairs, which only sees live ones.
-    for _, proxy in pairs proxies
+    for _, proxy in pairs(proxies)
       if proxy.values[k] == nil -- no local value set
-        notify_listeners proxy.listeners, k, new_v, old_v
-}
+        notify_listeners(proxy.listeners, k, new_v, old_v)
+})

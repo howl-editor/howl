@@ -1,11 +1,11 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-config = require 'aullar.config'
-Pango = require 'ljglibs.pango'
+config = require('aullar.config')
+Pango = require('ljglibs.pango')
 {:AttrList, :Attribute, :SCALE, :Color} = Pango
 append = table.insert
-ffi = require 'ffi'
+ffi = require('ffi')
 {:cast} = ffi
 {:copy} = moon
 
@@ -37,12 +37,12 @@ font_size_deltas = {
 }
 
 pango_attr_p = ffi.typeof('PangoAttribute *')
-attr_ptr = (a) -> cast pango_attr_p, a
+attr_ptr = (a) -> cast(pango_attr_p, a)
 
 get_font_size = (v) ->
   return v if type(v) == 'number'
   delta = font_size_deltas[tostring(v)]
-  error "Invalid font size specification '#{v}'", 2 unless delta
+  error("Invalid font size specification '#{v}'", 2) unless delta
   config.view_font_size + delta
 
 is_font_size = (v) ->
@@ -52,45 +52,45 @@ create_attributes = (def) ->
   attrs = {}
 
   if def.color
-    c = Color def.color
-    append attrs, Attribute.Foreground(c.red, c.green, c.blue)
+    c = Color(def.color)
+    append(attrs, Attribute.Foreground(c.red, c.green, c.blue))
 
   if def.strike_through
-    append attrs, Attribute.Strikethrough(true)
+    append(attrs, Attribute.Strikethrough(true))
     if type(def.strike_through) == 'string'
-      c = Color def.strike_through
-      append attrs, Attribute.StrikethroughColor(c.red, c.green, c.blue)
+      c = Color(def.strike_through)
+      append(attrs, Attribute.StrikethroughColor(c.red, c.green, c.blue))
 
   if def.underline
     vals = { def.underline }
     if type(def.underline) == 'string'
-      vals = [v for v in def.underline\gmatch '%S+']
+      vals = [v for v in def.underline:gmatch('%S+')]
 
     style = underline_options[vals[1]]
     if style
-      append attrs, Attribute.Underline(style) if style
+      append(attrs, Attribute.Underline(style)) if style
 
       if #vals > 1
-        c = Color vals[2]
-        append attrs, Attribute.UnderlineColor(c.red, c.green, c.blue)
+        c = Color(vals[2])
+        append(attrs, Attribute.UnderlineColor(c.red, c.green, c.blue))
 
   if def.letter_spacing
-    append attrs, Attribute.LetterSpacing(def.letter_spacing * SCALE)
+    append(attrs, Attribute.LetterSpacing(def.letter_spacing * SCALE))
 
   if def.font
     font = def.font
-    append attrs, Attribute.Family(font.family) if font.family
-    append attrs, Attribute.Style(Pango.STYLE_ITALIC) if font.italic
-    append attrs, Attribute.Weight(Pango.WEIGHT_BOLD) if font.bold
-    append attrs, Attribute.Size(get_font_size(font.size) * SCALE) if font.size
+    append(attrs, Attribute.Family(font.family)) if font.family
+    append(attrs, Attribute.Style(Pango.STYLE_ITALIC)) if font.italic
+    append(attrs, Attribute.Weight(Pango.WEIGHT_BOLD)) if font.bold
+    append(attrs, Attribute.Size(get_font_size(font.size) * SCALE)) if font.size
   else
-    append attrs, Attribute.Family('monospace')
+    append(attrs, Attribute.Family('monospace'))
 
   attrs
 
 named = (name, definition) ->
   if type(definition) != 'string'
-    definition = copy definition
+    definition = copy(definition)
     definition.name = name
 
   definition
@@ -99,52 +99,52 @@ lookup = (name) ->
   theme_styles[name] or styles[name]
 
 define = (name, definition) ->
-  error "Missing argument #1 (name)", 2 unless name
-  error "Missing argument #2 (definition)", 2 unless definition
+  error("Missing argument #1 (name)", 2) unless name
+  error("Missing argument #2 (definition)", 2) unless definition
 
-  styles[name] = named name, definition
+  styles[name] = named(name, definition)
 
   if name == 'default'
     attributes = {}
   else
     attributes[name] = nil
-    for k in pairs attributes
-      attributes[k] = nil if k\match "^#{name}:"
+    for k in pairs(attributes)
+      attributes[k] = nil if k:match("^#{name}:")
 
 is_defined = (name) ->
   lookup(name) != nil
 
 define_default = (name, def) ->
-  define name, def unless styles[name]
+  define(name, def) unless styles[name]
 
 set_theme = (definitions = {}) ->
-  theme_styles = {name, named(name, def) for name, def in pairs definitions}
+  theme_styles = {name, named(name, def) for name, def in pairs(definitions)}
   attributes = {}
 
 resolve_def = (name) ->
-  def = lookup name
+  def = lookup(name)
 
   while type(def) == 'string'
     name = def
-    def = lookup def
+    def = lookup(def)
 
   def, name
 
 def_for = (name) ->
-  base = lookup 'default'
-  def, name = resolve_def name
+  base = lookup('default')
+  def, name = resolve_def(name)
 
   if not def
     -- look for sub styling (base:style)
-    sub_base, ext = name\match '^([^:]+):(%S+)$'
+    sub_base, ext = name:match('^([^:]+):(%S+)$')
 
     if sub_base
       base = resolve_def(sub_base) or base
-      def = resolve_def ext
+      def = resolve_def(ext)
 
   return base unless def
 
-  live = name: name, font: base.font
+  live = {name: name, font: base.font}
   for k in *{
     'background',
     'background_alpha',
@@ -164,11 +164,11 @@ def_for = (name) ->
   live
 
 _exclude_attribute_list = {
-  [tonumber Pango.ATTR_FOREGROUND]: 'color'
+  [tonumber(Pango.ATTR_FOREGROUND)]: 'color'
 }
 
 _exclude_attribute = (attr, exclude) ->
-  attr_type = tonumber attr_ptr(attr).klass.type
+  attr_type = tonumber(attr_ptr(attr).klass.type)
   key = _exclude_attribute_list[attr_type]
   key and exclude[key]
 
@@ -177,18 +177,18 @@ apply = (list, name, start_index = Pango.ATTR_INDEX_FROM_TEXT_BEGINNING, end_ind
   exclude = opts.exclude
 
   unless attrs
-    def = def_for name
+    def = def_for(name)
     return unless def
 
-    attrs = create_attributes def, opts
+    attrs = create_attributes(def, opts)
     attributes[name] = attrs
 
   for attr in *attrs
-    continue if exclude and _exclude_attribute attr, exclude
-    attr = attr\copy!
+    continue if exclude and _exclude_attribute(attr, exclude)
+    attr = attr:copy()
     attr.start_index = start_index
     attr.end_index = end_index
-    list\insert_before attr
+    list:insert_before(attr)
 
 get_attributes = (styling, end_offset, opts = {}) ->
   list = AttrList()
@@ -202,12 +202,12 @@ get_attributes = (styling, end_offset, opts = {}) ->
     style_name = styling[i + 1]
 
     if start_index > last_pos_styled
-      apply list, 'default', last_pos_styled, start_index - 1, opts
+      apply(list, 'default', last_pos_styled, start_index - 1, opts)
 
-    apply list, style_name, start_index, end_index, opts
+    apply(list, style_name, start_index, end_index, opts)
 
   if last_pos_styled < end_offset
-    apply list, 'default', last_pos_styled, end_offset, opts
+    apply(list, 'default', last_pos_styled, end_offset, opts)
 
   list
 

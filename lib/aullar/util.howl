@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {
@@ -12,25 +12,25 @@
       p = props[k]
       if p
         p = p.get if type(p) == 'table'
-        p and p o
+        return p and p(o)
       elseif orig_index
-        orig_index o, k
+        return orig_index(o, k)
 
     meta.__newindex = (o, k, ...) ->
       p = props[k]
       p = p.set if p
       if p
-        p o, ...
+        return p(o, ...)
       else
-        rawset o, k, ...
+        return rawset(o, k, ...)
 
-    setmetatable {}, {
+    setmetatable({}, {
       __call: (t, ...) ->
-        o = setmetatable {}, meta
+        o = setmetatable({}, meta)
         if base.new
-          base.new o, ...
+          base.new(o, ...)
         o
 
       __index: meta.__index
-    }
+    })
 }

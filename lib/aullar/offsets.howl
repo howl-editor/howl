@@ -1,29 +1,29 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 --
 -- This supports more efficient mappings of character (code points) <->
 -- byte offsets for gap buffer contents, by caching offsets and thus
 -- making scans shorter
 
-ffi = require 'ffi'
-bit = require 'bit'
-require 'ljglibs.cdefs.glib'
+ffi = require('ffi')
+bit = require('bit')
+require('ljglibs.cdefs.glib')
 
 tonumber = tonumber
 band = bit.band
 
-ffi.cdef [[
+ffi.cdef([[
   struct ao_mapping {
     size_t c_offset;
     size_t b_offset;
   }
-]]
+]])
 
 NR_MAPPINGS = 20
 IDX_LAST = NR_MAPPINGS - 1
 MIN_SPAN_CHARS = 1000
 MIN_SPAN_BYTES = 1500
-zero_mapping = ffi.new 'struct ao_mapping'
+zero_mapping = ffi.new('struct ao_mapping')
 
 mapping_for_char = (mappings, char_offset) ->
   m = zero_mapping
@@ -112,7 +112,7 @@ Offsets = {
 
   char_offset: (gb, byte_offset) =>
     byte_offset = gb.size if byte_offset > gb.size -- clamp to the end of the buffer
-    m = mapping_for_byte @mappings, byte_offset
+    m = mapping_for_byte(@mappings, byte_offset)
 
     -- should we create a new mapping, closer this offset?
     if (byte_offset - m.b_offset) > MIN_SPAN_BYTES
@@ -120,16 +120,16 @@ Offsets = {
       m_b_offset -= MIN_SPAN_BYTES if m_b_offset == gb.size -- must be within the buffer
 
       -- position may be in the middle of a sequence here, so back up as needed
-      while m_b_offset > 0 and band(gb\get_ptr(m_b_offset, 1)[0], 0xc0) == 0x80
+      while m_b_offset > 0 and band(gb:get_ptr(m_b_offset, 1)[0], 0xc0) == 0x80
         m_b_offset -= 1
 
       c_offset = m.c_offset + gb_char_offset(gb, m.b_offset, m_b_offset)
-      m = update_for @mappings, c_offset, m_b_offset
+      m = update_for(@mappings, c_offset, m_b_offset)
 
-    tonumber m.c_offset + gb_char_offset(gb, m.b_offset, byte_offset)
+    tonumber(m.c_offset + gb_char_offset(gb, m.b_offset, byte_offset))
 
   byte_offset: (gb, char_offset) =>
-    m = mapping_for_char @mappings, char_offset
+    m = mapping_for_char(@mappings, char_offset)
 
     -- should we create a new mapping, closer this offset?
     if char_offset - m.c_offset > MIN_SPAN_CHARS
@@ -137,7 +137,7 @@ Offsets = {
       b_offset = m.b_offset + gb_byte_offset(gb, m.b_offset, m_c_offset - m.c_offset)
       m = update_for(@mappings, m_c_offset, b_offset)
 
-    tonumber m.b_offset + gb_byte_offset(gb, m.b_offset, char_offset - m.c_offset)
+    tonumber(m.b_offset + gb_byte_offset(gb, m.b_offset, char_offset - m.c_offset))
 
   adjust_for_insert: (byte_offset, bytes, characters) =>
     mappings = @mappings
@@ -158,7 +158,7 @@ Offsets = {
           m.c_offset -= characters
         else
           -- otherwise invalidate this and subsequent mappings
-          @invalidate_from byte_offset
+          @invalidate_from(byte_offset)
           break
 
   invalidate_from: (byte_offset) =>
@@ -168,4 +168,4 @@ Offsets = {
       nm.c_offset = 0 if nm.b_offset > byte_offset
 }
 
--> setmetatable { mappings: ffi.new "struct ao_mapping[#{NR_MAPPINGS}]" }, __index: Offsets
+-> setmetatable({ mappings: ffi.new("struct ao_mapping[#{NR_MAPPINGS}]") }, __index: Offsets)

@@ -1,9 +1,6 @@
 -- Copyright 2014-2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
--- A Howlscript port of lib/aullar/gap_buffer.moon, run against its own spec by
--- acceptance_spec.moon. Keep it in step when that module changes.
-
 ffi = require('ffi')
 C, ffi_copy, ffi_fill, ffi_gc, ffi_cast = ffi.C, ffi.copy, ffi.fill, ffi.gc, ffi.cast
 {:min} = math
@@ -17,7 +14,7 @@ ffi.cdef([[
 
 GAP_SIZE = 100
 
-define_class({
+return define_class {
   new: (type, size, opts = {}) =>
     @type = type
     @default_gap_size = opts.gap_size or GAP_SIZE
@@ -172,8 +169,8 @@ define_class({
         offset += @gap_size
 
       arr[offset] = val
-      i++
-      offset++
+      i += 1
+      offset += 1
 
   set: (data, size = #data) =>
     arr_size = size + @default_gap_size
@@ -191,4 +188,4 @@ define_class({
     @gap_start = size
     @gap_end = arr_size
     ffi_fill(@array + @gap_start, @gap_size * @type_size)
-})
+}

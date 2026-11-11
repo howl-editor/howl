@@ -26,9 +26,6 @@ spec_against_port = (spec, module_name, port_file, auto) ->
   rawset auto[1], auto[2], saved_auto if auto
   error err, 0 unless ok
 
-describe 'acceptance: lib/aullar/spec/gap_buffer_spec.moon against a Howlscript GapBuffer', ->
-  spec_against_port 'lib/aullar/spec/gap_buffer_spec.moon', 'aullar.gap_buffer', 'gap_buffer.howl'
-
 describe 'acceptance: spec/util/matcher_spec.moon against a Howlscript Matcher', ->
   spec_against_port 'spec/util/matcher_spec.moon', 'howl.util.matcher', 'matcher.howl', {howl.util, 'Matcher'}
 
