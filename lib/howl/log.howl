@@ -61,8 +61,8 @@ dispatch = (level, message) ->
 
   if #log.entries > config.max_log_entries
     to_remove = #log.entries - config.max_log_entries
-    for i=1,to_remove
-      table.remove(log.entries, i)
+    for _ = 1, to_remove
+      table.remove(log.entries, 1)
     safe_emit('log-trimmed', size: #log.entries)
 
   entry

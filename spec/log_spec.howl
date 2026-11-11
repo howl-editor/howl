@@ -68,7 +68,7 @@ describe 'log', ->
 
     it 'retains at most <max_log_entries> of the last entries', ->
       config.max_log_entries = 1
-      for i = 1,10
+      for i = 1, 10
         log.error('my error ' .. i)
 
       assert.equal #log.entries, 1
@@ -77,6 +77,16 @@ describe 'log', ->
         message: 'my error 10'
         level: 'error'
       }
+
+    it 'drops the oldest entries when <max_log_entries> is lowered', ->
+      config.max_log_entries = 10
+      for i = 1, 6
+        log.error('my error ' .. i)
+
+      config.max_log_entries = 2
+      log.error('my error 7')
+      assert.same {'my error 6', 'my error 7'}, [e.message for e in *log.entries]
+      config.max_log_entries = 1000
 
     it '.clear() clears all log entries', ->
       log.error('my error')

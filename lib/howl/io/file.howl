@@ -156,7 +156,7 @@ class File
   get children_async: =>
     handle = park('enumerate-children-async')
 
-    @gfile:enumerate_children_async 'standard::name,standard::type', nil, nil,  (status, ret, err_code) ->
+    @gfile:enumerate_children_async 'standard::name,standard::type', nil, nil, (status, ret, err_code) ->
       if status
         return resume(handle, ret)
       else
@@ -263,7 +263,7 @@ class File
       get_children = (dir) ->
         handle = park('enumerate-children-async')
 
-        dir:enumerate_children_async 'standard::name,standard::type', nil, nil,  (status, ret, err_code) ->
+        dir:enumerate_children_async 'standard::name,standard::type', nil, nil, (status, ret, err_code) ->
           if status
             return resume(handle, ret)
           else

@@ -10,6 +10,9 @@ this says what a converted file should look like.
 - **Mechanical:** a conversion changes only what Howlscript requires, so it reads
   line by line against the original. Improvements, like `x = x or {}` to `x or= {}`,
   are separate changes.
+- **Odd spacing is fixed,** as two spaces where one belongs (`new:  =>`), a space
+  before a comma, a block indented by other than two spaces, or `for _=1,n` for
+  `for _ = 1, n`. Spacing inside strings stays.
 - **Bugs found on the way** are fixed in the conversion and named in its commit, as
   `window_spec`'s `assert.is_nil, win.current_view` was: a value list, not a call,
   so it asserted nothing.
@@ -210,8 +213,9 @@ is visible:
 - **Named arguments before positional ones** get braces:
   `assert.same description: 'bar', x` becomes `assert.same {description: 'bar'}, x`.
 - **Function stubs:** `obj\m` becomes `(...) -> obj:m(...)`, so `pcall obj\m, res`
-  becomes `pcall((...) -> obj:m(...), res)`. A stub on self becomes `(...) -> @m(...)`,
-  as `Selection`'s `on_selection_changed: @\_on_selection_changed` did.
+  becomes `pcall((...) -> obj:m(...), res)`. A stub on self keeps its spelling:
+  `@\m` becomes `(...) -> @m(...)`, as in `Selection`'s listener, and `self\m`
+  becomes `(...) -> self:m(...)`, as in `Buffer`'s.
 - **Several values after an inline function** in arguments or a table: MoonScript
   takes them into its body, where a `,` ends the body in Howlscript. So the function
   gets parentheses: `spy.new -> 'r1', 'r2'` becomes `spy.new((-> 'r1', 'r2'))`. Howl
@@ -435,9 +439,10 @@ elseif index < 1
 
 - **A loop as a value** collects into a new local list, which is then returned or
   assigned, unless a comprehension can do it. A loop assigned to a new name collects
-  straight into it, as `items = for i = 1, #paths` in `DirectoryExplorer` did. The
-  list's name mustn't be a visible local, as `vc`'s `files` function ruled out
-  `files`:
+  straight into it, as `items = for i = 1, #paths` in `DirectoryExplorer` did, but
+  one assigned to the list it goes over collects into a new one, as `byte_matches`
+  for `matches` in `Buffer`'s `replace`. The list's name mustn't be a visible local,
+  as `vc`'s `files` function ruled out `files`:
 
   ```moonscript
   return for i = 1, #paths
@@ -498,6 +503,11 @@ elseif index < 1
 
   A `with` block becomes `return with x`, as in `vi/state`'s `apply`.
 
+  Setters and constructors are the exception. Nothing uses their values, as a
+  property assignment throws the setter's away, as PropertyObject's did, so
+  Howlscript compiles them without one, and their `if`s stay as they are, as in
+  `Buffer`'s `modified` setter.
+
 ### Parameters
 
 Howlscript has no `@x` parameters. Each becomes a plain parameter, assigned to its
@@ -534,7 +544,7 @@ Howlscript code never uses `PropertyObject`, as its classes have properties of t
 own. A class extending it loses its parent, and with it the `super!` in `new`. A
 hierarchy built on it converts as a unit, its root with all its subclasses, so that no
 Howlscript class extends a `PropertyObject` class and no MoonScript class needs
-`@property` from a Howlscript parent, as the `Popup` chain did:
+`@property` from a Howlscript parent, as the `Popup` and `Buffer` chains did:
 
 - `@property x: get: => e` becomes `get x: => e`, and a set-only
   `@property x: set: (v) => ...` becomes `set x: (v) => ...`.
@@ -555,7 +565,8 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
 
 - **Overrides:** a subclass's `@property` replaced both of its parent's accessors,
   while a `get` or `set` replaces only its own and keeps the parent's other one. Howl's
-  one override, `ActionBuffer`'s `modified`, gives both, so it converts as is.
+  one override, `ActionBuffer`'s `modified`, gives both, so it converted as is, to
+  `get modified: -> false` and `set modified: ->`.
 
 - **Metamethods** go in the class's `meta`, whether they were members or given to
   `@meta {...}`. It stands where the first of them stood, with its braces on lines of
@@ -622,9 +633,12 @@ What no conversion has met yet, with counts from a survey of Howl's MoonScript
 
 - **Inherited metamethods:** a subclass inherits its parent's metamethods in
   Howlscript but not in MoonScript, so converting a class with metamethods changes
-  its subclasses. No converted class with metamethods has subclasses yet.
-- **PropertyObject's last users:** the `Buffer` chain (`Buffer`, `ActionBuffer` and
-  its four subclasses) and 10 other classes. Once they're converted,
+  its subclasses. That's not so for a `PropertyObject` class, whose `@meta` reaches
+  its subclasses too, as `Buffer`'s `__len` and `__tostring` did. No converted plain
+  class with metamethods has subclasses yet.
+- **PropertyObject's last users:** 10 classes, in `application`, `ui/editor`,
+  `ui/cursor`, `ui/list`, `ui/list_widget`, `ui/text_widget`, `ui/activity`,
+  `ui/command_panel` (two) and `io/output_stream`. Once they're converted,
   `PropertyObject` goes with its spec, the `property_object.howl` fixture and its
   acceptance block, the interop specs for it, and REFERENCE.md's notes on
   `@property(...)`.
@@ -658,3 +672,4 @@ What no conversion has met yet, with counts from a survey of Howl's MoonScript
 | `lib/howl/ustring.moon`, `spec/ustring_spec.moon` | 2026-11-11 |
 | `lib/howl/io/file.moon`, `spec/io/file_spec.moon` | 2026-11-11 |
 | `lib/howl/buffer_markers.moon`, `spec/buffer_markers_spec.moon` | 2026-11-11 |
+| The `Buffer` chain: `lib/howl/buffer`, and in `lib/howl/ui/` `action_buffer`, `list_buffer`, `process_buffer`, `process_list_buffer` and `journal_buffer`, with the specs of `buffer`, `action_buffer` and `process_list_buffer` | 2026-11-11 |

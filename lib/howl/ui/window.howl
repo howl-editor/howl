@@ -127,17 +127,17 @@ class Window
 
   set fullscreen: (state) =>
     if state and not @fullscreen
-      return @win:fullscreen()
+      @win:fullscreen()
     elseif not state and @fullscreen
-      return @win:unfullscreen()
+      @win:unfullscreen()
 
   get maximized: => @win.maximized
 
   set maximized: (state) =>
     if state and not @maximized
-      return @win:maximize()
+      @win:maximize()
     elseif not state and @maximized
-      return @win:unmaximize()
+      @win:unmaximize()
 
   add_widget: (widget) =>
     @widgets:append(widget)

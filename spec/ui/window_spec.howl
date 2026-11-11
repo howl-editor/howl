@@ -199,41 +199,41 @@ describe 'Window', ->
 
   describe 'siblings(view, wraparound)', ->
     context 'when wraparound is false', ->
-       it 'returns a table of siblings for the specified view when present', ->
-          left = Gtk.Entry()
-          right = Gtk.Entry()
-          bottom = Gtk.Entry()
-          win:add_view(left)
-          win:add_view(right, 'right_of', left)
-          win:add_view(bottom, 'below', left)
+      it 'returns a table of siblings for the specified view when present', ->
+        left = Gtk.Entry()
+        right = Gtk.Entry()
+        bottom = Gtk.Entry()
+        win:add_view(left)
+        win:add_view(right, 'right_of', left)
+        win:add_view(bottom, 'below', left)
 
-          assert.same { right: right, down: bottom }, win:siblings(left, false)
-          assert.same { left: left, down: bottom }, win:siblings(right, false)
-          assert.same { up: left }, win:siblings(bottom, false)
+        assert.same { right: right, down: bottom }, win:siblings(left, false)
+        assert.same { left: left, down: bottom }, win:siblings(right, false)
+        assert.same { up: left }, win:siblings(bottom, false)
 
     context 'when wraparound is true', ->
       it 'returns a table of siblings for the specified view in a wraparound fashion', ->
-          left = Gtk.Entry()
-          right = Gtk.Entry()
-          bottom = Gtk.Entry()
-          win:add_view(left)
-          win:add_view(right, 'right_of', left)
-          win:add_view(bottom, 'below', left)
+        left = Gtk.Entry()
+        right = Gtk.Entry()
+        bottom = Gtk.Entry()
+        win:add_view(left)
+        win:add_view(right, 'right_of', left)
+        win:add_view(bottom, 'below', left)
 
-          assert.same { left: bottom, right: right, up: bottom, down: bottom }, win:siblings(left, true)
-          assert.same { left: left, right: bottom, up: bottom, down: bottom }, win:siblings(right, true)
-          assert.same { left: right, right: left, up: left, down: left }, win:siblings(bottom, true)
+        assert.same { left: bottom, right: right, up: bottom, down: bottom }, win:siblings(left, true)
+        assert.same { left: left, right: bottom, up: bottom, down: bottom }, win:siblings(right, true)
+        assert.same { left: right, right: left, up: left, down: left }, win:siblings(bottom, true)
 
     it 'returns an empty table if there are no siblings', ->
-        v1 = Gtk.Entry()
-        win:add_view(v1)
-        assert.same {}, win:siblings(v1)
+      v1 = Gtk.Entry()
+      win:add_view(v1)
+      assert.same {}, win:siblings(v1)
 
     it 'defaults to the currently focused child if view is not provided', ->
-        v1 = Gtk.Entry()
-        win:add_view(v1)
-        v1:grab_focus()
-        assert.same {}, win:siblings()
+      v1 = Gtk.Entry()
+      win:add_view(v1)
+      v1:grab_focus()
+      assert.same {}, win:siblings()
 
     it 'returns an empty table if view is not provided and no child is focused', ->
       assert.same {}, win:siblings()

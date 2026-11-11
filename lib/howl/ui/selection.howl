@@ -27,7 +27,7 @@ class Selection
 
   set anchor: (pos) =>
     if @empty
-      return @set(pos, max(@_view.cursor.pos - 1, 1))
+      @set(pos, max(@_view.cursor.pos - 1, 1))
     else
       @_sel.anchor = @_buffer:byte_offset(pos)
 

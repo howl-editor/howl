@@ -33,10 +33,17 @@ describe 'classes', ->
       Node():copy().__class == Node, Node:create().__class == Node
     ]]}
 
-  it 'do not return anything from new', ->
+  it 'do not return anything from new, also when an if ends it', ->
     lua = compile [[
       class Box
         new: => tostring(1)
+    ]]
+    assert.not_match lua, 'return tostring'
+    lua = compile [[
+      class Box
+        new: (v) =>
+          if v
+            tostring(v)
     ]]
     assert.not_match lua, 'return tostring'
 
@@ -241,6 +248,15 @@ describe 'classes', ->
         err
       ]]
 
+    it 'return nothing from setters, also when an if ends one', ->
+      lua = compile [[
+        class Name
+          set value: (v) =>
+            if v
+              tostring(v)
+      ]]
+      assert.not_match lua, 'return tostring'
+
     it 'go through the setter for assignments in the constructor', ->
       assert.equals 'X', run [[
         class Name
@@ -295,6 +311,19 @@ describe 'classes', ->
         b = Base()
         b.value = 'base'
         s.value, b.value
+      ]]}
+
+    it "let a subclass replace both of its parent's accessors, with any functions", ->
+      assert.same {false, nil}, {run [[
+        class Base
+          get modified: => @_modified
+          set modified: (v) => @_modified = v
+        class Never extends Base
+          get modified: -> false
+          set modified: ->
+        n = Never()
+        n.modified = true
+        n.modified, n._modified
       ]]}
 
     it "keep a subclass's property read-only when its parent's is", ->

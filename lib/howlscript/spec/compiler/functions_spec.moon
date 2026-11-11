@@ -53,6 +53,14 @@ describe 'functions', ->
       f(), g()
     ]]}
 
+  it 'can have a function with a block as their one-line body', ->
+    assert.equals 'wrapped x', run [[
+      wrap = (f) -> (x) ->
+        y = f(x)
+        'wrapped ' .. y
+      wrap((v) -> v)('x')
+    ]]
+
   it 'support explicit returns', ->
     assert.equals 'early', run [[
       f = (x) ->

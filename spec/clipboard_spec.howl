@@ -12,7 +12,7 @@ primary_cb = display.primary_clipboard
 describe 'Clipboard', ->
   setup -> set_howl_loop()
 
-  before_each ->  clipboard.clear()
+  before_each -> clipboard.clear()
 
   describe 'push(item, opts = {})', ->
     context 'when <item> is a string', ->

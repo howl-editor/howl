@@ -213,7 +213,7 @@ class DirectoryExplorer
 
   new: (file=File.root_dir, opts={}) =>
     @file = file
-    @lister =  opts.lister or directory_lister
+    @lister = opts.lister or directory_lister
     if opts.files_only and opts.directories_only
       error('invalid to specify both files_only and directories_only')
     @files_only = opts.files_only
@@ -261,7 +261,7 @@ class DirectoryExplorer
     items = make_display_items(paths, @file)
     return items, {
       find_hidden: (sub_path) ->
-        _, file  = @lister.find_hidden(@file, sub_path)
+        _, file = @lister.find_hidden(@file, sub_path)
         if file
           if file.is_directory
             return DirectoryExplorer(file, @_copy_opts())
@@ -294,7 +294,7 @@ class DirectoryExplorer
     local matched, remaining_text
     if text:starts_with(File.separator)
       -- parse absolute path
-      matched, remaining_text  = DirectoryExplorer.for_path(text, @_copy_opts())
+      matched, remaining_text = DirectoryExplorer.for_path(text, @_copy_opts())
     else
       -- parse path relative to current directory
       local absolute_path

@@ -46,6 +46,16 @@ describe 'conditionals', ->
       f(true), f(false)
     ]]}
 
+  it 'take a condition continued on the next line, with the body indented like it', ->
+    assert.same {'out', 'in'}, {run [[
+      f = (n) ->
+        if n < 1 or
+          n > 9
+          return 'out'
+        'in'
+      f(0), f(5)
+    ]]}
+
   it 'take assignments after then and else on one line, ending at the else', ->
     assert.same {'a', 'b'}, {run [[
       pick = (c) ->
