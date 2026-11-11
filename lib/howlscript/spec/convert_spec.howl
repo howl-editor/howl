@@ -1,0 +1,805 @@
+-- Copyright 2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+-- The converter's rules, as CONVERTING.md describes them.
+
+{:dedent} = require('howlscript.spec.support')
+howlscript = require('howlscript')
+{:convert} = require('howlscript.convert')
+
+-- The Howlscript and the warnings for a MoonScript source.
+to_howl = (moon, opts) ->
+  text, warnings = convert(dedent(moon), opts)
+  error(warnings, 0) unless text
+  text, warnings
+
+-- Checks that a MoonScript source converts to the Howlscript given, and that
+-- the result compiles.
+converts = (moon, expected, opts) ->
+  text, warnings = to_howl(moon, opts)
+  assert.equals dedent(expected), text
+  assert.same {}, warnings
+  lua, err = howlscript.to_lua(text)
+  error(err, 0) unless lua
+
+-- The messages of the warnings for a MoonScript source.
+warnings_for = (moon, opts) ->
+  _, warnings = to_howl(moon, opts)
+  [w.message for w in *warnings]
+
+describe 'convert', ->
+  it 'returns nil and the error for a source that does not parse', ->
+    text, err = convert('x = = 1')
+    assert.is_nil text
+    assert.match err, 'line 1'
+
+  describe 'calls', ->
+    it 'turns method calls into :m() and ! calls into ()', ->
+      converts([[
+        x = obj\m f!
+      ]], [[
+        x = obj:m(f())
+      ]])
+
+    it 'gives every call parentheses', ->
+      converts([[
+        table.insert clips, 1, item
+        error "Unknown signal '#{name}'", 2 unless all[name]
+      ]], [[
+        table.insert(clips, 1, item)
+        error("Unknown signal '#{name}'", 2) unless all[name]
+      ]])
+
+    it 'leaves out the parentheses of a call statement taking a function block', ->
+      converts([[
+        cb\read_text_async (res) ->
+          done!
+      ]], [[
+        cb:read_text_async (res) ->
+          done()
+      ]])
+
+    it 'keeps the form of a call whose only argument is a table', ->
+      converts([[
+        config.define {
+          name: 'x'
+        }
+        x = word {'a', 'b'}
+      ]], [[
+        config.define {
+          name: 'x'
+        }
+        x = word {'a', 'b'}
+      ]])
+
+    it 'gives parentheses to calls in arguments, headers and interpolations', ->
+      converts([[
+        for handler in *handlers_for name
+          co = coroutine.create (...) -> handler ...
+        if first\match '%p'
+          s = "Context<#{tostring buffer}>"
+      ]], [[
+        for handler in *handlers_for(name)
+          co = coroutine.create((...) -> handler(...))
+        if first:match('%p')
+          s = "Context<#{tostring(buffer)}>"
+      ]])
+
+    it 'closes the parentheses after a function block on a line of their own', ->
+      converts([[
+        cb\read_text_async async (res) ->
+          done!
+        x = f a, ->
+          done!
+      ]], [[
+        cb:read_text_async(async((res) ->
+          done()
+        ))
+        x = f(a, ->
+          done()
+        )
+      ]])
+
+    it 'moves a comment ending the block above its closing parentheses', ->
+      converts([[
+        x = f ->
+          done! -- all done
+      ]], [[
+        x = f(->
+          done() -- all done
+        )
+      ]])
+
+    it 'gives parentheses to a call whose only argument is a long string', ->
+      converts('x = trimmed_text [==[\n  text\n]==]\ny = f[==[text]==]\n',
+        'x = trimmed_text([[\n  text\n]])\ny = f([[text]])\n')
+
+    it 'keeps the parentheses of f (a) when they hold a call or ...', ->
+      converts([[
+        f (g!)
+        f (a .. b)
+        x = f (a), b
+      ]], [[
+        f((g()))
+        f(a .. b)
+        x = f((a), b)
+      ]])
+
+    it 'gives parentheses to a call with a negative first argument', ->
+      converts([[
+        x = s\usub -2
+      ]], [[
+        x = s:usub(-2)
+      ]])
+
+    it 'gives braces to named arguments before positional ones', ->
+      converts([[
+        x = f description: 'bar', y
+      ]], [[
+        x = f({description: 'bar'}, y)
+      ]])
+
+    it 'turns function stubs into functions', ->
+      converts([[
+        f = obj\m
+        m = =>
+          g = @\m
+          h = self\m
+      ]], [[
+        f = (...) -> obj:m(...)
+        m = =>
+          g = (...) -> @m(...)
+          h = (...) -> self:m(...)
+      ]])
+
+    it 'gives parentheses to an inline function returning several values in arguments', ->
+      converts([[
+        f = spy.new -> 'r1', 'r2'
+      ]], [[
+        f = spy.new((-> 'r1', 'r2'))
+      ]])
+
+    it 'turns arguments on the lines after a call into a table', ->
+      converts([[
+        config.define
+          name: 'max'
+          default: 1000
+
+        signal.register 'trimmed',
+          description: 'Signaled'
+          parameters:
+            size: 'The size'
+        x = 1
+      ]], [[
+        config.define {
+          name: 'max'
+          default: 1000
+        }
+
+        signal.register('trimmed', {
+          description: 'Signaled'
+          parameters: {
+            size: 'The size'
+          }
+        })
+        x = 1
+      ]])
+
+    it 'puts a comma before a table on the lines after an argument without one', ->
+      converts([[
+        x = f 'a'
+          b: 1
+      ]], [[
+        x = f('a', {
+          b: 1
+        })
+      ]])
+
+    it 'gives parentheses to a table as the only argument of a call on an index', ->
+      converts([[
+        x = callbacks[1]
+          a: 1
+      ]], [[
+        x = callbacks[1]({
+          a: 1
+        })
+      ]])
+
+    it 'keeps positional arguments continued after a trailing comma on their lines', ->
+      converts([[
+        tag = g C.LOW,
+          callback,
+          nil
+      ]], [[
+        tag = g(C.LOW,
+          callback,
+          nil)
+      ]])
+
+    it 'turns \\m lines in a with block into :m()', ->
+      converts([[
+        with buffer
+          \indent!
+          \insert 'x', 1
+      ]], [[
+        with buffer
+          :indent()
+          :insert('x', 1)
+      ]])
+
+    it 'returns the value of a module ending in a call', ->
+      converts([[
+        x = 1
+        PropertyTable Clipboard
+      ]], [[
+        x = 1
+        return PropertyTable(Clipboard)
+      ]])
+
+    it 'keeps the form of a module ending in a call taking a function block', ->
+      converts([[
+        howl.util.lpeg_lexer ->
+          P'x'
+      ]], [[
+        howl.util.lpeg_lexer ->
+          P'x'
+      ]])
+
+    describe 'in specs', ->
+      it "leaves out the parentheses of busted's calls and assertions", ->
+        converts([[
+          describe 'x', ->
+            it 'y', ->
+              assert.equal 'x', buffer.text
+              helper 'x'
+        ]], [[
+          describe 'x', ->
+            it 'y', ->
+              assert.equal 'x', buffer.text
+              helper('x')
+        ]], spec: true)
+
+      it 'gives parentheses to calls in their arguments and inline functions', ->
+        converts([[
+          it 'y', ->
+            assert.raises 'none', -> signal.connect 'none', -> true
+        ]], [[
+          it 'y', ->
+            assert.raises 'none', -> signal.connect('none', -> true)
+        ]], spec: true)
+
+      it 'gives parentheses to an assertion whose first argument cannot start a call', ->
+        converts([[
+          it 'y', ->
+            assert.same [a for a in *t], b
+            assert.equals -1, x
+            assert.is_nil ([b for b in *t])[1]
+        ]], [[
+          it 'y', ->
+            assert.same([a for a in *t], b)
+            assert.equals(-1, x)
+            assert.is_nil(([b for b in *t])[1])
+        ]], spec: true)
+
+  describe 'tables', ->
+    it 'gives braces to tables without them', ->
+      converts([[
+        x = a: 1
+        f = -> :a, :b
+      ]], [[
+        x = {a: 1}
+        f = -> {:a, :b}
+      ]])
+
+    it 'gives braces to a returned table', ->
+      converts([[
+        f = ->
+          return :a, :b
+      ]], [[
+        f = ->
+          return {:a, :b}
+      ]])
+
+    it 'puts a space between a key and the value it touches', ->
+      converts([[
+        x = {sort:not y, text:z}
+      ]], [[
+        x = {sort: not y, text: z}
+      ]])
+
+    it 'gives a table ending a function below other statements lines of its own', ->
+      converts([[
+        f = ->
+          x = 1
+          complete: -> x
+      ]], [[
+        f = ->
+          x = 1
+          {
+            complete: -> x
+          }
+      ]])
+
+    it "opens a function's only table on the function's line", ->
+      converts([[
+        f = ->
+          a:
+            b: 1
+      ]], [[
+        f = -> {
+          a: {
+            b: 1
+          }
+        }
+      ]])
+
+    it 'gives a table nested under a key lines of its own, and the table around it', ->
+      converts([[
+        t = {
+          current: get: ->
+            clips[1]
+          clips: get: -> clips
+        }
+        w = visible: true, status: [m]: f
+      ]], [[
+        t = {
+          current: {
+            get: ->
+              clips[1]
+          }
+          clips: {
+            get: -> clips
+          }
+        }
+        w = {
+          visible: true
+          status: {
+            [m]: f
+          }
+        }
+      ]])
+
+    it 'keeps a table ending a module on its line', ->
+      converts([[
+        :encode, :decode
+      ]], [[
+        {:encode, :decode}
+      ]])
+
+  describe 'layout', ->
+    it 'indents a line continuing an expression deeper than the line it continues', ->
+      converts([[
+        ok = a\test(l) or
+        b\test(l)
+      ]], [[
+        ok = a:test(l) or
+          b:test(l)
+      ]])
+
+    it 'moves bodies after then, do and else to lines of their own', ->
+      converts([[
+        if not index then index = 1
+        elseif index < 1 then index = 2 else index = 3
+        for x in *t do print x
+        while busy! do wait!
+      ]], [[
+        if not index
+          index = 1
+        elseif index < 1
+          index = 2
+        else
+          index = 3
+        for x in *t
+          print(x)
+        while busy()
+          wait()
+      ]])
+
+    it 'turns else if into elseif', ->
+      converts([[
+        if a
+          x = 1
+        else if b
+          x = 2
+        else
+          x = 3
+      ]], [[
+        if a
+          x = 1
+        elseif b
+          x = 2
+        else
+          x = 3
+      ]])
+
+    it 'indents blocks by two spaces', ->
+      converts([[
+        f = ->
+            x = 1
+            if x
+                y = 2
+      ]], [[
+        f = ->
+          x = 1
+          if x
+            y = 2
+      ]])
+
+    it 'keeps the lines of a long string in a block indented by other than two', ->
+      converts('f = ->\n    s = [==[\n        text\n    ]==]\n',
+        'f = ->\n  s = [[\n        text\n    ]]\n')
+
+    it 'drops trailing whitespace', ->
+      converts('x = 1  \n\ny = 2 -- note  \n', 'x = 1\n\ny = 2 -- note\n')
+
+    it 'puts a space before a comment touching a name', ->
+      converts('x = y--note\n', 'x = y --note\n')
+
+    it 'fixes odd spacing', ->
+      converts([[
+        class X
+          new:  => @y = f a , b,  c
+          m: ->  x
+        x  = 1
+      ]], [[
+        class X
+          new: => @y = f(a, b, c)
+          m: -> x
+        x = 1
+      ]])
+
+  describe 'control flow', ->
+    it 'turns when into if in comprehensions and for modifiers', ->
+      converts([[
+        x = [a for a in *t when a > 0]
+        print a for a in *t when a
+      ]], [[
+        x = [a for a in *t if a > 0]
+        print(a) for a in *t if a
+      ]])
+
+    it 'declares the names assigned an if value and assigns them in its branches', ->
+      converts([[
+        pfx, sfx = if first\match '%p'
+          '%p+$', '^%p+'
+        elseif first\match '%w'
+          '%w+$', '^%w+'
+      ]], [[
+        local pfx, sfx
+        if first:match('%p')
+          pfx, sfx = '%p+$', '^%p+'
+        elseif first:match('%w')
+          pfx, sfx = '%w+$', '^%w+'
+      ]])
+
+    it 'assigns nil when no branch of an if value assigning a name matches', ->
+      converts([[
+        x = 1
+        x = if a then b
+        t.y = if a then b
+      ]], [[
+        x = 1
+        if a
+          x = b
+        else
+          x = nil
+        if a
+          t.y = b
+        else
+          t.y = nil
+      ]])
+
+    it 'assigns no nil to a name surely nil before an if value', ->
+      converts([[
+        local left
+        left = if a then b
+      ]], [[
+        local left
+        if a
+          left = b
+      ]])
+
+    it 'keeps an assignment ending a branch of an if value', ->
+      converts([[
+        x = if a
+          y = 1
+        else
+          2
+      ]], [[
+        local x
+        if a
+          y = 1
+        else
+          x = 2
+      ]])
+
+    it 'returns in each branch of a returned if', ->
+      converts([[
+        f = ->
+          return if is_table
+            offsets
+          else
+            table.unpack offsets
+      ]], [[
+        f = ->
+          if is_table
+            return offsets
+          else
+            return table.unpack(offsets)
+      ]])
+
+    it 'assigns in each case of a switch value', ->
+      converts([[
+        path = switch p
+          when '/' then p .. text
+          else p .. '/' .. text
+      ]], [[
+        local path
+        switch p
+          when '/'
+            path = p .. text
+          else
+            path = p .. '/' .. text
+      ]])
+
+    it 'returns from the branches of an if ending a function', ->
+      converts([[
+        after = (s, f) ->
+          if s != 0
+            approximately s, f
+          else
+            if s
+              exactly s, f
+            else
+              with t
+                .x = 1
+      ]], [[
+        after = (s, f) ->
+          if s != 0
+            return approximately(s, f)
+          else
+            if s
+              return exactly(s, f)
+            else
+              return with t
+                .x = 1
+      ]])
+
+    it 'returns from the cases of a switch ending a function', ->
+      converts([[
+        f = (a) ->
+          switch a
+            when 1 then 'one'
+            else 'many'
+      ]], [[
+        f = (a) ->
+          switch a
+            when 1
+              return 'one'
+            else
+              return 'many'
+      ]])
+
+    it 'returns a modified expression ending a branch', ->
+      converts([[
+        f = ->
+          if a
+            g! if b
+      ]], [[
+        f = ->
+          if a
+            return g() if b
+      ]])
+
+    it 'returns nothing new from a loop ending a branch', ->
+      converts([[
+        f = ->
+          if a
+            for x in *t
+              g x
+      ]], [[
+        f = ->
+          if a
+            for x in *t
+              g(x)
+      ]])
+
+    it 'leaves the if ending a constructor or a setter as it is', ->
+      converts([[
+        class X
+          new: =>
+            if a
+              b!
+          @property x:
+            set: (v) =>
+              if v
+                c!
+      ]], [[
+        class X
+          new: =>
+            if a
+              b()
+          set x: (v) =>
+            if v
+              c()
+      ]])
+
+    it 'gives a one-line function ending in a for modifier in a table a block', ->
+      converts([[
+        x = {
+          put: (t) => rawset env, k, v for k,v in pairs t
+        }
+      ]], [[
+        x = {
+          put: (t) =>
+            rawset(env, k, v) for k,v in pairs(t)
+        }
+      ]])
+
+    it 'keeps a one-line function ending in a for modifier as the last argument of a statement', ->
+      converts([[
+        describe 'x', ->
+          after_each -> VC.unregister name for name in pairs VC.available
+      ]], [[
+        describe 'x', ->
+          after_each -> VC.unregister(name) for name in pairs(VC.available)
+      ]], spec: true)
+
+    it 'warns about loops as values', ->
+      assert.same {'a loop as a value'}, warnings_for([[
+        x = if a
+          for y in *t
+            y
+      ]])
+      assert.same {'a loop returned as a value'}, warnings_for([[
+        f = -> return for y in *t do y
+      ]])
+
+    it 'warns about comprehensions with several for clauses', ->
+      assert.same {"a comprehension with several 'for' clauses"}, warnings_for([[
+        x = [a for a in *t for b in *a]
+      ]])
+
+  describe 'parameters', ->
+    it 'turns @x parameters into plain ones, assigned at the top of the body', ->
+      converts([[
+        class X
+          new: (@buffer, @pos) =>
+          show: (widget, @@options = {}) =>
+            error 'no widget' if not widget
+          set: (@x) => @y = 1
+      ]], [[
+        class X
+          new: (buffer, pos) =>
+            @buffer = buffer
+            @pos = pos
+          show: (widget, options = {}) =>
+            @@options = options
+            error('no widget') if not widget
+          set: (x) =>
+            @x = x
+            @y = 1
+      ]])
+
+  describe 'names', ->
+    it 'turns imports into destructuring', ->
+      converts([[
+        import a, b from t
+        import \m from obj
+      ]], [[
+        {:a, :b} = t
+        m = (...) -> obj:m(...)
+      ]])
+
+    it 'warns about export', ->
+      assert.same {"'export'"}, warnings_for([[
+        export x = 1
+      ]])
+
+  describe 'classes', ->
+    it 'drops PropertyObject as a parent, with its super call and import', ->
+      converts([[
+        {:PropertyObject} = howl.util.moon
+
+        class Context extends PropertyObject
+          new: (@buffer) =>
+            super!
+
+            @x = 1
+      ]], [[
+        class Context
+          new: (buffer) =>
+            @buffer = buffer
+
+            @x = 1
+      ]])
+
+    it 'turns @property into get and set items', ->
+      converts([[
+        class X extends PropertyObject
+          @property text:
+            get: => @_text
+            set: (text) => @buffer\replace text
+
+          @property mode:
+            get: => @_mode
+
+            set: (mode) =>
+              @_mode = mode
+          @property idle: get: =>
+            1
+      ]], [[
+        class X
+          get text: => @_text
+          set text: (text) => @buffer:replace(text)
+
+          get mode: => @_mode
+
+          set mode: (mode) =>
+            @_mode = mode
+          get idle: =>
+            1
+      ]])
+
+    it 'turns @meta and metamethod members into meta', ->
+      converts([[
+        class X
+          @meta {__len: => 1}
+        class Y
+          __tostring: => @text
+          m: => 1
+          __len: => #@text
+      ]], [[
+        class X
+          meta {__len: => 1}
+        class Y
+          meta {
+            __tostring: => @text
+            __len: => #@text
+          }
+          m: => 1
+      ]])
+
+    it 'warns about an __index member, which MoonScript ignores', ->
+      messages = warnings_for([[
+        class X
+          __index: (k) => 1
+      ]])
+      assert.match messages[1], '__index'
+
+    it "warns about a member reading a class body's local assigned above it", ->
+      messages = warnings_for([[
+        class X
+          helper = 1
+          value: helper
+          f: => helper
+      ]])
+      assert.equals 1, #messages
+      assert.match messages[1], 'helper'
+
+  describe 'strings', ->
+    it 'turns a long string with a level into one without', ->
+      converts('s = [==[a]b]==]\n', 's = [[a]b]]\n')
+
+    it "turns a long string containing ']]' into a quoted string", ->
+      converts("s = [==[\na]]'\\]==]\n", "s = 'a]]\\'\\\\'\n")
+
+  describe 'the copyright option', ->
+    it "ends a copyright's years with the year given", ->
+      converts([[
+        -- Copyright 2012-2015 The Howl Developers
+        x = {author: 'Copyright 2014 The Howl Developers'}
+      ]], [[
+        -- Copyright 2012-2026 The Howl Developers
+        x = {author: 'Copyright 2014-2026 The Howl Developers'}
+      ]], copyright: {year: 2026, first_year: 2012})
+
+    it 'adds a copyright header to a file without one', ->
+      converts([[
+        x = 1
+      ]], [[
+        -- Copyright 2019-2026 The Howl Developers
+        -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+        x = 1
+      ]], copyright: {year: 2026, first_year: 2019})

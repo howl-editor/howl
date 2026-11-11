@@ -1,18 +1,26 @@
 # Converting MoonScript to Howlscript
 
 How Howl's MoonScript is converted to Howlscript, collected from modules converted by
-hand. The converter will follow these rules, and the hand-converted modules will check
-it. [REFERENCE.md](REFERENCE.md) lists every difference between the two languages;
+hand. [REFERENCE.md](REFERENCE.md) lists every difference between the two languages;
 this says what a converted file should look like.
+
+The converter, `convert.lua` here, follows these rules, and `bin/howl-convert` runs
+it (`-w --howl` writes Howl's own files in place). It reproduces the hand-converted
+modules, apart from their fixes made by hand. What it can't decide is left as it is,
+for the Howlscript compiler to reject or with a warning, and fixed by hand following
+the rules below (see [By hand](#by-hand)).
 
 ## Principles
 
 - **Mechanical:** a conversion changes only what Howlscript requires, so it reads
   line by line against the original. Improvements, like `x = x or {}` to `x or= {}`,
   are separate changes.
-- **Odd spacing is fixed,** as two spaces where one belongs (`new:  =>`), a space
-  before a comma, a block indented by other than two spaces, or `for _=1,n` for
-  `for _ = 1, n`. Spacing inside strings stays.
+- **Odd spacing is fixed,** as two spaces where one belongs (`new:  =>`, `->  x`,
+  `x  = 1`), a space before a comma or none after it, a block indented by other
+  than two spaces, a closing brace on a line of its own not lined up with the line
+  its table opens on, trailing whitespace, or `for _=1,n` for `for _ = 1, n`.
+  Spacing inside strings stays, and so do the lines of a long string in a block
+  that moves.
 - **Bugs found on the way** are fixed in the conversion and named in its commit, as
   `window_spec`'s `assert.is_nil, win.current_view` was: a value list, not a call,
   so it asserted nothing.
@@ -252,6 +260,15 @@ is visible:
   })
   ```
 
+  MoonScript also takes such a table after an argument without a comma. After a
+  string, as in `interact.search`'s calls, the comma is added:
+  `f 'a'` with `b: 1` below becomes `f('a', {`. After a name, MoonScript calls the
+  name with the table, which stays so: `f a` with `b: 1` below becomes `f(a {`.
+
+- **A table as the only argument of a call on anything but a name,** as an index,
+  gets parentheses, as Howlscript only takes a table after a name as an argument:
+  `callbacks[1]` with `a: 1` below becomes `callbacks[1]({`.
+
 - **Positional arguments continued after a trailing `,`** keep their lines inside
   the parentheses, which close after the last one:
 
@@ -349,6 +366,15 @@ if not index or index > #list + 1
 elseif index < 1
   index = 1
 ```
+
+A comment touching a name or `]` gets a space, as Howlscript reads the `--` as a
+decrement there: `x--note` becomes `x --note`.
+
+### Strings
+
+A long string with a level becomes one without, `[==[text]==]` becoming
+`[[text]]`, or a single-quoted string when its text contains `]]`, as
+`[==[a]]b]==]` becomes `'a]]b'`.
 
 ### Control flow
 
@@ -649,6 +675,21 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
     }
   ```
 
+- **An `__index` member** did nothing in MoonScript, as the base's `__index` replaced
+  it, while in `meta` it's a fallback. The converter moves it there with a warning,
+  to be dropped or kept by hand.
+- **Members reading class-body locals:** MoonScript added a class's members before
+  running its body, so a member reading a local the body assigns saw nil, where
+  Howlscript, running the body top to bottom, sees the value assigned above it. The
+  converter warns about such members. Howl has none.
+- **`super` outside classes:** `super` only works in derived classes, while Howl's
+  modes called the parent mode's version of a method with a `super` that
+  `mode.moon` put in their environment. A mode's `create` now gets the parent mode
+  as its second argument, and the mode calls through that, as
+  `parent.indent_for(@, line, indent_level)`. Unlike `@parent`, which is the parent
+  of the mode a method is called on, it's the defining mode's parent, also when a
+  sub-mode inherits the method. `ruby_mode` and `coffeescript_mode` were changed so
+  before their conversion, and `mode.moon` no longer gives modes a `super`.
 - **Errors:** writing a read-only property fails with `property 'x' is read-only`,
   where PropertyObject's message was `Attempt to set read-only property "x"`. Reading
   a set-only one fails with `property 'x' is write-only`, where PropertyObject went
@@ -661,6 +702,19 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
 - A class or module with a Howlscript port in `lib/howlscript/spec/fixtures/` drops
   the port and its line in `acceptance_spec.moon`, as its own spec now runs against
   the real thing.
+
+## By hand
+
+The converter leaves these as they are, for the rules above to be applied by hand.
+The Howlscript compiler rejects all but the warned ones, and `bin/howl-convert`
+reports both:
+
+- `export`, and `setfenv` modules (see [Globals](#globals));
+- loops as values, warned about, and comprehensions with two `for`s;
+- `if` and `switch` values inside expressions, as in an argument;
+- expressions kept for their effect;
+- parameters and loop variables shadowing a local;
+- assignments in `if` and `with` headers.
 
 ## To do
 

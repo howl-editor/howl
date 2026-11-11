@@ -89,4 +89,25 @@ tries `.moon` and `.lua`, while `bundle_load` and the user init try `.lua` befor
 `.moon`.
 
 There's no Howlscript linter yet, so `--lint` only checks that a `.howl` file
-compiles. The existing MoonScript code hasn't been converted.
+compiles.
+
+## Converting MoonScript
+
+```lua
+local convert = require('howlscript.convert')
+-- on failure: nil and the parse error
+local text, warnings = convert.convert(moonscript_source, { spec = true })
+```
+
+`convert.lua` converts MoonScript to Howlscript, following the rules in
+[CONVERTING.md](CONVERTING.md). It parses with MoonScript's own grammar and keeps
+the source's comments and layout. `spec` leaves the calls of busted specs without
+parentheses, and `copyright = { year = 2026, first_year = 2014 }` makes Howl's
+copyright lines end with `year`, adding a header starting at `first_year` to a file
+without one. `warnings` lists `{ line, message }` for what needs a look; what it
+can't convert is left for the compiler to reject.
+
+`bin/howl-convert [-w] [--spec] [--howl] <file.moon>...` prints the Howlscript for
+files, or with `-w` writes each `.howl` in place of its `.moon`, reporting warnings
+and compile errors in the result. `--howl` updates the copyright headers of Howl's
+own files.
