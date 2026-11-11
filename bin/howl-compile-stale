@@ -30,7 +30,8 @@ itself. With no arguments, sweeps lib/, bundles/ and spec/. Exits 0 when there w
 nothing to do.
 
   --prune      also delete stray *_spec.bc files (harmless, since the spec runner
-               loadfile's the source, but noise)
+               loadfile's the source, but noise), and .bc files whose source is
+               gone, which require would otherwise still load
   -h, --help   this help
 EOF
       exit 0
@@ -46,6 +47,15 @@ done
 if [ "$PRUNE" = yes ]; then
   pruned=$(find $PATHS -name '*_spec.bc' -print -delete 2>/dev/null | wc -l)
   echo "pruned $pruned stray *_spec.bc file(s)"
+  orphans=0
+  for bc in $(find $PATHS -name '*.bc' 2>/dev/null); do
+    src="${bc%.bc}"
+    if [ ! -e "$src.moon" ] && [ ! -e "$src.howl" ] && [ ! -e "$src.lua" ]; then
+      rm -f "$bc"
+      orphans=$((orphans + 1))
+    fi
+  done
+  echo "pruned $orphans .bc file(s) without a source"
 fi
 
 STALE=$(mktemp "${TMPDIR:-/tmp}/howl-stale-XXXXXX") || exit 1
