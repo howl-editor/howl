@@ -1,0 +1,7 @@
+-- Copyright 2014-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+{
+  DefaultMode: require('howl.modes.default_mode')
+  base_modes: require('howl.modes.base_modes')
+}

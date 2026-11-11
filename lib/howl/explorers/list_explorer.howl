@@ -1,0 +1,30 @@
+-- Copyright 2019-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+class ListItem
+  new: (item) =>
+    @item = item
+  display_row: =>
+    return {@item} if type(@item) == 'string'
+    return moon.copy(@item)
+
+class ListExplorer
+  new: (opts) =>
+    error('no items provided') unless opts.items
+    @opts = moon.copy(opts)
+  display_path: =>
+    if @opts.prompt
+      return @opts.prompt
+    else
+      return nil
+  display_title: =>
+    if @opts.title
+      return @opts.title
+    else
+      return nil
+  display_columns: =>
+    if @opts.columns
+      return @opts.columns
+    else
+      return nil
+  display_items: => [ListItem(item) for item in *@opts.items]

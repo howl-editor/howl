@@ -792,3 +792,4 @@ without a rule, so the rest is converted in one go.
 |---|---|---|
 | `lib/aullar/`, with its specs | 2026-11-11 | `view`'s two reads forcing a lazy computation, and a loop as a value in `buffer_spec` |
 | `lib/ljglibs/`, with its specs | 2026-11-11 | Nothing |
+| `lib/howl/` and `spec/`, but for PropertyObject | 2026-11-11 | The `export`s of `spec_helper` and `highlight`, and of `bindings` and `lpeg_lexer`, which dropped their `setfenv`; loops as values in `app_commands`, `edit_commands`, `lsp/edits`, `project`, `paths`, `theme`, `matcher` and `matcher_spec`; an `if` value in `search_view`'s table |

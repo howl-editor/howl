@@ -1,0 +1,28 @@
+-- Copyright 2012-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+property_table = (properties) ->
+  setmetatable({}, {
+    __index: (t, key) ->
+      prop = properties[key]
+      if prop
+        if type(prop) == 'table' and prop.get
+          return prop.get(t)
+        else
+          return prop
+      nil
+
+    __newindex: (t, key, value) ->
+      prop = properties[key]
+      if prop
+        if prop.set
+          return prop.set(t, value)
+        elseif prop.get
+          return error('Attempt to write to a read-only property "' .. key .. '"')
+        else
+          return rawset(t, key, value)
+      else
+        return rawset(t, key, value)
+  })
+
+return setmetatable({}, __call: (_, properties) -> property_table(properties))

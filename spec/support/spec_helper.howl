@@ -1,0 +1,175 @@
+-- Copyright 2012-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+busted = require('busted')
+say = require('say')
+C = require('ffi').C
+
+{:File} = howl.io
+{:theme} = howl.ui
+{:Window} = howl.ui
+{:signal, :config} = howl
+_G.Spy = require('howl.spec.spy')
+
+-- additional aliases
+_G.context = describe
+
+-- includes assertion
+includes = (state, args) ->
+  t, b = table.unpack(args)
+  if type(t) == 'string'
+    return t:contains(b), args
+
+  error('Not a table', 1) if type(t) != 'table'
+  for v in *t
+    if v == b
+      return true, args
+  return false, args
+
+say:set("assertion.includes.positive", "Expected '%s' to include '%s'")
+say:set("assertion.includes.negative", "Expected '%s' to not include '%s'")
+assert:register("assertion", "includes", includes, "assertion.includes.positive", "assertion.includes.negative")
+
+-- match assertion
+match = (state, args) ->
+  target, pattern = table.unpack(args)
+  return target:match(pattern) != nil, { target, pattern }
+
+say:set("assertion.match.positive", "Expected '%s' to match '%s'")
+say:set("assertion.match.negative", "Expected '%s' to not match '%s'")
+assert:register("assertion", "match", match, "assertion.match.positive", "assertion.match.negative")
+
+-- raises assertion
+raises = (state, args) ->
+  pattern, f = table.unpack(args)
+  error('Not a function', 2) if type(f) != 'function'
+  status, raised_error = pcall(f)
+  raised_error = raised_error or '<no-error>'
+  val = not status and raised_error.ulower:match(pattern.ulower) != nil
+  return val, { pattern }
+
+say:set("assertion.raises.positive", "Function raised no error matching '%s'")
+say:set("assertion.raises.negative", "Function did raise an error matching '%s'")
+assert:register("assertion", "raises", raises, "assertion.raises.positive", "assertion.raises.negative")
+
+-- helpers
+with _G
+  .with_tmpdir = (f) ->
+    dir = File.tmpdir()
+    status, err = pcall(f, dir)
+    dir:delete_all() if dir.exists
+    error(err) if not status
+
+  .with_signal_handler = (name, ret, f) ->
+    handler = spy.new(-> ret)
+    signal.connect(name, handler)
+    status, err = pcall(f, handler)
+    signal.disconnect(name, handler)
+    error(err) if not status
+
+root = howl.app.root_dir
+support_files = root / 'spec' / 'support'
+
+-- load basic theme for specs
+theme.register('spec_theme', support_files / 'spec_theme.css')
+config.theme = 'spec_theme'
+theme.apply()
+
+-- catch any errors and store them in _G.errors
+-- export errors = {}
+-- signal.connect_first 'error', (e) ->
+--   append errors, e
+--   true
+
+
+default_loop = require'busted.loop.default'
+
+_G.howl_main_ctx = C.g_main_context_default()
+howl_loop = setmetatable({
+    step: (...) ->
+      jit.off(true, false)
+      C.g_main_context_iteration(howl_main_ctx, false)
+      default_loop.step()
+
+    pcall: pcall
+}, __index: default_loop)
+
+with _G
+  .set_howl_loop = -> _G.setloop(howl_loop)
+
+  .howl_async = (f) ->
+    _G.setloop(howl_loop)
+    co = coroutine.create(busted.async(f))
+    status, err = coroutine.resume(co)
+    error(err) unless status
+
+  .close_all_buffers = ->
+    for b in *howl.app.buffers
+      howl.app:close_buffer(b, true)
+
+  .collect_memory = ->
+    mem = collectgarbage('count')
+    while true
+      collectgarbage()
+      used = collectgarbage('count')
+      break if used >= mem
+      mem = used
+
+  .trimmed_text = (s) ->
+    return s if s.is_empty
+    s = s:gsub('^%s*\n', '')
+    lines = s:split('\n')
+    return lines[1].stripped unless #lines > 1
+    indentation = lines[1]:match('^%s+')
+    return s unless indentation
+    adj_lines = [l:gsub("^#{indentation}", '') for l in *lines]
+    table.concat(adj_lines, '\n')
+
+  .test_window = (child) ->
+    Gtk = require('ljglibs.gtk')
+    window = Gtk.Window(default_width: 840, default_height: 640)
+    window.title = 'howl-test'
+    window.css_classes = {'test-window'}
+    window.child = child if child
+    window:show()
+    watched = child or window
+    while watched.allocated_height <= 0
+      howl.app:pump_mainloop()
+    window
+
+  .use_test_buffers = (...) ->
+    app = howl.app
+
+    for b in *app.buffers
+      app:close_buffer(b)
+
+    existing_buffer = app.buffers[1]
+
+    buffers = {}
+    for b_info in *{...}
+      b = app:new_buffer()
+
+      if type(b_info) == 'string'
+        b.title = b_info
+      elseif type(b_info) == 'table'
+        for k, v in pairs(b_info)
+          b[k] = v
+
+      table.insert(buffers, b)
+
+    if existing_buffer
+      app:close_buffer(existing_buffer)
+
+    buffers
+
+  .within_command_line = (interaction, f) ->
+    -- invoke interaction function and call f with topmost command_line
+    with howl.app
+      unless .window
+        .window = Window(window: test_window())
+        .window:realize()
+    command_panel = howl.app.window.command_panel
+    wrapped = coroutine.wrap(interaction)
+    wrapped()  -- this invokes the interaction and activates the command line
+    command_line = command_panel.command_lines[#command_panel.command_lines]
+    f(command_line)

@@ -1,0 +1,329 @@
+-- Copyright 2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+ffi = require('ffi')
+json_rpc = require('howl.json_rpc')
+uri = require('howl.lsp.uri')
+{:dispatch, :timer, :sys} = howl
+{:Process} = howl.io
+append = table.insert
+
+REQUEST_TIMEOUT = 10
+MAX_STDERR_LINES = 20
+
+-- set HOWL_LSP_TRACE=1 to print all LSP traffic to stdout
+trace = sys.env.HOWL_LSP_TRACE and (dir, data) -> print("LSP #{dir} #{data}")
+
+client_capabilities = -> {
+  general: {
+    positionEncodings: { 'utf-8' }
+  }
+  textDocument: {
+    synchronization: {
+      didSave: true
+    }
+    completion: {
+      completionItem: {
+        snippetSupport: false
+      }
+      contextSupport: true
+    }
+    hover: {
+      contentFormat: { 'markdown', 'plaintext' }
+    }
+    definition: {
+      linkSupport: true
+    }
+    declaration: {
+      linkSupport: true
+    }
+    typeDefinition: {
+      linkSupport: true
+    }
+    implementation: {
+      linkSupport: true
+    }
+    rename: {
+      prepareSupport: true
+    }
+    publishDiagnostics: {
+      versionSupport: true
+    }
+  }
+  workspace: {
+    workspaceFolders: true
+    applyEdit: true
+    workspaceEdit: {
+      documentChanges: true
+      failureHandling: 'transactional'
+    }
+  }
+}
+
+-- the server requests answered by every client
+default_request_handlers = {
+  'workspace/configuration': (params) ->
+    items = params and params.items or {}
+    list = [json_rpc.null for _ in *items]
+    #list > 0 and list or json_rpc.empty_array()
+
+  'client/registerCapability': -> nil
+  'client/unregisterCapability': -> nil
+  'window/workDoneProgress/create': -> nil
+}
+
+class Client
+  -- opts: `name` (the server's name, used in messages), `cmd`, `root` (a File),
+  -- and optionally `init_options` (sent as the `initializationOptions`), `env`
+  -- (the server's whole environment, as for `Process`), `process` (used instead
+  -- of spawning `cmd`), `on_initialized` and `on_exit` (called with the client
+  -- once the server is initialized, and when it exits), `notification_handlers`
+  -- (a table of method -> handler(params)) and `request_handlers` (a table of
+  -- method -> handler(params), returning the result)
+  new: (opts) =>
+    @name = opts.name
+    @cmd = opts.cmd
+    @init_options = opts.init_options
+    @root = opts.root
+    @on_initialized = opts.on_initialized
+    @on_exit = opts.on_exit
+    @notification_handlers = opts.notification_handlers or {}
+    @request_handlers = { k, v for k, v in pairs(default_request_handlers) }
+    @request_handlers[k] = v for k, v in pairs(opts.request_handlers or {})
+    @initialized = false
+    @dead = false
+    -- set when the client is deliberately stopped
+    @stopping = false
+    @failure = nil
+    -- the time of the last message sent to the server
+    @last_used = sys.time()
+    @capabilities = {}
+    @stderr = {}
+
+    @_pending = {}
+    @_next_id = 0
+    @_deferred = {}
+    @_queue = {}
+    @_writing = false
+    @_decoder = json_rpc.Decoder()
+
+    @process = opts.process or Process {
+      cmd: @cmd,
+      env: opts.env,
+      working_directory: @root,
+      read_stdout: true,
+      read_stderr: true,
+      write_stdin: true,
+      long_lived: true,
+      title: "LSP: #{@name}"
+    }
+    -- stopping from the process list shuts the server down cleanly
+    @process.stop_handler = -> @stop()
+
+    dispatch.launch(-> @_read())
+
+  -- sends the initialize handshake; messages sent before it completes are
+  -- held back until it has
+  start: =>
+    root_uri = uri.for_file(@root)
+    params = {
+      processId: tonumber(ffi.C.getpid()),
+      clientInfo: { name: 'Howl Editor' }
+      rootUri: root_uri,
+      workspaceFolders: { { uri: root_uri, name: @root.basename } }
+      capabilities: client_capabilities()
+      initializationOptions: @init_options
+    }
+
+    @_send_request 'initialize', params, (result, err) ->
+      if err
+        @_fail("initialize failed: #{err}")
+        return
+
+      @capabilities = result.capabilities or {}
+      @server_info = result.serverInfo
+      encoding = @capabilities.positionEncoding
+      unless encoding == 'utf-8'
+        @_fail("server does not support the utf-8 position encoding (got #{encoding or 'utf-16'})")
+        return
+
+      @initialized = true
+      @_write(json_rpc.notification('initialized', {}))
+      deferred = @_deferred
+      @_deferred = {}
+      @_write(msg) for msg in *deferred
+      @.on_initialized(@) if @on_initialized
+
+  -- sends a request, calling `callback(result, err)` with the response. The
+  -- callback is never invoked before this returns. Returns the request id,
+  -- or nil and an error message if the request can't be sent.
+  send_request: (method, params, callback, timeout = REQUEST_TIMEOUT) =>
+    @_send_request(method, params, callback, timeout)
+
+  -- sends a request and waits for the response, returning the result or nil
+  -- and an error message. Must be called from a coroutine.
+  request: (method, params, timeout) =>
+    handle = dispatch.park("lsp-request-#{method}")
+    id, err = @send_request(method, params, ((result, r_err) -> dispatch.resume(handle, result, r_err)), timeout)
+    unless id
+      dispatch.resume_or_clear(handle)
+      return nil, err
+
+    dispatch.wait(handle)
+
+  notify: (method, params) =>
+    return if @dead
+    @_send(json_rpc.notification(method, params or {}))
+
+  cancel: (id) =>
+    entry = @_pending[id]
+    return unless entry
+    @_pending[id] = nil
+    timer.cancel(entry.timer)
+    @notify('$/cancelRequest', :id)
+
+  stop: =>
+    return if @dead or @stopping
+    @stopping = true
+    @send_request 'shutdown', nil, ->
+      @notify('exit')
+      -- nothing is sent after exit, and servers may also wait for the end of
+      -- their input
+      @_close_stdin()
+    timer.after 2, ->
+      @process:send_signal('TERM') unless @process.exited
+
+  _send_request: (method, params, callback, timeout = REQUEST_TIMEOUT) =>
+    return nil, 'server is not running' if @dead
+    @_next_id += 1
+    id = @_next_id
+    entry = {:callback, :method}
+    entry.timer = timer.after(timeout, ->
+      if @_pending[id] == entry
+        @_pending[id] = nil
+        return callback(nil, "request '#{method}' timed out")
+    )
+
+    @_pending[id] = entry
+    @_send(json_rpc.request(method, params, id))
+    id
+
+  _send: (msg) =>
+    @last_used = sys.time()
+    if @initialized or msg.method == 'initialize' or not msg.method
+      return @_write(msg)
+    else
+      return append(@_deferred, msg)
+
+  _write: (msg) =>
+    return if @_closing_stdin
+    data = json_rpc.encode(msg)
+    trace('->', data) if trace
+    append(@_queue, data)
+    return if @_writing
+    @_writing = true
+    dispatch.launch ->
+      while #@_queue > 0 and not @dead
+        chunk = table.concat(@_queue)
+        @_queue = {}
+        status, err = pcall(@process.stdin.write, @process.stdin, chunk)
+        unless status
+          log.error("LSP (#{@name}): failed to write to server: #{err}")
+          break
+
+      @_writing = false
+      @_close_stdin() if @_closing_stdin
+
+  -- closes the server's stdin once what's queued has been written, and stops
+  -- anything more from being written
+  _close_stdin: =>
+    @_closing_stdin = true
+    return if @_writing or @_stdin_closed
+    @_stdin_closed = true
+    stdin = @process.stdin
+    -- the server is done with it either way, so a failure doesn't matter
+    dispatch.launch(-> pcall(stdin.close, stdin))
+
+  _read: =>
+    status, err = pcall(@process.pump, @process, (...) -> @_on_stdout(...), (...) -> @_on_stderr(...))
+    @_on_exited(not status and err or nil)
+
+  _on_stdout: (data) =>
+    return unless data
+    trace('<-', data) if trace
+    status, messages = pcall(@_decoder.feed, @_decoder, data)
+    unless status
+      log.error("LSP (#{@name}): #{messages}")
+      @_decoder = json_rpc.Decoder()
+      return
+
+    for msg in *messages
+      status, err = pcall(@_on_message, @, msg)
+      log.error("LSP (#{@name}): error handling message: #{err}") unless status
+
+  _on_stderr: (data) =>
+    return unless data
+    for line in data:gmatch('[^\n]+')
+      append(@stderr, line)
+      table.remove(@stderr, 1) if #@stderr > MAX_STDERR_LINES
+
+  _on_message: (msg) =>
+    if msg.method
+      if msg.id != nil
+        return @_on_server_request(msg)
+      else
+        handler = @notification_handlers[msg.method]
+        return handler(msg.params) if handler
+    elseif msg.id != nil
+      entry = @_pending[msg.id]
+      return unless entry
+      @_pending[msg.id] = nil
+      timer.cancel(entry.timer)
+      if msg.error
+        return entry.callback(nil, msg.error.message or 'unknown error')
+      else
+        return entry.callback(msg.result)
+
+  _on_server_request: (msg) =>
+    handler = @request_handlers[msg.method]
+    unless handler
+      @_write(json_rpc.error_response(msg.id, -32601, "Method not supported: #{msg.method}"))
+      return
+
+    -- the server is answered even when the handler fails
+    status, result = pcall(handler, msg.params)
+    if status
+      return @_write(json_rpc.response(msg.id, result))
+    else
+      log.error("LSP (#{@name}): error handling '#{msg.method}': #{result}")
+      return @_write(json_rpc.error_response(msg.id, -32603, tostring(result)))
+
+  _fail: (reason) =>
+    @failure = reason
+    log.warn("LSP (#{@name}): #{reason}")
+    @_shut_down()
+    @process:send_signal('TERM') unless @process.exited
+
+  _on_exited: (err) =>
+    unless @dead or @stopping
+      msg = err or @process.exit_status_string or 'exited'
+      log.warn("LSP (#{@name}): server exited (#{msg})")
+      for i = math.max(1, #@stderr - 4), #@stderr
+        log.warn("LSP (#{@name}): #{@stderr[i]}")
+
+    @_shut_down()
+    @.on_exit(@) if @on_exit
+
+  _shut_down: =>
+    return if @dead
+    @dead = true
+    @initialized = false
+    @_close_stdin()
+    pending = @_pending
+    @_pending = {}
+    @_deferred = {}
+    for _, entry in pairs(pending)
+      timer.cancel(entry.timer)
+      entry.callback(nil, 'server is not running')
+
+Client

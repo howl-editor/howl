@@ -1,0 +1,12 @@
+-- Copyright 2016-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+util = howl.util
+
+return setmetatable({}, {
+  __index: (key) =>
+    tb = debug.traceback('', 2)
+    first = tb:match('stack traceback:\n%s*([^\n]+)')
+    log.error("`howl.aux` is deprecated, please update your code to use `howl.util` instead\n  (#{first})\n")
+    util[key]
+})

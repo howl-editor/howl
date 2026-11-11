@@ -1,0 +1,24 @@
+-- Copyright 2015-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+Gtk = require('ljglibs.gtk')
+
+class ContentBox
+
+  new: (name, content_widget, opts = {})=>
+    @name = name
+    @content_widget = content_widget
+    @opts = opts
+
+    @widget = Gtk.Box(Gtk.ORIENTATION_VERTICAL)
+    @widget.css_classes = {'content-box', "content-box-#{name}"}
+
+    if opts.header
+      @widget:append(opts.header)
+
+    @widget:append(content_widget)
+
+    if opts.footer
+      @widget:append(opts.footer)
+
+  to_gobject: => @widget

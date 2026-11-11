@@ -1,0 +1,27 @@
+-- Copyright 2014-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+{:mode} = howl
+
+curly_mode = {
+  indentation: {
+    more_after: {
+      '[[{(]%s*$',
+    }
+
+    less_for: {
+      '^%s*[]})]',
+    }
+  }
+
+  code_blocks: {
+    multiline: {
+      { '{%s*$', '^%s*}', '}'}
+      { '%[%s*$', '^%s*%]', ']'}
+      { '%(%s*$', '^%s*%)', ')'}
+    }
+  }
+
+}
+
+return mode.register(name: 'curly_mode', create: -> curly_mode)

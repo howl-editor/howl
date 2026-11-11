@@ -222,10 +222,10 @@ local function main()
 
     if args.spec then
       set_package_path('lib/ext/spec-support')
-      package.loaded.lfs = loadfile(app_root .. '/lib/ext/spec-support/howl-lfs-shim.moon')()
+      package.loaded.lfs = loadfile(app_root .. '/lib/ext/spec-support/howl-lfs-shim.howl')()
       local busted = assert(loadfile(app_root .. '/lib/ext/spec-support/busted/busted_bootstrap'))
       _G.arg = {table.unpack(argv, 3, #argv)}
-      local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
+      local support = assert(loadfile(app_root .. '/spec/support/spec_helper.howl'))
       support()
       busted()
     elseif args.run or args.run_async then

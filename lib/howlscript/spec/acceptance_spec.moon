@@ -1,33 +1,10 @@
--- Real code in Howlscript: Howlscript ports of real modules, run against those
--- modules' own specs.
+-- Real code in Howlscript: Howlscript ports of real modules.
 
 howlscript = require 'howlscript'
-moonscript = require 'moonscript'
 match = require 'luassert.match'
 {:run} = require 'howlscript.spec.support'
 
 fixtures = debug.getinfo(1, 'S').source\match('^@(.+/)') .. 'fixtures/'
-
--- Loads a module's own spec with the Howlscript port of the module in its place:
--- `require` returns the port while the spec loads, and so does the auto-loading
--- table that `import X from howl.util` reads, when `auto` gives it and its key, as
--- in `{howl.util, 'Matcher'}`. The spec keeps the port, while everything is
--- restored for any other code.
-spec_against_port = (spec, module_name, port_file, auto) ->
-  port = assert(howlscript.loadfile fixtures .. port_file)!
-  saved = package.loaded[module_name]
-  saved_auto = auto and rawget auto[1], auto[2]
-  package.loaded[module_name] = port
-  rawset auto[1], auto[2], port if auto
-
-  ok, err = pcall -> assert(moonscript.loadfile howl.app.root_dir\join(spec).path)!
-
-  package.loaded[module_name] = saved
-  rawset auto[1], auto[2], saved_auto if auto
-  error err, 0 unless ok
-
-describe 'acceptance: spec/util/matcher_spec.moon against a Howlscript Matcher', ->
-  spec_against_port 'spec/util/matcher_spec.moon', 'howl.util.matcher', 'matcher.howl', {howl.util, 'Matcher'}
 
 -- PropertyObject's spec (spec/util/moon/propertyobject_spec.moon) declares its
 -- classes in MoonScript, so it's translated here, with the classes in Howlscript.

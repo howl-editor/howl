@@ -1,0 +1,8 @@
+-- Copyright 2014-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+{
+  auto_pair: require('howl.editing.auto_pair')
+  text: require('howl.editing.text')
+  formatting: require('howl.editing.formatting')
+}

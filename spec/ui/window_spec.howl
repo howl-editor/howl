@@ -240,6 +240,8 @@ describe 'Window', ->
 
   describe 'get_screenshot(opts)', ->
     it 'renders the part of the window given by opts.region, at opts.scale', ->
+      -- something to render, as the spec theme paints no window background
+      win:add_view(Gtk.Label(label: 'shot'))
       -- a window renders nothing until it's shown
       gobject = win:to_gobject()
       gobject:show()
