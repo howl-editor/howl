@@ -22,7 +22,7 @@ Exits 1 with the error if an input doesn't compile.
   -h, --help         this help
 
 Examples:
-  howlc lib/howlscript/spec/fixtures/property_object.howl
+  howlc lib/aullar/cursor.howl
   howlc -e 'f = (a) -> a + 1'
   echo 'x = 1' | howlc
 EOF

@@ -156,6 +156,15 @@ howl.mode.register
 
 ---
 
+## howl.util.moon.PropertyObject
+
+`PropertyObject` is gone. Howl is now written in Howlscript, whose classes have
+properties and metamethods of their own, as `get name: =>`, `set name: (v) =>`
+and `meta {...}` items (see `lib/howlscript/REFERENCE.md`). `bin/howl-convert`
+converts a MoonScript class built on `PropertyObject` to such a Howlscript class.
+
+---
+
 ## The command line
 
 Previously the command line API was available at `howl.app.window.command_line`.

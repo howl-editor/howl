@@ -720,9 +720,9 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
 - **Members added to `__base` after the class** stay as they are, as instances find
   them, also in a class with properties: `File.__base.rm = File.delete` gives every
   file `rm`.
-- A class or module with a Howlscript port in `lib/howlscript/spec/fixtures/` drops
-  the port and its line in `acceptance_spec.moon`, as its own spec now runs against
-  the real thing.
+- **PropertyObject** itself was removed once its last classes were converted, with
+  its spec and the compiler's specs for classes built on it. Classes extending it
+  convert as above.
 
 ## By hand
 
@@ -737,19 +737,6 @@ reports both:
 - expressions kept for their effect;
 - parameters and loop variables shadowing a local;
 - assignments in `if` and `with` headers.
-
-## To do
-
-What no conversion has met yet. Each gets a rule above once a conversion settles it.
-A survey of Howl's MoonScript parse trees on 2026-11-11 found no construct left
-without a rule, so the rest is converted in one go.
-
-- **PropertyObject's last users:** 9 classes, in `application`, `ui/editor`,
-  `ui/cursor`, `ui/list`, `ui/list_widget`, `ui/activity`, `ui/command_panel` (two)
-  and `io/output_stream`. Once they're converted,
-  `PropertyObject` goes with its spec, the `property_object.howl` fixture and its
-  acceptance block, the interop specs for it, and REFERENCE.md's notes on
-  `@property(...)`.
 
 ## Converted by hand
 

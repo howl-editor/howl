@@ -2,7 +2,6 @@
 
 moonscript = require 'moonscript'
 {:dedent, :run} = require 'howlscript.spec.support'
-{:PropertyObject} = howl.util.moon
 
 describe 'interop with MoonScript classes', ->
   moon_run = (src, env = {}) ->
@@ -108,48 +107,3 @@ describe 'interop with MoonScript classes', ->
     ]]
     Thing.__base.b = => 'b'
     assert.equals 'b', Thing!\b!
-
-  describe 'PropertyObject subclasses', ->
-    Buffer = nil
-
-    before_each ->
-      Buffer = run [[
-        class Buffer extends PropertyObject
-          new: (text = '') =>
-            @_text = text
-            super()
-          @property(text: {
-            get: => @_text
-            set: (v) => @_text = v
-          })
-          @property(size: {get: => #@_text})
-          @meta({
-            __len: => #@_text
-            __tostring: => "Buffer(#{@_text})"
-          })
-          append: (s) => @text ..= s
-      ]], :PropertyObject
-
-    it 'support properties', ->
-      b = Buffer 'ab'
-      b.text = 'abc'
-      b\append 'd'
-      assert.equals 'abcd', b.text
-      assert.equals 4, b.size
-      assert.raises 'read%-only', -> b.size = 3
-
-    it 'support metamethods via @meta', ->
-      b = Buffer 'xyz'
-      assert.equals 3, #b
-      assert.equals 'Buffer(xyz)', tostring b
-
-    it 'can be subclassed again after being instantiated', ->
-      Buffer 'x' -- installs __newindex on Buffer's base
-      Sub = run [[
-        class Sub extends Buffer
-          text: 'not the property'
-          shout: => @_text:upper()
-      ]], :Buffer
-      s = Sub 'hey'
-      assert.equals 'HEY', s\shout!
-      assert.equals 'not the property', rawget Sub.__base, 'text'

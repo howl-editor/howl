@@ -636,7 +636,7 @@ howl.config.define(name: 'tab_width', default: 4, :scope)
 The last call is `howl.config.define({name = 'tab_width', default = 4, scope = scope})`
 in Lua. Positional arguments come first, so `f(a, b, key: 1)` is `f(a, b, {key = 1})`,
 and a positional argument can't follow the named ones. A nested table needs its
-braces: `@property(title: {get: => @title})`.
+braces: `signal.register('saved', parameters: {buffer: 'The buffer saved'})`.
 
 With a [destructured parameter](#destructured-parameters), named arguments work like
 keyword arguments:
@@ -1194,10 +1194,6 @@ Properties and fallbacks extend this:
 - **MoonScript subclasses:** they get the same setup through the parent's
   `__inherited`. Classes with metamethods, properties or fallbacks wrap their
   `__inherited` to do that, and still call the one they had.
-- **PropertyObject:** a class extending a MoonScript class built on Howl's
-  `PropertyObject` uses its `@property(...)` and `@meta(...)` instead of `get`, `set`
-  and `meta`. PropertyObject replaces the
-  base's `__index` and `__newindex` with its own.
 
 A class without a parent, properties, fallbacks or metamethods compiles to exactly
 MoonScript's layout.
@@ -1219,9 +1215,6 @@ This compares Howlscript with MoonScript 0.5.0, the version in `lib/ext/moonscri
 | An inline body in arguments or a table takes the rest of the line: `f(-> a, b)` passes one function returning `a` and `b` | A `,` ends it there, so `f(-> a, b)` passes a function returning `a`, and `b`. `f((-> a, b))` passes one function returning both (see [Layout](#layout)). |
 | `f a: 1, 2` | An error: positional arguments come first. |
 | `x = a: 1`, `return a: 1`, indented key blocks | `x = {a: 1}`. A table needs braces, except for the trailing named arguments of a call. |
-| `@property name: get: => @x`, with Howl's `PropertyObject` | `get name: => @x`, and `set name: (v) => ...` for a setter (see [Properties](#properties)). In a class still extending `PropertyObject`, `@property(name: {get: => @x})`, as a nested table needs its braces. |
-| A PropertyObject subclass's `@property` replaces both of its parent's accessors | A subclass's `get` or `set` replaces only that accessor, and keeps the parent's other one. |
-| `@meta __tostring: => @x`, with Howl's `PropertyObject` | `meta {__tostring: => @x}` (see [Metamethods](#metamethods)). |
 | A member named after a metamethod, as in `__tostring: => @x`, is one, since the base is the instances' metatable | An error: metamethods go in `meta {...}`. |
 | A subclass doesn't inherit its parent's metamethods | It does. |
 | An `__index` member is ignored, as the base's `__index` is set to the base afterwards | `__index` and `__newindex` in `meta` are fallbacks for keys the instance doesn't have (see [Metamethods](#metamethods)). |
