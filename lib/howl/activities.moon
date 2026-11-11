@@ -147,7 +147,6 @@ run_process = (def, p) ->
   process_status = def.status or ->
     units = def.read_lines and 'lines' or 'bytes'
     "$ #{p.command_line}.. (#{read} #{units} read)"
-    "$ #{p.command_line}.."
 
   cancel_process = ->
     if interrupted

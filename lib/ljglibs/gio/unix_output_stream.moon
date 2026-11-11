@@ -7,8 +7,8 @@ core = require 'ljglibs.core'
 
 C = ffi.C
 
+-- unreferencing the last reference closes the stream
 release = (p) ->
-  C.g_output_stream_close, p, nil
   C.g_object_unref(p)
 
 core.define 'GUnixOutputStream < GOutputStream', {
