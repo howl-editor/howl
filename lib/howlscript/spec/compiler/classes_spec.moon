@@ -506,6 +506,15 @@ describe 'classes', ->
       o:end(), o.ab
     ]]}
 
+  it 'assign a local declared before them, which functions defined earlier see', ->
+    assert.equals 'later', run [[
+      local Later
+      make = -> Later()
+      class Later
+        name: 'later'
+      make().name
+    ]]
+
   it 'are returned when last in a file', ->
     assert.equals 'Last', run('class Last').__name
 

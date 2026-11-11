@@ -173,6 +173,15 @@ describe 'assignment', ->
     it 'are statements, not expressions', ->
       assert.not_nil compile_error 'y = x++'
 
+  it 'evaluate a value assigned to _, keeping a read for its effect', ->
+    assert.same {'a', 'b'}, run [[
+      reads = {}
+      t = setmetatable({}, {__index: (k) => reads[#reads + 1] = k})
+      _ = t.a
+      _ = t.b
+      reads
+    ]]
+
   describe 'local', ->
     it 'forward declares names', ->
       assert.equals 'odd', run [[

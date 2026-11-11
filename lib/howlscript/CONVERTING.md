@@ -402,6 +402,32 @@ elseif index < 1
     left = before
   ```
 
+  An `if` value inside an expression, as a table entry, an argument or a list
+  element, goes into a local declared just before the statement and assigned in each
+  branch, and the expression uses the local. It's named after the key it fills, as
+  `:text` in `HelpContext`'s `add_section`, or the parameter it's passed for, unless
+  that's a visible local, as `text` was in `ExplorerView`'s `refresh`:
+
+  ```moonscript
+  @explorer_view\redraw_text if text.is_empty then current_value else text
+  @explorer_view\redraw_prompt if @item.display_path then @item\display_path! else nil
+  ```
+
+  ```howl
+  local new_text
+  if text.is_empty
+    new_text = current_value
+  else
+    new_text = text
+  @explorer_view:redraw_text(new_text)
+  local prompt
+  if @item.display_path
+    prompt = @item:display_path()
+  else
+    prompt = nil
+  @explorer_view:redraw_prompt(prompt)
+  ```
+
   A returned `if` value becomes an `if` statement returning in each branch, as in
   `ustring`'s `byte_offset`:
 
@@ -473,6 +499,13 @@ elseif index < 1
       lsp_locations[#lsp_locations + 1] = { uri: d.uri, range: e.range }
   locations = to_locations(lsp_locations, state.client.root)
   ```
+
+- **An expression kept for its effect,** which Howlscript rejects as a statement that
+  does nothing: a conditional call `a and f(...)` becomes `f(...) if a`, as in
+  `TextWidget`'s listener, and a read that triggers a lazy computation is assigned to
+  `_`, as `d_line.block` became `_ = d_line.block` in aullar's `display_lines` spec.
+  Ending a function, such an expression is its value, and stays. Other expressions
+  that do nothing are mistakes, fixed as bugs found on the way.
 
 - **A one-line function ending in a `for` modifier, inside a table or call
   arguments,** gets a block body, as the user prefers:
@@ -569,7 +602,10 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
   `get modified: -> false` and `set modified: ->`.
 
 - **Metamethods** go in the class's `meta`, whether they were members or given to
-  `@meta {...}`. It stands where the first of them stood, with its braces on lines of
+  `@meta {...}`. Subclasses inherit them in Howlscript, where a MoonScript subclass
+  didn't inherit metamethod members, but no Howl class meets that: the one plain class
+  with metamethod members, `Matcher`, has no subclasses, and PropertyObject's `@meta`
+  already reached subclasses, as `Buffer`'s did. It stands where the first of them stood, with its braces on lines of
   their own and an entry on each line:
 
   ```moonscript
@@ -628,17 +664,13 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
 
 ## To do
 
-What no conversion has met yet, with counts from a survey of Howl's MoonScript
-(2026-11-10). Each gets a rule above once a conversion settles it.
+What no conversion has met yet. Each gets a rule above once a conversion settles it.
+A survey of Howl's MoonScript parse trees on 2026-11-11 found no construct left
+without a rule, so the rest is converted in one go.
 
-- **Inherited metamethods:** a subclass inherits its parent's metamethods in
-  Howlscript but not in MoonScript, so converting a class with metamethods changes
-  its subclasses. That's not so for a `PropertyObject` class, whose `@meta` reaches
-  its subclasses too, as `Buffer`'s `__len` and `__tostring` did. No converted plain
-  class with metamethods has subclasses yet.
-- **PropertyObject's last users:** 10 classes, in `application`, `ui/editor`,
-  `ui/cursor`, `ui/list`, `ui/list_widget`, `ui/text_widget`, `ui/activity`,
-  `ui/command_panel` (two) and `io/output_stream`. Once they're converted,
+- **PropertyObject's last users:** 9 classes, in `application`, `ui/editor`,
+  `ui/cursor`, `ui/list`, `ui/list_widget`, `ui/activity`, `ui/command_panel` (two)
+  and `io/output_stream`. Once they're converted,
   `PropertyObject` goes with its spec, the `property_object.howl` fixture and its
   acceptance block, the interop specs for it, and REFERENCE.md's notes on
   `@property(...)`.
@@ -673,3 +705,7 @@ What no conversion has met yet, with counts from a survey of Howl's MoonScript
 | `lib/howl/io/file.moon`, `spec/io/file_spec.moon` | 2026-11-11 |
 | `lib/howl/buffer_markers.moon`, `spec/buffer_markers_spec.moon` | 2026-11-11 |
 | The `Buffer` chain: `lib/howl/buffer`, and in `lib/howl/ui/` `action_buffer`, `list_buffer`, `process_buffer`, `process_list_buffer` and `journal_buffer`, with the specs of `buffer`, `action_buffer` and `process_list_buffer` | 2026-11-11 |
+| `lib/howl/ui/help_context.moon`, `spec/ui/help_context_spec.moon` | 2026-11-11 |
+| `lib/howl/ui/explorer_view.moon`, `spec/ui/explorer_view_spec.moon` | 2026-11-11 |
+| `lib/howl/ui/text_widget.moon`, `spec/ui/text_widget_spec.moon` | 2026-11-11 |
+| `lib/aullar/spec/display_lines_spec.moon` | 2026-11-11 |
