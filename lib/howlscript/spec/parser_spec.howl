@@ -1,57 +1,60 @@
+-- Copyright 2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 -- The layout rules, and the MoonScript forms that Howlscript drops.
 
-howlscript = require 'howlscript'
-{:compile_error, :run} = require 'howlscript.spec.support'
+howlscript = require('howlscript')
+{:compile_error, :run} = require('howlscript.spec.support')
 
 describe 'howlscript.parser', ->
   describe 'layout', ->
     it 'ends a statement at the end of its line', ->
-      assert.same {1, 2}, {run [[
+      assert.same {1, 2}, {run([[
         a = 1
         b = 2
         a, b
-      ]]}
+      ]])}
 
     it 'continues a line ending with an operator, comma or =', ->
-      assert.same {3, 1, 2, 'x'}, {run [[
+      assert.same {3, 1, 2, 'x'}, {run([[
         a = 1 +
           2
         b, c =
           1, 2
         d = 'x'
         a, b, c, d
-      ]]}
+      ]])}
 
     it 'ignores the indentation of comment lines inside a block', ->
-      assert.equals 2, run [[
+      assert.equals 2, run([[
         f = ->
           x = 1
         -- a comment at the start of the line
               -- an indented comment
           x + 1
         f()
-      ]]
+      ]])
 
     it 'takes tabs for indentation', ->
-      assert.equals 3, run "f = (x) ->\n\tif x\n\t\treturn 3\n\telse\n\t\treturn 4\nf(true)"
+      assert.equals 3, run("f = (x) ->\n\tif x\n\t\treturn 3\n\telse\n\t\treturn 4\nf(true)")
 
     it 'requires blocks to be indented consistently', ->
       assert.match compile_error('if x\n    a()\n  b()'), 'unexpected indentation'
-      _, err = howlscript.to_lua '  x = 1'
+      _, err = howlscript.to_lua('  x = 1')
       assert.match err, 'unexpected indentation'
 
     it 'ignores the indentation of lines inside brackets', ->
-      assert.same {1, 2, 3}, run [[
+      assert.same {1, 2, 3}, run([[
         x = {
               1,
           2,
                 3
         }
         x
-      ]]
+      ]])
 
     it 'lets a block opened inside brackets end at the closing bracket', ->
-      assert.same {'a', 'b', 'c'}, {run [[
+      assert.same {'a', 'b', 'c'}, {run([[
         f = (fn, ...) -> fn(...)
         x = f((v) ->
           v
@@ -64,37 +67,37 @@ describe 'howlscript.parser', ->
               c
             )
         x, y, g('c')
-      ]]}
+      ]])}
 
     it 'indents a block relative to the line its bracket entry starts on', ->
-      assert.equals 3, run [[
+      assert.equals 3, run([[
         f = (a, fn) -> fn(a)
         f(1,
           (x) ->
             x + 2
         )
-      ]]
+      ]])
 
     it 'ends inline bodies inside arguments and tables at a comma', ->
-      assert.same {'z', 'x'}, {run [[
+      assert.same {'z', 'x'}, {run([[
         call = (fn, x) -> fn(), x
         call(-> 'z', 'x')
-      ]]}
-      assert.same {'z', 'x'}, {run [[
+      ]])}
+      assert.same {'z', 'x'}, {run([[
         got = nil
         call = (fn, x) -> got = {fn(), x}
         call -> 'z', 'x'
         unpack(got)
-      ]]}
-      assert.same {'f', 2}, {run [[
+      ]])}
+      assert.same {'f', 2}, {run([[
         t = {f: -> 'f', g: 2}
         t.f(), t.g
-      ]]}
-      t = run '{-> 1, 2}'
+      ]])}
+      t = run('{-> 1, 2}')
       assert.same {2, 1, 2}, {#t, t[1](), t[2]}
 
     it 'leaves several values to inline bodies in parentheses, and to block bodies', ->
-      assert.same {1, 2, 3, 4}, {run [[
+      assert.same {1, 2, 3, 4}, {run([[
         f = (fn) -> fn()
         a, b = f((-> 1, 2))
         t = {
@@ -103,10 +106,10 @@ describe 'howlscript.parser', ->
         }
         c, d = t.g()
         a, b, c, d
-      ]]}
+      ]])}
 
     it 'ends inline bodies inside arguments and tables at a comma ending the line', ->
-      assert.same {'f', 2, 'h', 3}, {run [[
+      assert.same {'f', 2, 'h', 3}, {run([[
         t = {
           f: -> 'f',
           g: 2,
@@ -115,43 +118,43 @@ describe 'howlscript.parser', ->
         h, x = call(-> 'h',
           3)
         t.f(), t.g, h, x
-      ]]}
+      ]])}
 
     it 'ends the arguments of a call without parentheses at the end of the line', ->
-      assert.same {{1}, 2}, {run [[
+      assert.same {{1}, 2}, {run([[
         args = nil
         f = (...) -> args = {...}
         f 1
         x = 2
         args, x
-      ]]}
+      ]])}
 
     it 'ends the arguments of a call without parentheses with a block they open', ->
-      assert.same {'block', 'after'}, run [[
+      assert.same {'block', 'after'}, run([[
         log = {}
         f = (fn) -> fn()
         f ->
           log[#log + 1] = 'block'
         log[#log + 1] = 'after'
         log
-      ]]
+      ]])
       -- unlike in parentheses, where `, x` can continue them
       assert.match compile_error('f ->\n  x()\n, 1'), "unexpected ','"
 
     it 'lets inline bodies return lists in statements', ->
-      assert.same {1, 2}, {run [[
+      assert.same {1, 2}, {run([[
         f = -> 1, 2
         f()
-      ]]}
+      ]])}
 
     it 'ends block headers at the end of their line', ->
-      assert.equals 'with', run [[
+      assert.equals 'with', run([[
         obj = {done: false, finish: => @done = 'with'}
         with obj
           if not .done
             :finish()
         obj.done
-      ]]
+      ]])
 
     it 'treats lines starting with . or : as statements of a with block', ->
       assert.match compile_error('.b = 1'), "'.b' refers to the target of a with block"
@@ -196,14 +199,14 @@ describe 'howlscript.parser', ->
 
   describe 'errors', ->
     it 'report the position with the source line and a caret', ->
-      err = compile_error [[
+      err = compile_error([[
         x = 1
         y = (1 +
-      ]]
+      ]])
       assert.equals "spec:3:1: unexpected end of input\n  \n  ^", err
 
     it 'report columns in characters for multibyte text', ->
-      err = compile_error "x = 'åäö' y"
+      err = compile_error("x = 'åäö' y")
       assert.match err, '^spec:1:11: '
       assert.match err, "\n            %^$"
 

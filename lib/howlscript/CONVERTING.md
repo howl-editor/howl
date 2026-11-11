@@ -779,5 +779,7 @@ reports both:
 |---|---|---|
 | `lib/aullar/`, with its specs | 2026-11-11 | `view`'s two reads forcing a lazy computation, and a loop as a value in `buffer_spec` |
 | `lib/ljglibs/`, with its specs | 2026-11-11 | Nothing |
+| `lib/howlscript/spec/` | 2026-11-11 | Nothing; snippets containing `]]` became quoted strings |
+| `lib/scripts/` | 2026-11-11 | The paths to them in `bin/`, and the Howl sources `screen-shooter` opens |
 | `bundles/`, but for their `misc/` examples | 2026-11-11 | vi's functions given to `apply` and the like, whose `editor` parameter shadowed the caller's, became `ed`; a loop as a value in `pascal_lexer` |
 | `lib/howl/` and `spec/`, but for PropertyObject | 2026-11-11 | The `export`s of `spec_helper` and `highlight`, and of `bindings` and `lpeg_lexer`, which dropped their `setfenv`; loops as values in `app_commands`, `edit_commands`, `lsp/edits`, `project`, `paths`, `theme`, `matcher` and `matcher_spec`; an `if` value in `search_view`'s table |

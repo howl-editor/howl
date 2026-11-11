@@ -1,8 +1,11 @@
-{:compile_error, :run} = require 'howlscript.spec.support'
+-- Copyright 2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+{:compile_error, :run} = require('howlscript.spec.support')
 
 describe 'switch', ->
   name_of = (n) ->
-    run [[
+    run([[
       switch ...
         when 'Robert'
           return 'robert'
@@ -10,23 +13,23 @@ describe 'switch', ->
           return 'dan'
         else
           return 'unknown'
-    ]], {}, n
+    ]], {}, n)
 
   it 'picks the first matching when, comparing with ==', ->
     assert.same {'robert', 'dan', 'dan', 'unknown'}, {name_of('Robert'), name_of('Dan'), name_of('Daniel'), name_of('x')}
 
   it 'supports when ... then and else on one line', ->
-    assert.same {'two', 'other'}, {run [[
+    assert.same {'two', 'other'}, {run([[
       f = (x) ->
         switch x
           when 1 then return 'one'
           when 2 then return 'two'
           else return 'other'
       f(2), f(3)
-    ]]}
+    ]])}
 
   it 'evaluates the subject once', ->
-    assert.same {1, 'b'}, {run [[
+    assert.same {1, 'b'}, {run([[
       calls = 0
       subject = ->
         calls += 1
@@ -36,10 +39,10 @@ describe 'switch', ->
         when 1 then r = 'a'
         when 2 then r = 'b'
       calls, r
-    ]]}
+    ]])}
 
   it 'tests the values in order, up to the first match', ->
-    assert.same {'one', '1'}, {run [[
+    assert.same {'one', '1'}, {run([[
       log = {}
       v = (n) ->
         log[#log + 1] = n
@@ -49,10 +52,10 @@ describe 'switch', ->
         when v(1), v(2) then r = 'one'
         when v(3) then r = 'three'
       r, table.concat(log, ',')
-    ]]}
+    ]])}
 
   it 'puts the case value on the left of ==', ->
-    assert.equals 'when value on the left', run [[
+    assert.equals 'when value on the left', run([[
       mt = {__eq: (a, b) -> a.id == 'when'}
       case = setmetatable({id: 'when'}, mt)
       local r
@@ -60,7 +63,7 @@ describe 'switch', ->
         when case then r = 'when value on the left'
         else r = 'subject on the left'
       r
-    ]]
+    ]])
 
   it 'has no value', ->
     assert.match compile_error('x = switch y\n  when 1 then 2'), "'switch' is a statement and gives no value"

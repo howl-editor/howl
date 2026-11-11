@@ -6,7 +6,7 @@
 # Recompiles exactly those .moon, .howl and .lua files whose sibling .bc is out of date.
 #
 # The .bc always wins over the source when a module is require'd, and staleness is
-# never checked anywhere (lib/howl/init.lua, lib/howl/util/sandboxed_loader.moon), so
+# never checked anywhere (lib/howl/init.lua, lib/howl/util/sandboxed_loader.howl), so
 # a stale .bc means specs silently test the old code. Run this after editing.
 #
 # Follows the project rules mechanically: files without an existing .bc are left alone,

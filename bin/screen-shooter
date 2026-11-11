@@ -7,4 +7,4 @@
 . "$(dirname "$0")/_howl_env.sh"
 
 exec "$ROOT/bin/howl-headless" --size 1280x720 --scale 2 -- \
-  --no-profile --run "$ROOT/lib/scripts/screen-shooter.moon" "$@"
+  --no-profile --run "$ROOT/lib/scripts/screen-shooter.howl" "$@"

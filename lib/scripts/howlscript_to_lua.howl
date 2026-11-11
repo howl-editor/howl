@@ -6,23 +6,23 @@
 --
 -- Normally invoked via bin/howlc; directly it is
 --
---   ./src/howl --run lib/scripts/howlscript_to_lua.moon [-e <code>] [<file>|-]...
+--   ./src/howl --run lib/scripts/howlscript_to_lua.howl [-e <code>] [<file>|-]...
 
-howlscript = require 'howlscript'
+howlscript = require('howlscript')
 
 -- NOTE: -h/--help and -v/--version never reach this script - howl's own argument
 -- parser (lib/howl/init.lua) intercepts them. bin/howlc handles --help itself.
 
 die = (msg) ->
-  io.stderr\write "howlc: #{msg}\n"
-  os.exit 1
+  io.stderr:write("howlc: #{msg}\n")
+  os.exit(1)
 
 read_all = (path) ->
   return io.read('*a') or '' if path == '-'
-  fh, err = io.open path, 'r'
-  die err unless fh
-  content = fh\read('*a') or ''
-  fh\close!
+  fh, err = io.open(path, 'r')
+  die(err) unless fh
+  content = fh:read('*a') or ''
+  fh:close()
   content
 
 args = {...}
@@ -35,11 +35,11 @@ while i <= #args
     when '-e', '--eval'
       i += 1
       code = args[i]
-      die '-e requires an argument' unless code
+      die('-e requires an argument') unless code
       inputs[#inputs + 1] = { name: '<snippet>', :code }
     else
       name = arg == '-' and '<stdin>' or arg
-      code = read_all arg
+      code = read_all(arg)
       inputs[#inputs + 1] = { :name, :code }
   i += 1
 
@@ -48,18 +48,18 @@ if #inputs == 0
 
 status = 0
 
-for idx, input in ipairs inputs
-  lua, err = howlscript.to_lua input.code, chunkname: "=#{input.name}"
+for idx, input in ipairs(inputs)
+  lua, err = howlscript.to_lua(input.code, chunkname: "=#{input.name}")
 
   if lua
     if #inputs > 1
-      io.write '\n' if idx > 1
-      io.write "-- >>> #{input.name}\n"
+      io.write('\n') if idx > 1
+      io.write("-- >>> #{input.name}\n")
 
-    io.write lua
-    io.write '\n' unless lua\match '\n$'
+    io.write(lua)
+    io.write('\n') unless lua:match('\n$')
   else
-    io.stderr\write "#{err}\n"
+    io.stderr:write("#{err}\n")
     status = 1
 
-os.exit status
+return os.exit(status)

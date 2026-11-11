@@ -31,4 +31,4 @@ EOF
   esac
 done
 
-exec "$HOWL" --no-profile --run "$ROOT/lib/scripts/howlscript_to_lua.moon" "$@"
+exec "$HOWL" --no-profile --run "$ROOT/lib/scripts/howlscript_to_lua.howl" "$@"

@@ -1,68 +1,71 @@
+-- Copyright 2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 -- Howlscript classes have MoonScript's layout, so the two can extend each other.
 
-moonscript = require 'moonscript'
-{:dedent, :run} = require 'howlscript.spec.support'
+moonscript = require('moonscript')
+{:dedent, :run} = require('howlscript.spec.support')
 
 describe 'interop with MoonScript classes', ->
   moon_run = (src, env = {}) ->
-    setmetatable env, __index: _G
-    f = assert moonscript.loadstring dedent(src)
-    setfenv(f, env)!
+    setmetatable(env, __index: _G)
+    f = assert(moonscript.loadstring(dedent(src)))
+    setfenv(f, env)()
 
   it 'lets a Howlscript class extend a MoonScript one', ->
-    Animal = moon_run [[
+    Animal = moon_run([[
       class Animal
         new: (@name) =>
         speak: => "#{@name} makes a sound"
         @create: (name) => @ name
-    ]]
-    assert.same {'Rex barks; Rex makes a sound', 'Dog', true}, {run [[
+    ]])
+    assert.same {'Rex barks; Rex makes a sound', 'Dog', true}, {run([[
       class Dog extends Animal
         new: (name) =>
           super(name)
         speak: => "#{@name} barks; " .. super()
       dog = Dog:create('Rex')
       dog:speak(), typeof(dog), dog.__class.__parent == Animal
-    ]], :Animal}
+    ]], :Animal)}
 
   it 'lets a MoonScript class extend a Howlscript one', ->
-    Animal = run [[
+    Animal = run([[
       class Animal
         new: (name) => @name = name
         speak: => "#{@name} makes a sound"
-    ]]
-    Dog = moon_run [[
+    ]])
+    Dog = moon_run([[
       class Dog extends Animal
         speak: => "woof, " .. super!
-    ]], :Animal
-    dog = Dog 'Rex'
-    assert.equals 'woof, Rex makes a sound', dog\speak!
-    assert.equals 'Dog', typeof dog
+    ]], :Animal)
+    dog = Dog('Rex')
+    assert.equals 'woof, Rex makes a sound', dog:speak()
+    assert.equals 'Dog', typeof(dog)
 
   it 'calls __inherited on a MoonScript parent', ->
-    Base = moon_run [[
+    Base = moon_run([[
       class Base
         @__inherited: (child) => @child = child.__name
-    ]]
-    run 'class Sub extends Base', :Base
+    ]])
+    run('class Sub extends Base', :Base)
     assert.equals 'Sub', Base.child
 
   it "gives a Howlscript subclass the metamethods of a MoonScript parent", ->
-    Point = moon_run [[
+    Point = moon_run([[
       class Point
         new: (@x) =>
         __tostring: => "P#{@x}"
-    ]]
-    assert.equals 'P1', tostring run([[
+    ]])
+    assert.equals 'P1', tostring(run([[
       class Sub extends Point
       Sub(1)
-    ]], :Point)
+    ]], :Point))
 
   describe 'MoonScript subclasses of Howlscript classes with properties', ->
     Base = nil
 
     before_each ->
-      Base = run [[
+      Base = run([[
         class Base
           @__inherited: (child) => @child = child.__name
           new: (v = 'v') => @_v = v
@@ -73,37 +76,37 @@ describe 'interop with MoonScript classes', ->
             __tostring: => "Base(#{@_v})"
             __index: (key) => "fallback #{key}"
           }
-      ]]
+      ]])
 
     it 'get the properties, metamethods and fallbacks', ->
-      Sub = moon_run [[
+      Sub = moon_run([[
         class Sub extends Base
           shout: => @value .. '!'
-      ]], :Base
-      s = Sub!
+      ]], :Base)
+      s = Sub()
       s.value = 'x'
-      assert.equals 'X!', s\shout!
-      assert.equals 'Base(X)', tostring s
+      assert.equals 'X!', s:shout()
+      assert.equals 'Base(X)', tostring(s)
       assert.equals 'fallback other', s.other
       assert.raises "property 'size' is read%-only", -> s.size = 2
 
     it 'pass them on to their own subclasses', ->
-      Sub = moon_run 'class Sub extends Base', :Base
-      Deeper = moon_run [[
+      Sub = moon_run('class Sub extends Base', :Base)
+      Deeper = moon_run([[
         class Deeper extends Sub
           new: => super 'd'
-      ]], :Sub
-      assert.equals 'Base(d)', tostring Deeper!
-      assert.equals 'd', Deeper!.value
+      ]], :Sub)
+      assert.equals 'Base(d)', tostring(Deeper())
+      assert.equals 'd', Deeper().value
 
     it 'still call the parent class __inherited', ->
-      moon_run 'class Sub extends Base', :Base
+      moon_run('class Sub extends Base', :Base)
       assert.equals 'Sub', Base.child
 
   it 'sees methods added to __base later, as MoonScript code does', ->
-    Thing = run [[
+    Thing = run([[
       class Thing
         a: => 'a'
-    ]]
+    ]])
     Thing.__base.b = => 'b'
-    assert.equals 'b', Thing!\b!
+    assert.equals 'b', Thing():b()

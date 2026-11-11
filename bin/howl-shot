@@ -50,7 +50,7 @@ Scenarios run in a coroutine, with these helpers besides the usual globals:
 
 Example:
   howl-shot -t all - <<'EOF2'
-  open 'lib/howl/application.moon', at: 'table.sort'
+  open 'lib/howl/application.howl', at: 'table.sort'
   run 'show-doc-at-cursor'
   wait_for -> app.editor.popup
   shot 'show-doc', crop: 'popup'
@@ -93,7 +93,7 @@ fi
 
 if [ -n "$SRC" ] && [ "$SRC" != - ] && [ -z "$CODE" ]; then
   exec "$ROOT/bin/howl-headless" --size "$SIZE" --scale "$SCALE" -- \
-    $PROFILE --run "$ROOT/lib/scripts/shot.moon" "$OUT" "$THEMES" "$SRC"
+    $PROFILE --run "$ROOT/lib/scripts/shot.howl" "$OUT" "$THEMES" "$SRC"
 fi
 
 [ -n "$CODE" ] || CODE=$(cat)
@@ -104,7 +104,7 @@ TMP=$(mktemp "${TMPDIR:-/tmp}/howl-shot-XXXXXX.moon") || exit 1
 printf '%s\n' "$CODE" > "$TMP"
 
 "$ROOT/bin/howl-headless" --size "$SIZE" --scale "$SCALE" -- \
-  $PROFILE --run "$ROOT/lib/scripts/shot.moon" "$OUT" "$THEMES" "$TMP"
+  $PROFILE --run "$ROOT/lib/scripts/shot.howl" "$OUT" "$THEMES" "$TMP"
 status=$?
 
 # Keep the file on failure - tracebacks reference it by path.

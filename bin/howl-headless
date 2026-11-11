@@ -27,7 +27,7 @@ Without sway or wtype, Howl runs on the current display and HOWL_HEADLESS is uns
   -h, --help      this help
 
 Example:
-  howl-headless -- --no-profile --run lib/scripts/screen-shooter.moon /tmp/shots
+  howl-headless -- --no-profile --run lib/scripts/screen-shooter.howl /tmp/shots
 EOF
 }
 

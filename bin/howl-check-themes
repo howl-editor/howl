@@ -47,4 +47,4 @@ while [ $i -lt $argc ]; do
   esac
 done
 
-exec "$HOWL" --run "$ROOT/lib/scripts/check_themes.moon" $PROFILE --bundles "$@"
+exec "$HOWL" --run "$ROOT/lib/scripts/check_themes.howl" $PROFILE --bundles "$@"

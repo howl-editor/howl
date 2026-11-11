@@ -26,8 +26,8 @@ result, go to stderr. Exits 1 if there were any.
   -h, --help   this help
 
 Examples:
-  howl-convert lib/aullar/cursor.moon
-  howl-convert -w --howl lib/aullar/*.moon lib/aullar/spec/*.moon
+  howl-convert ~/.howl/bundles/my_bundle/my_mode.moon
+  howl-convert -w ~/.howl/bundles/my_bundle/*.moon
 EOF
       exit 0
       ;;
