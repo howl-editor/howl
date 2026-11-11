@@ -30,8 +30,8 @@ Howl directly from the checkout directory.
 
 Howl has a minimal C core, and has some dependencies written in C as well, all
 of which is compiled as you type `make`. Nearly all of Howl is actually written
-in Moonscript (and some Lua) however, and code can also be written in
-[Howlscript], the successor to Moonscript for Howl. While none of these is
+in [Howlscript], the successor to Moonscript for Howl (and some Lua) however,
+and code can also be written in Moonscript. While none of these is
 compiled in the traditional sense, for Howl they are all compiled down to
 LuaJIT byte code. This is done for performance reasons, as we are mindful of the
 startup time for Howl.

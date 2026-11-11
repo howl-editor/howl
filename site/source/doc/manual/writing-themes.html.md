@@ -424,7 +424,7 @@ for yourself.
 
 To add a theme to the themes bundled with Howl, add a directory for it under
 `bundles/howl-themes/` and register it in the list of themes in
-`bundles/howl-themes/init.moon`. Credits and copyright notes, e.g. for a theme
+`bundles/howl-themes/init.howl`. Credits and copyright notes, e.g. for a theme
 based on another, go in `bundles/howl-themes/README.md`. The bundle's spec
 applies every bundled theme and fails on any error, so make sure it passes:
 

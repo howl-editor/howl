@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 #
-# Compiles the standalone CSS property JSON information into one .moon file.
+# Compiles the standalone CSS property JSON information into one .howl file.
 # Fast and hacky way of getting it done.
 # Copyright 2013-2015 The Howl Developers
 # License: MIT (see LICENSE.md at the top-level directory of the distribution)

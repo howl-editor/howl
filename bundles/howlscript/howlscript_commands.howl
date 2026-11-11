@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 -- The howlscript-eval and howlscript-print commands, the counterparts of
--- howl-moon-eval and howl-moon-print (lib/howl/commands/app_commands.moon).
+-- howl-moon-eval and howl-moon-print (lib/howl/commands/app_commands.howl).
 
 {:app, :breadcrumbs, :log, :mode, :Buffer} = howl
 {:ActionBuffer, :BufferPopup} = howl.ui

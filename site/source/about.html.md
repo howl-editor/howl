@@ -7,8 +7,9 @@ title: About
 Howl is a general purpose editor that aims to be both lightweight
 and fully customizable. It is built on top of the very fast
 [LuaJIT](http://luajit.org) runtime, uses [GTK](http://www.gtk.org) for its
-interface, and can be extended in either [Lua](http://www.lua.org) or
-[Moonscript](http://www.moonscript.org). It is known to work on Linux, but
+interface, and can be extended in [Lua](http://www.lua.org),
+[Moonscript](http://www.moonscript.org) or [Howlscript]. It is known to work on
+Linux, but
 should work on at least the \*BSD:s as well.
 
 It is released as free software under the
@@ -45,7 +46,7 @@ sense.
 ### Customizable
 
 Howl does not have an extension language. Instead, it is itself written almost
-completely in Moonscript and Lua, using the same API's that's available for
+completely in Howlscript and Lua, using the same API's that's available for
 everyone else. Its C core, discounting external dependencies, is miniscule (321
 LOC at the time of this writing, comments and all.). Whether you're adding some
 personal configuration code or writing a Howl bundle, you'll have access to the
@@ -54,8 +55,8 @@ API Howl itself is using.
 Should the Howl API not be enough, you can directly interact with C libraries using
 LuaJIT's [ffi](http://luajit.org/ext_ffi.html) library.
 
-Howl can be developed for in either [Moonscript](http://www.moonscript.org) or
-[Lua](http://www.lua.org), whatever suits your taste better. They both target
+Howl can be developed for in [Howlscript], [Moonscript](http://www.moonscript.org)
+or [Lua](http://www.lua.org), whatever suits your taste better. They all target
 the Lua runtime, so whatever you choose you're going to have to learn Lua.
 Fortunately, Lua is a small and quite elegant language that's easy to pick up if
 you have any previous programming experience.
@@ -90,11 +91,17 @@ Quoted from the above page, LuaJIT is "a Just-In-Time Compiler (JIT) for the Lua
 programming language". What Howl uses for its runtime. Very fast and lean, and
 offers excellent C integration via its ffi interface.
 
+#### [Howlscript]
+
+The successor to Moonscript made for Howl, which compiles into Lua as well.
+Nearly all of Howl's code is written in Howlscript.
+
 #### [Moonscript](http://www.moonscript.org)
 
 "MoonScript is a dynamic scripting language that compiles into Lua. It gives you
 the power of one of the fastest scripting languages combined with a rich set of
-features." Nearly all of Howl's code is written in Moonscript.
+features." Howl was written in Moonscript before Howlscript, and bundles and
+configuration can still be written in it.
 
 #### [LPeg](http://www.inf.puc-rio.br/~roberto/lpeg/)
 
@@ -109,3 +116,5 @@ speaking use Scintillua, it reuses a lot of its lexers.
 #### [Busted](https://lunarmodules.github.io/busted/)
 
 "Elegant Lua unit testing". Used in Howl for its specs.
+
+[Howlscript]: https://github.com/howl-editor/howl/blob/master/lib/howlscript/REFERENCE.md

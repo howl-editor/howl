@@ -20,8 +20,10 @@ you need something more recent than 0.6 but still on Gtk-3.
 Howl is a general purpose editor that aims to be both lightweight
 and fully customizable. It's built on top of the very fast
 [LuaJIT](http://luajit.org) runtime, uses [Gtk](http://www.gtk.org) for its
-interface, and can be extended in either [Lua](http://www.lua.org) or
-[Moonscript](http://www.moonscript.org). It's known to work on Linux, but
+interface, and can be extended in [Lua](http://www.lua.org),
+[Moonscript](http://www.moonscript.org) or
+[Howlscript](lib/howlscript/REFERENCE.md), the successor to Moonscript that Howl
+itself is written in. It's known to work on Linux, but
 should work on at least the \*BSD's as well.
 
 It is released as free software under the [MIT](http://opensource.org/licenses/MIT)
