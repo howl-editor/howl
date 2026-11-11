@@ -127,6 +127,35 @@ docs](api/interact.html) for more info.
 
 ---
 
+## Modes
+
+A mode's methods no longer have `super` for calling the parent mode's version
+of a method. Instead, a mode's `create` function gets the parent mode as its
+second argument, after the mode's name, and the mode calls the parent's method
+on itself through that:
+
+```moonscript
+-- 0.6
+howl.mode.register
+  name: 'my_mode'
+  create: -> {
+    indent_for: (line, indent_level) =>
+      return 0 if line.is_blank
+      super line, indent_level
+  }
+
+-- 0.7
+howl.mode.register
+  name: 'my_mode'
+  create: (name, parent) -> {
+    indent_for: (line, indent_level) =>
+      return 0 if line.is_blank
+      parent.indent_for @, line, indent_level
+  }
+```
+
+---
+
 ## The command line
 
 Previously the command line API was available at `howl.app.window.command_line`.

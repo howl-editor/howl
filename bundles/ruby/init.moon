@@ -20,7 +20,7 @@ mode_reg =
     'Cheffile$', 'Thorfile$', 'Podfile$', 'config.ru$', 'Vagrantfile$'
   }
   shebangs: '[/ ]ruby.*$'
-  create: -> bundle_load('ruby_mode')
+  create: (_, parent) -> bundle_load('ruby_mode') parent
 
 lsp_servers = {
   { name: 'ruby-lsp', command: 'ruby-lsp', modes: 'ruby' },

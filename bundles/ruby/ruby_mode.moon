@@ -32,7 +32,7 @@ continuation_indent = (line, indent_level) ->
 
       return start.indentation
 
-{
+(parent) -> {
   lexer: bundle_load('ruby_lexer')
 
   comment_syntax: '#'
@@ -82,5 +82,5 @@ continuation_indent = (line, indent_level) ->
         cont_indent -= indent_level
       return math.max 0, cont_indent
 
-    super line, indent_level
+    parent.indent_for @, line, indent_level
 }

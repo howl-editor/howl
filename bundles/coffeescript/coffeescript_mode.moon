@@ -10,7 +10,7 @@ find_previous_starter = (line) ->
 
   prev
 
-(lexer) -> {
+(lexer, parent) -> {
   lexer: bundle_load(lexer)
 
   comment_syntax: '#'
@@ -62,7 +62,7 @@ find_previous_starter = (line) ->
       return prev.indentation if prev and prev\match '^%s*%.'
       return prev.indentation + indent_level
 
-    super line, indent_level
+    parent.indent_for @, line, indent_level
 
   structure: (editor) =>
     lines = {}
@@ -93,5 +93,5 @@ find_previous_starter = (line) ->
           prev_line = nil
           break
 
-    #lines > 0 and lines or super(editor)
+    #lines > 0 and lines or parent.structure(@, editor)
 }

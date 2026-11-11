@@ -2,7 +2,7 @@ mode_reg =
   name: 'coffeescript'
   extensions: 'coffee'
   shebangs: '/coffee$'
-  create: -> bundle_load('coffeescript_mode') 'coffeescript_lexer'
+  create: (_, parent) -> bundle_load('coffeescript_mode') 'coffeescript_lexer', parent
 
 howl.mode.register mode_reg
 
@@ -10,7 +10,7 @@ mode_reg =
   name: 'litcoffeescript'
   extensions: 'litcoffee'
   patterns: '%.coffee%.md$'
-  create: -> bundle_load('coffeescript_mode') 'litcoffeescript_lexer'
+  create: (_, parent) -> bundle_load('coffeescript_mode') 'litcoffeescript_lexer', parent
 
 howl.mode.register mode_reg
 

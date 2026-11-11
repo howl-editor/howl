@@ -64,11 +64,11 @@ describe 'mode', ->
         assert.equal 'default', mode.for_file(file).name
 
   context 'mode creation', ->
-    it 'modes are created by calling the modes create function, passing the name', ->
+    it 'modes are created by calling the modes create function, passing the name and the parent mode', ->
       create = spy.new -> {}
       mode.register name: 'callme', :create
       mode.by_name('callme')
-      assert.spy(create).was_called_with 'callme'
+      assert.spy(create).was_called_with 'callme', mode.by_name('default')
 
   it 'mode instances are memoized', ->
     mode.register name: 'same', extensions: 'again', create: -> {}
@@ -150,44 +150,30 @@ describe 'mode', ->
       second_mode = mode.by_name('second')
       assert.equal "second1 first2X", second_mode\one!
 
-    describe 'super(...)', ->
-      it 'super methods can be invoked using `super`', ->
-        mode.register name: 'first', create: -> { foo: => "1" }
-        mode.register name: 'second', parent: 'first', create: -> {
-          foo: => super! .. '2'
+    describe 'the parent passed to create', ->
+      it "lets a mode call the parent's version of a method it overrides", ->
+        mode.register name: 'first', create: -> { foo: => "1#{@mark}" }
+        mode.register name: 'second', parent: 'first', create: (_, parent) -> {
+          foo: => parent.foo(@) .. '2'
         }
-        mode.register name: 'third', parent: 'second', create: -> {
-          foo: => super! .. '3'
-          other: => 'other'
+        mode.register name: 'third', parent: 'second', create: (_, parent) -> {
+          mark: '!'
+          foo: => parent.foo(@) .. '3'
         }
+        assert.equal '1!23', mode.by_name('third')\foo!
 
-        third_mode = mode.by_name('third')
-        assert.equal '123', third_mode\foo!
-
-      it 'raises an error if no parent has the specified method', ->
-        mode.register name: 'wrong', create: -> {
-          foo: => super!
+      it 'is the parent of the mode defining a method, also for modes inheriting it', ->
+        mode.register name: 'first', create: -> { foo: => '1' }
+        mode.register name: 'second', parent: 'first', create: (_, parent) -> {
+          foo: => parent.foo(@) .. '2'
         }
-        assert.raises "No parent 'foo'", ->
-          mode.by_name('wrong')\foo!
+        mode.register name: 'third', parent: 'second', create: -> {}
+        assert.equal '12', mode.by_name('third')\foo!
 
-      it 'invokes the super method with the correct parameters', ->
-        local args
-        mode.register name: 'first', create: -> {
-          foo: (...) -> args = {...}
-        }
-        mode.register name: 'second', parent: 'first', create: -> {
-          foo: (...) => super ...
-        }
-
-        second = mode.by_name('second')
-        second\foo '1', 2
-        assert.same {second, '1', 2}, args
-
-      it 'works when deriving from the default mode implicitly', ->
-        mode.register name: 'implicit', create: -> {
+      it 'is the default mode for a mode without a parent', ->
+        mode.register name: 'implicit', create: (_, parent) -> {
           comment_syntax: '--'
-          comment: (editor) => super editor
+          comment: (editor) => parent.comment @, editor
         }
         buf = Buffer {}
         buf.text = 'line 1\nline2'
