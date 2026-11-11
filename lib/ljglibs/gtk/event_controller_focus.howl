@@ -1,0 +1,15 @@
+-- Copyright 2022-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+core = require('ljglibs.core')
+require('ljglibs.gtk.event_controller')
+
+{:C} = require('ffi')
+
+return core.define('GtkEventControllerFocus < GtkEventController', {
+    properties: {
+      contains_focus: 'gboolean'
+      is_focus: 'gboolean'
+    }
+
+}, (t) -> C.gtk_event_controller_focus_new())

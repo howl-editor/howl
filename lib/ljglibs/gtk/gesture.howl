@@ -1,0 +1,11 @@
+-- Copyright 2022-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+core = require('ljglibs.core')
+require('ljglibs.gtk.event_controller')
+
+return core.define('GtkGesture < GtkEventController', {
+  properties: {
+    n_points: 'guint'
+  }
+})

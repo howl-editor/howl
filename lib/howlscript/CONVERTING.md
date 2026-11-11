@@ -769,3 +769,4 @@ without a rule, so the rest is converted in one go.
 | Original | Converted | By hand |
 |---|---|---|
 | `lib/aullar/`, with its specs | 2026-11-11 | `view`'s two reads forcing a lazy computation, and a loop as a value in `buffer_spec` |
+| `lib/ljglibs/`, with its specs | 2026-11-11 | Nothing |

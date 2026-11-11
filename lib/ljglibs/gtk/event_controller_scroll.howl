@@ -1,0 +1,25 @@
+-- Copyright 2024-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+core = require('ljglibs.core')
+require('ljglibs.gtk.event_controller')
+
+{:C} = require('ffi')
+
+return core.define('GtkEventControllerScroll < GtkEventController', {
+  constants: {
+    prefix: 'GTK_EVENT_CONTROLLER_SCROLL_'
+
+    -- GtkEventControllerScrollFlags
+    'NONE',
+    'VERTICAL',
+    'HORIZONTAL',
+    'DISCRETE',
+    'KINETIC',
+    'BOTH_AXES'
+  }
+
+  properties: {
+    flags: 'GtkEventControllerScrollFlags'
+  }
+}, (t, flags) -> C.gtk_event_controller_scroll_new(flags))

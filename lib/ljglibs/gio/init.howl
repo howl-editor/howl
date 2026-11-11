@@ -1,0 +1,10 @@
+-- Copyright 2014-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+core = require('ljglibs.core')
+callbacks = require('ljglibs.callbacks')
+ffi = require('ffi')
+
+return core.auto_loading('gio', {
+  async_ready_callback: ffi.cast('GVCallback3', callbacks.void3)
+})
