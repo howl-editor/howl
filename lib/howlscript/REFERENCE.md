@@ -729,7 +729,8 @@ while busy() do wait()
 ### Conditionals
 
 - **`if`** takes any number of `elseif` branches and an optional `else`. A branch's
-  body follows `then` on the same line, or is an indented block.
+  body follows `then` on the same line, or is an indented block, which a `then`
+  ending the line may precede.
 - **`unless c`** is `if not c`. It takes an `else` branch but no `elseif`.
 - **Conditions** are expressions, not assignments: `if x = f()` is an error.
 - **No value:** `if`, `unless` and `switch` are statements, and give no value. So

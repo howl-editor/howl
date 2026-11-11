@@ -130,6 +130,15 @@ describe 'calls', ->
         log
       ]]
 
+    it 'can end with a named argument taking a function and its block', ->
+      assert.equals 'entered x', run [[
+        got = nil
+        find = (opts) -> got = opts.on_enter('x')
+        find on_enter: (dir) ->
+          'entered ' .. dir
+        got
+      ]]
+
     it 'continue on the next line after a trailing comma', ->
       assert.same {1, 2}, run [[
         args = nil

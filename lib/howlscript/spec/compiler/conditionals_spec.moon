@@ -36,6 +36,16 @@ describe 'conditionals', ->
       f(1), f(2), f(3), g()
     ]]}
 
+  it 'take a then ending the line, before an indented block', ->
+    assert.same {'a', 'b'}, {run [[
+      f = (x) ->
+        if x then
+          return 'a'
+        else
+          return 'b'
+      f(true), f(false)
+    ]]}
+
   it 'take assignments after then and else on one line, ending at the else', ->
     assert.same {'a', 'b'}, {run [[
       pick = (c) ->

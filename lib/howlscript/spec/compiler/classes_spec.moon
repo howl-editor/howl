@@ -364,6 +364,16 @@ describe 'classes', ->
         c:choose(), c.state
       ]]}
 
+    it 'find members added to the base later, as MoonScript code does', ->
+      assert.same {nil, 'b', 1}, {run [[
+        class Thing
+          get one: => 1
+        t = Thing()
+        before = t.b
+        Thing.__base.b = => 'b'
+        before, t:b(), t.one
+      ]]}
+
     it "keep a subclass's member set to false over its parent's", ->
       assert.same {false, 'menu'}, {run [[
         class Menu

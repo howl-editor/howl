@@ -201,6 +201,12 @@ is visible:
   assert.is_nil(([b for b in *app.buffers if b.file == other])[1])
   ```
 
+- **A negative first argument:** MoonScript's `f -1`, with a space before the `-`
+  and none after it, calls `f(-1)`, where Howlscript subtracts. The call gets its
+  parentheses as usual, so `s\usub -2` becomes `s:usub(-2)`. An assertion starting
+  with one gets them too, since its argument can't start a call without them:
+  `assert.equals -1, x` becomes `assert.equals(-1, x)`.
+
 - **Named arguments before positional ones** get braces:
   `assert.same description: 'bar', x` becomes `assert.same {description: 'bar'}, x`.
 - **Function stubs:** `obj\m` becomes `(...) -> obj:m(...)`, so `pcall obj\m, res`
@@ -324,8 +330,9 @@ opening_decl_p:test(l) or
 A body after `then`, `do` or `else` on the same line, as in `if c then x = 1 else
 x = 2` or `when 'nil' then append(out, 'null')`, moves to lines of its own. The
 language allows it, but the user prefers the block. So does a body that MoonScript
-takes without `then`, as in `preview: => if c return {`. Statement modifiers
-(`x = 1 if c`) stay as they are.
+takes without `then`, as in `preview: => if c return {`. A `then` ending the line
+before its block stays, as in `File`'s `if File.async then`, and so do statement
+modifiers (`x = 1 if c`).
 
 ```moonscript
 if not index or index > #list + 1 then index = #list + 1
@@ -389,6 +396,23 @@ elseif index < 1
   ```howl
   if before and before.y == current.y
     left = before
+  ```
+
+  A returned `if` value becomes an `if` statement returning in each branch, as in
+  `ustring`'s `byte_offset`:
+
+  ```moonscript
+  return if is_table
+    offsets
+  else
+    table.unpack offsets
+  ```
+
+  ```howl
+  if is_table
+    return offsets
+  else
+    return table.unpack(offsets)
   ```
 
 - **`switch` as a value** becomes a statement assigning in each case, as `if` does,
@@ -584,6 +608,9 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
   on to the methods and returned nil. Howl's two set-only properties are never read.
 - **A module ending in a class** stays as it is, as Howlscript returns a class ending
   a file, like MoonScript, so `directory_explorer` still returns `DirectoryExplorer`.
+- **Members added to `__base` after the class** stay as they are, as instances find
+  them, also in a class with properties: `File.__base.rm = File.delete` gives every
+  file `rm`.
 - A class or module with a Howlscript port in `lib/howlscript/spec/fixtures/` drops
   the port and its line in `acceptance_spec.moon`, as its own spec now runs against
   the real thing.
@@ -593,15 +620,11 @@ Howlscript class extends a `PropertyObject` class and no MoonScript class needs
 What no conversion has met yet, with counts from a survey of Howl's MoonScript
 (2026-11-10). Each gets a rule above once a conversion settles it.
 
-- **`f -1`** (15) calls `f(-1)` in MoonScript, but subtracts in Howlscript. That's
-  only an error as a statement of its own before others, so the subtraction goes
-  unnoticed in a value or at the end of a function. Each gets its parentheses:
-  `f(-1)`.
 - **Inherited metamethods:** a subclass inherits its parent's metamethods in
   Howlscript but not in MoonScript, so converting a class with metamethods changes
   its subclasses. No converted class with metamethods has subclasses yet.
 - **PropertyObject's last users:** the `Buffer` chain (`Buffer`, `ActionBuffer` and
-  its four subclasses) and 12 other classes. Once they're converted,
+  its four subclasses) and 10 other classes. Once they're converted,
   `PropertyObject` goes with its spec, the `property_object.howl` fixture and its
   acceptance block, the interop specs for it, and REFERENCE.md's notes on
   `@property(...)`.
@@ -632,3 +655,6 @@ What no conversion has met yet, with counts from a survey of Howl's MoonScript
 | `lib/howl/lsp/rename.moon`, `spec/lsp/rename_spec.moon` | 2026-11-10 |
 | `lib/howl/ui/selection.moon`, `spec/ui/selection_spec.moon` | 2026-11-10 |
 | `lib/howl/explorers/directory_explorer.moon`, `spec/explorers/directory_explorer_spec.moon` | 2026-11-10 |
+| `lib/howl/ustring.moon`, `spec/ustring_spec.moon` | 2026-11-11 |
+| `lib/howl/io/file.moon`, `spec/io/file_spec.moon` | 2026-11-11 |
+| `lib/howl/buffer_markers.moon`, `spec/buffer_markers_spec.moon` | 2026-11-11 |
