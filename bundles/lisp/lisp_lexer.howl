@@ -1,0 +1,28 @@
+-- Copyright 2013-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+howl.util.lpeg_lexer ->
+
+  comment = capture('comment', span(';', eol))
+  operator = capture('operator', S'/.%^#,(){}[]')
+  dq_string = capture('string', span('"', '"', P'\\'))
+  number = capture('number', digit^1 * alpha^-1)
+
+  delimiter = any { space, S'/.,(){}[]^#' }
+  name = complement(delimiter)^1
+  identifier = capture('identifier', name)
+  keyword = capture('constant', P':' * P':'^0 * name)
+
+  fcall = capture('operator', P'(') * capture('function', complement(delimiter))^1
+  specials = capture('special', word({ 'true', 'false' }) * #delimiter^1)
+
+  any {
+    dq_string,
+    comment,
+    number,
+    fcall,
+    keyword,
+    specials,
+    identifier,
+    operator,
+  }

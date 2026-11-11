@@ -1,0 +1,34 @@
+-- Copyright 2012-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+{:config, :VC} = howl
+
+find = (file) ->
+  unless howl.sys.find_executable(config.git_path)
+    return nil
+
+  while file != nil
+    git_dir = file:join('.git')
+    if git_dir.exists
+      return bundle_load('git')(file)
+    file = file.parent
+  nil
+
+VC.register('git', :find)
+config.define {
+  name: 'git_path',
+  description: 'Path to git executable',
+  default: 'git',
+  scope: 'global'
+}
+
+info = {
+  author: 'The Howl Developers',
+  description: 'Git bundle',
+  license: 'MIT',
+}
+
+unload = ->
+  VC.unregister('git')
+
+return {:info, :unload}

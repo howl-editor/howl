@@ -1,0 +1,439 @@
+-- Copyright 2013-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+common_auto_pairs = {
+  '(': ')'
+  '[': ']'
+  '{': '}'
+  '"': '"'
+  "'": "'"
+}
+
+{
+  ada: {
+    extensions: { 'ada', 'adb', 'ads' }
+    comment_syntax: '--'
+    auto_pairs: {
+      '(': ')'
+      '"': '"'
+    }
+  }
+
+  antlr: {
+    extensions: 'g'
+    comment_syntax: '//'
+    auto_pairs: {
+      '[': ']'
+      "'": "'"
+    }
+  }
+
+  awk: {
+    extensions: 'awk'
+    shebangs: '[/ ]awk$'
+    comment_syntax: '#'
+    auto_pairs: common_auto_pairs
+  }
+
+  bash: {
+    extensions: { 'bash', 'bashrc', 'bash_profile', 'configure', 'csh', 'sh', 'zsh' }
+    shebangs: {'[/ ]sh$', '[/ ]bash$' }
+    comment_syntax: '#'
+    auto_pairs: common_auto_pairs
+  }
+
+  batch: {
+    extensions: { 'bat', 'cmd' }
+    comment_syntax: 'REM'
+    auto_pairs: {
+      '%': '%'
+      '"': '"'
+    }
+  }
+
+  bibtex: {
+    extensions: 'bib'
+    auto_pairs: {
+      '{': '}'
+      '"': '"'
+    }
+  }
+
+  caml: {
+    extensions: { 'caml', 'ml', 'mli', 'mll', 'mly' }
+    comment_syntax: { '(*', '*)' }
+    auto_pairs: {
+      '"': '"'
+      '(': ')'
+      '[': ']'
+    }
+  }
+
+  cmake: {
+    extensions: { 'cmake', 'ctest' }
+    patterns: { '.cmake.in$', '.ctest.in$', 'CMakeLists.txt$' }
+    comment_syntax: '#'
+    auto_pairs: {
+      '(': ')'
+      '"': '"'
+      '{': '}'
+    }
+  }
+
+  csharp: {
+    extensions: 'cs'
+    comment_syntax: '//'
+    auto_pairs: common_auto_pairs
+  }
+
+  dlang: {
+    extensions: 'd'
+    comment_syntax: '//'
+    auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
+  }
+
+  desktop: {
+    extensions: 'desktop'
+    comment_syntax: '#'
+    auto_pairs: {
+      '[': ']'
+    }
+  }
+
+  diff: {
+    extensions: { 'diff', 'patch' }
+    aliases: 'patch'
+    patterns: { '%.git/COMMIT_EDITMSG$' }
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '{': '}'
+      '"': '"'
+    }
+  }
+
+  dot: {
+    extensions: { 'dot', 'gv' }
+    comment_syntax: '//'
+    auto_pairs: {
+      '{': '}'
+      '[': ']'
+      '"': '"'
+    }
+  }
+
+  eiffel: {
+    extensions: { 'e', 'eif' }
+    comment_syntax: '--'
+    auto_pairs: common_auto_pairs
+  }
+
+  erlang: {
+    extensions: { 'erl', 'hrl' }
+    comment_syntax: '%'
+    auto_pairs: common_auto_pairs
+  }
+
+  fsharp: {
+    extensions: 'fs'
+    comment_syntax: '//'
+    auto_pairs: {
+      '{': '}'
+      '(': ')'
+      '"': '"'
+    }
+  }
+
+  forth: {
+    extensions: { 'f', 'forth', 'frt', 'fth' }
+    comment_syntax: '\\'
+    auto_pairs: {
+      '(': ')'
+      '"': '"'
+      "'": "'"
+    }
+  }
+
+  fortran: {
+    extensions: { 'for', 'fort', 'fpp', 'f77', 'f90', 'f95', 'f03', 'f08' }
+    comment_syntax: '!'
+    auto_pairs: {
+      '(': ')'
+      '"': '"'
+      "'": "'"
+    }
+  }
+
+  gettext: {
+    extensions: { 'po', 'pot' }
+    comment_syntax: '#'
+    auto_pairs: {
+      '"': '"'
+    }
+  }
+
+  gnuplot: {
+    extensions: { 'dem', 'plt' }
+    comment_syntax: '#'
+    auto_pairs: {
+      '[': ']'
+      '"': '"'
+    }
+  }
+
+  groovy: {
+    extensions: { 'groovy', 'gvy' }
+    comment_syntax: '//'
+    auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
+  }
+
+  haskell: {
+    extensions: 'hs'
+    comment_syntax: '--'
+    auto_pairs: common_auto_pairs
+  }
+
+  ini: {
+    extensions: { 'cfg', 'cnf', 'inf', 'ini', 'reg' }
+    comment_syntax: ';'
+    auto_pairs: {
+      '[': ']'
+      '"': '"'
+    }
+  }
+
+  io: {
+    extensions: 'io'
+    comment_syntax: '//'
+    auto_pairs: common_auto_pairs
+  }
+
+  java: {
+    extensions: { 'java', 'bsh' }
+    comment_syntax: '//'
+    auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
+  }
+
+  jsp: {
+    extensions: 'jsp'
+    comment_syntax: { '<%--', '--%>' }
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '{': '}'
+      '"': '"'
+      "'": "'"
+      '<': '>'
+    }
+  }
+
+  json: {
+    extensions: 'json'
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '{': '}'
+      '"': '"'
+    }
+    parent: 'curly_mode'
+  }
+
+  latex: {
+    extensions: { 'bbl', 'dtx', 'ins', 'ltx', 'tex', 'sty' }
+    comment_syntax: '%'
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '{': '}'
+      '"': '"'
+    }
+  }
+
+  makefile: {
+    extensions: { 'iface', 'mak', 'mk', 'gmk' }
+    aliases: 'make'
+    patterns: { 'GNUmakefile$', 'Makefile$', 'makefile$' }
+    comment_syntax: '#'
+    auto_pairs: common_auto_pairs
+
+    keymap: {
+      tab: (editor) ->
+        if editor.selection.empty and editor.current_context.prefix.is_blank
+          editor:insert("\t")
+          return true
+        else
+          return false
+    }
+
+    default_config: {
+      indent: 4
+      tab_width: 4
+      use_tabs: true
+    }
+  }
+
+  objective_c: {
+    extensions: {'m', 'mm', 'objc' }
+    comment_syntax: '//'
+    auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
+  }
+
+  perl: {
+    extensions: { 'al', 'perl', 'pl', 'pm', 'pod' }
+    shebangs: '[/ ]perl.*$'
+    comment_syntax: '#'
+    auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
+  }
+
+  pike: {
+    extensions: { 'pike', 'pmod' }
+    comment_syntax: '//'
+    auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
+  }
+
+  pkgbuild: {
+    patterns: { 'PKGBUILD$' }
+    comment_syntax: '#'
+    auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
+  }
+
+
+  postscript: {
+    extensions: { 'ps', 'eps' }
+    comment_syntax: '%'
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '<': '>'
+      '{': '}'
+    }
+  }
+
+  prolog: {
+    extensions: 'prolog'
+    comment_syntax: '%'
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+    }
+  }
+
+  properties: {
+    extensions: 'properties'
+    comment_syntax: '#'
+    auto_pairs: {
+      '"': '"'
+    }
+  }
+
+  rstats: {
+    extensions: { 'r', 'rout', 'rhistory', 'rt' }
+    patterns: { 'Rout%.save$', 'Rout%.fail$' }
+    comment_syntax: '#'
+    auto_pairs: common_auto_pairs
+  }
+
+  rebol: {
+    extensions: 'reb'
+    comment_syntax: ';'
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '{': '}'
+      '"': '"'
+    }
+  }
+
+  rails: {} -- only used for sublexing
+
+  scala: {
+    extensions: 'scala'
+    comment_syntax: '/'
+    auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
+  }
+
+  smalltalk: {
+    extensions: { 'changes', 'st', 'sources' }
+    comment_syntax: { '"', '"' }
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      "'": "'"
+    }
+  }
+
+  sql: {
+    extensions: { 'sql', 'ddl' }
+    comment_syntax: '--'
+    auto_pairs: {
+      '(': ')'
+      "'": "'"
+    }
+  }
+
+  tcl: {
+    extensions: { 'tcl', 'tk' }
+    comment_syntax: '#'
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '"': '"'
+      '{': '}'
+    }
+  }
+
+  vala: {
+    extensions: 'vala'
+    comment_syntax: '//'
+    auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
+  }
+
+  verilog: {
+    extensions: { 'v', 'ver' }
+    comment_syntax: '//'
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '"': '"'
+      '{': '}'
+    }
+  }
+
+  vhdl: {
+    extensions: { 'vh', 'vhd', 'vhdl' }
+    comment_syntax: '--'
+    auto_pairs: {
+      '(': ')'
+      "'": "'"
+    }
+  }
+
+  xml: {
+    extensions: { 'dtd', 'svg', 'xml', 'xsd', 'xsl', 'xslt', 'xul' }
+    comment_syntax: { '<!--', '-->' }
+    auto_pairs: {
+        '(': ')'
+        '[': ']'
+        '"': '"'
+        '<': '>'
+    }
+    indentation: {
+      more_after: {
+        '<[^/]+>%s*$'
+      }
+      less_for: {
+        '^%s*</[^<]+>%s*$'
+      }
+    }
+  }
+
+}

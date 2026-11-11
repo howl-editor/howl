@@ -1,0 +1,41 @@
+-- Copyright 2012-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+{:config} = howl
+
+mode_reg = {
+  name: 'lua'
+  shebangs: {'/lua.*$', '/env lua.*$'}
+  extensions: {'lua', 'luacheckrc'}
+  create: bundle_load('lua_mode')
+}
+
+provide_module('luacheck')
+
+howl.mode.register(mode_reg)
+howl.lsp.register_server(name: 'lua-language-server', command: 'lua-language-server', modes: 'lua')
+howl.inspection.register {
+  name: 'luacheck',
+  factory: ->
+    bundle_load('luacheck_inspector')
+}
+
+config.define {
+  name: 'luacheck_config_path',
+  description: 'Path to luacheck configuration file',
+  default: '.luacheckrc'
+}
+
+unload = ->
+  howl.mode.unregister('lua')
+  howl.lsp.unregister_server('lua-language-server')
+  howl.inspection.unregister('luacheck')
+
+return {
+  info: {
+    author: 'Copyright 2012-2026 The Howl Developers',
+    description: 'Lua mode',
+    license: 'MIT',
+  }
+  :unload
+}

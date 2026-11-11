@@ -1,0 +1,178 @@
+-- Copyright 2012-2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+state = ...
+base_map = bundle_load('base_map')
+{:apply, :record, :repeat_last} = state
+{:command, :bindings} = howl
+
+to_insert = (editor) ->
+  state.change_mode(editor, 'insert')
+  state.record(editor, ->)
+
+replace_char = (event, source, translations, editor) ->
+  if event.character
+    return apply(editor, (ed) ->
+      with ed.cursor
+        ed.buffer:delete(.pos, .pos)
+        ed.buffer:insert(event.character, .pos, 1)
+    )
+  else
+    return false
+
+with_lines_selected = (editor, count, f) ->
+  current_line = editor.current_line
+  lines = editor.buffer.lines
+  start_pos = current_line.start_pos
+  end_line = lines[current_line.nr + count]
+  end_pos = end_line and end_line.start_pos or #editor.buffer + 1
+
+  with editor.selection
+    .includes_cursor = false
+    :set(start_pos, end_pos)
+    f(editor)
+    .includes_cursor = true
+
+copy_lines = (editor) ->
+  state.execute ->
+    if not state.count or state.count <= 1
+      return editor:copy_line()
+    else
+      return editor:with_position_restored(->
+        with_lines_selected editor, state.count, (ed) ->
+          ed.selection:copy(whole_lines: true)
+      )
+
+  state.reset()
+
+map = {
+  __meta: setmetatable({
+    name: 'VI'
+  }, __index: base_map.__meta)
+
+  editor: setmetatable({
+    escape: (editor) ->
+      state.reset()
+
+    a: (editor) ->
+      if editor.cursor.at_end_of_line
+        editor:insert(' ')
+      else
+        editor.cursor:right()
+
+      to_insert(editor)
+
+    A: (editor) ->
+      editor.cursor:line_end()
+      to_insert(editor)
+
+    c: (editor) ->
+      if not state.change
+        state.change = true
+        return
+
+      -- cc
+      editor.buffer:as_one_undo ->
+        for _ = 1, ((state.count or 1) - 1)
+          editor:cut()
+        editor.cursor:home_indent()
+        if not editor.cursor.at_end_of_line
+          editor:delete_to_end_of_line()
+        to_insert(editor)
+
+    C: (editor) -> apply(editor, (ed) ->
+      ed:delete_to_end_of_line()
+      to_insert(ed)
+    )
+
+    d: (editor) ->
+      if not state.delete
+        state.delete = true
+        return
+
+      -- dd
+      count = state.count or 1
+
+      record editor, (ed) ->
+        with_lines_selected ed, count, (e) ->
+          e.selection:cut(whole_lines: true)
+
+    D: (editor) ->
+      if state.has_modifier()
+        state.reset()
+        return
+
+      apply(editor, (ed) -> ed:delete_to_end_of_line())
+
+    i: to_insert
+
+    J: (editor) -> apply(editor, (ed) -> ed:join_lines())
+
+    o: (editor) -> apply(editor, (ed) ->
+      ed.cursor:line_end()
+      to_insert(ed)
+      ed:newline()
+    )
+
+    O: (editor) -> apply(editor, (ed) ->
+      ed.cursor:home()
+      ed:newline()
+      ed.cursor:up()
+      ed:indent()
+      to_insert(ed)
+    )
+
+    p: (editor) -> apply(editor, (ed) ->
+      ed:paste(where: 'after')
+    )
+
+    P: (editor) -> apply(editor, (ed) -> ed:paste())
+
+    r: (editor) -> bindings.capture(replace_char)
+
+    u: (editor) -> state.execute(editor.undo, editor)
+    ctrl_r: (editor) -> state.execute(editor.redo, editor)
+
+    v: (editor) -> state.change_mode(editor, 'visual')
+
+    x: (editor) ->
+      state.delete = true
+      apply editor, (ed, _state) ->
+        ed.cursor.pos += (_state.count or 1) - 1
+        true
+
+    y: (editor) ->
+      if state.yank
+        copy_lines(editor)
+        state.yank = false
+      else
+        state.yank = true
+
+    Y: (editor) -> copy_lines(editor)
+
+    Z: ->
+      if state.quitting
+        state.reset()
+        return command.save_and_quit()
+      else
+        state.quitting = true
+
+    Q: ->
+      if state.quitting
+        state.reset()
+        return command.quit_without_save()
+
+    '.': (editor) -> repeat_last(editor)
+
+    tab: 'navigate-forward'
+    ctrl_i: 'navigate-forward'
+    ctrl_o: 'navigate-back'
+  }, __index: base_map.editor)
+
+  ':': -> command.run()
+}
+
+return setmetatable(map, {
+  __index: base_map
+  __call: (_, editor) -> state.leave_edit_mode(editor)
+})
