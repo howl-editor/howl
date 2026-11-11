@@ -1895,6 +1895,35 @@ end
 -- Files
 -------------------------------------------------------------------------------
 
+-- Comment lines ending a block that closing brackets were placed after, being
+-- indented deeper than the brackets, move above them, inside the block.
+local function keep_trailing_comments(text)
+  local out, pos = {}, 1
+  while true do
+    local s = find(text, CLOSE, pos, true)
+    if not s then break end
+    out[#out + 1] = sub(text, pos, s - 1)
+    local indent, closer, after = match(text, '^\n([ \t]*)([%)%]}]+)()', s + 1)
+    if not indent then
+      out[#out + 1] = CLOSE
+      pos = s + 1
+    else
+      -- the comment lines after the closer's line, indented deeper than it
+      local comments, i = {}, after
+      while true do
+        local line, next_i = match(text, '^(\n[ \t]*%-%-[^\n]*)()', i)
+        if not line or #match(line, '^\n([ \t]*)') <= #indent then break end
+        comments[#comments + 1] = line
+        i = next_i
+      end
+      out[#out + 1] = concat(comments) .. CLOSE .. '\n' .. indent .. closer
+      pos = i
+    end
+  end
+  out[#out + 1] = sub(text, pos)
+  return concat(out)
+end
+
 function Conv:render_file()
   local tree = self.tree
   if not self.spans[tree] then return self.src end
@@ -1917,6 +1946,7 @@ function Conv:render_file()
 
   -- a comment ending a line moves above closing brackets placed after it
   text = gsub(text, CLOSE .. '(\n[ \t]*[%)%]}]+)([ \t]+%-%-[^\n]*)', '%2%1')
+  text = keep_trailing_comments(text)
   text = gsub(text, '[\1\3\4]', '')
   text = gsub(text, '\n\n+$', '\n')
 

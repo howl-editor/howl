@@ -110,6 +110,27 @@ describe 'convert', ->
         )
       ]])
 
+    it 'keeps comment lines ending a block above the closing brackets', ->
+      converts([[
+        config.define
+          name: 'max'
+          -- more to come
+        x = f a, ->
+          done!
+          -- all done
+        y = 1
+      ]], [[
+        config.define {
+          name: 'max'
+          -- more to come
+        }
+        x = f(a, ->
+          done()
+          -- all done
+        )
+        y = 1
+      ]])
+
     it 'gives parentheses to a call whose only argument is a long string', ->
       converts('x = trimmed_text [==[\n  text\n]==]\ny = f[==[text]==]\n',
         'x = trimmed_text([[\n  text\n]])\ny = f([[text]])\n')

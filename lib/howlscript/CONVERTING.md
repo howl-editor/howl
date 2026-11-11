@@ -368,7 +368,8 @@ elseif index < 1
 ```
 
 A comment touching a name or `]` gets a space, as Howlscript reads the `--` as a
-decrement there: `x--note` becomes `x --note`.
+decrement there: `x--note` becomes `x --note`. Comment lines ending a block stay in it,
+above the closing brackets added after it.
 
 ### Strings
 
