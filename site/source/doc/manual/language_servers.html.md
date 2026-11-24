@@ -72,15 +72,18 @@ again the next time you show or edit a file for it. How long is controlled by th
   you pick. When the server finds none, the project is searched for the word
   instead. See [Finding references](editing.html#finding-references).
 
-- **Highlights**: When the cursor rests on a symbol that occurs elsewhere in
-  the file, the server's list of its occurrences is highlighted, with the places
-  assigning to it highlighted differently. The highlights go away when you move the
-  cursor off them, press `escape` or edit the file. How long the cursor must
-  rest first is set by `lsp_occurrences_highlight_delay`, in milliseconds (1000
-  by default). To turn this off, set `lsp_occurrences_highlighted` to false.
-  The `buffer-search-occurrences` command, bound to `ctrl_period` by default,
-  highlights them right away and lets you go through them. See [Going through
+- **Highlights**: The `buffer-search-occurrences` command, bound to
+  `ctrl_period` by default, highlights the server's list of the occurrences of
+  the symbol at the cursor, with the places assigning to it highlighted
+  differently, and lets you go through them. See [Going through
   occurrences](editing.html#going-through-occurrences).
+
+  The occurrences can also be highlighted automatically, whenever the cursor
+  rests on a symbol that occurs elsewhere in the file, by setting
+  `lsp_occurrences_highlighted` to true. These highlights go away when you move
+  the cursor off them, press `escape` or edit the file. How long the cursor must
+  rest first is set by `lsp_occurrences_highlight_delay`, in milliseconds (1000
+  by default).
 
 - **Renaming**: The `rename-symbol` command renames the symbol at the cursor
   wherever it's used, previewing the new name in each place as you type it. See

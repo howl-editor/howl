@@ -29,7 +29,7 @@ config.define {
   name: 'lsp_occurrences_highlighted'
   description: 'Whether the occurrences of the symbol at the cursor are highlighted, as found by the language server'
   type_of: 'boolean'
-  default: true
+  default: false
 }
 
 config.define {

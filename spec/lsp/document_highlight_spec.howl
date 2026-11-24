@@ -254,6 +254,7 @@ describe 'lsp.document_highlight', ->
       assert.same {}, shown()
 
     it 'are cleared when lsp_occurrences_highlighted is turned off', ->
+      buffer.config.lsp_occurrences_highlighted = true
       buffer.config.lsp_occurrences_highlighted = false
       assert.same {}, shown()
 
@@ -286,7 +287,9 @@ describe 'lsp.document_highlight', ->
 
   describe 'when the cursor rests', ->
     setup -> set_howl_loop()
-    before_each -> buffer.config.lsp_occurrences_highlight_delay = 200
+    before_each ->
+      buffer.config.lsp_occurrences_highlighted = true
+      buffer.config.lsp_occurrences_highlight_delay = 200
 
     wait = (seconds, f) -> timer.after_exactly(seconds, async(f))
 
@@ -320,8 +323,8 @@ describe 'lsp.document_highlight', ->
         assert.spy(client.send_request).was_called(1)
         done()
 
-    it 'requests nothing when lsp_occurrences_highlighted is false', (done) ->
-      buffer.config.lsp_occurrences_highlighted = false
+    it 'requests nothing when lsp_occurrences_highlighted is false, as by default', (done) ->
+      buffer.config.lsp_occurrences_highlighted = nil
       move_to(16)
       wait 0.3, ->
         assert.spy(client.send_request).was_not_called()
