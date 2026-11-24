@@ -4,7 +4,8 @@
 -- Highlights the occurrences of the symbol at the cursor once the cursor has
 -- rested on it, as found by the server's `documentHighlight`. The highlights
 -- stay while the cursor is on one of them, and are cleared when it leaves them
--- or the buffer changes.
+-- or the buffer changes. Occurrences that are held, as while going through
+-- them with `buffer-search-occurrences`, stay until released.
 
 lsp = require('howl.lsp')
 {:config, :signal, :timer} = howl
@@ -74,22 +75,37 @@ on_highlight = (buffer, pos) ->
     return true if pos > range[1] and pos <= range[2]
   false
 
--- shows the highlights for the symbol at pos, unless it occurs only there
-show = (buffer, highlights, pos) ->
-  markers, ranges = {}, {}
+-- converts the server's highlights to occurrences, `{ start_pos, end_pos,
+-- write: <bool> }` in the order of their positions, leaving out empty ones
+to_occurrences = (buffer, highlights) ->
+  occurrences = {}
   for h in *highlights
     start_pos = lsp.pos_for(buffer, h.range.start)
     end_pos = lsp.pos_for(buffer, h.range['end'])
     continue unless end_pos > start_pos
-    flair = h.kind == WRITE and 'occurrence_highlight_write' or 'occurrence_highlight'
-    append(markers, { name: MARKER, :flair, start_offset: start_pos, end_offset: end_pos })
-    append(ranges, { start_pos, end_pos })
+    append(occurrences, { start_pos, end_pos, write: h.kind == WRITE })
 
+  table.sort(occurrences, (a, b) -> a[1] < b[1])
+  occurrences
+
+-- shows occurrences as buffer's highlights, replacing any shown
+mark = (buffer, occurrences) ->
   clear(buffer)
-  return if #markers == 0
-  return if #ranges == 1 and pos >= ranges[1][1] and pos <= ranges[1][2]
-  buffer.markers:add(markers)
-  buffer.data.lsp_highlights = ranges
+  return if #occurrences == 0
+  buffer.markers:add([{
+    name: MARKER
+    flair: o.write and 'occurrence_highlight_write' or 'occurrence_highlight'
+    start_offset: o[1]
+    end_offset: o[2]
+  } for o in *occurrences])
+  buffer.data.lsp_highlights = occurrences
+
+-- shows the highlights for the symbol at pos, unless it occurs only there
+show = (buffer, highlights, pos) ->
+  occurrences = to_occurrences(buffer, highlights)
+  if #occurrences == 1 and pos >= occurrences[1][1] and pos <= occurrences[1][2]
+    occurrences = {}
+  mark(buffer, occurrences)
 
 -- requests the highlights for the symbol at pos, showing them when they arrive
 -- unless the request has been cancelled by then
@@ -116,10 +132,45 @@ request = (buffer, pos) ->
 
   pending = req if req.id
 
+-- returns the occurrences of the symbol at pos (see `to_occurrences`), or nil
+-- if there's no server supporting it or it found none. Unlike the highlighting
+-- as the cursor rests, this also asks with pos just before a word, and starts
+-- the buffer's server if needed. Must be called from a coroutine.
+occurrences_for = (buffer, pos) ->
+  return nil unless on_word(buffer, pos) or on_word(buffer, pos + 1)
+  state = lsp.attach(buffer)
+  return nil unless state
+  client = state.client
+  return nil if client.initialized and not client.capabilities.documentHighlightProvider
+
+  lsp.sync(buffer)
+  result = client:request('textDocument/documentHighlight', {
+    textDocument: { uri: state.uri },
+    position: lsp.position(buffer, pos)
+  })
+  return nil if type(result) != 'table' or buffer.data.lsp != state
+  occurrences = to_occurrences(buffer, result)
+  #occurrences > 0 and occurrences or nil
+
+-- shows occurrences as buffer's highlights, kept until `release` whatever the
+-- cursor does, and keeps the highlighting as the cursor rests from replacing
+-- them
+hold = (buffer, occurrences) ->
+  cancel()
+  mark(buffer, occurrences)
+  buffer.data.lsp_highlights_held = true
+
+-- ends `hold`, clearing the highlights unless keep is true. Kept ones are
+-- then cleared like any others, once the cursor leaves them.
+release = (buffer, keep = false) ->
+  buffer.data.lsp_highlights_held = nil
+  clear(buffer) unless keep
+
 -- requests the highlights at the editor's cursor once it has rested there
 schedule = (editor) ->
   cancel()
   buffer = editor.buffer
+  return if buffer.data.lsp_highlights_held
   return unless buffer.data.lsp and buffer.config.lsp_occurrences_highlighted
   req = {:editor, :buffer}
   -- `timer.after` would round whole seconds to its coarse ticks
@@ -133,7 +184,7 @@ schedule = (editor) ->
 
 on_cursor_changed = (editor) ->
   buffer = editor.buffer
-  return if on_highlight(buffer, editor.cursor.pos)
+  return if buffer.data.lsp_highlights_held or on_highlight(buffer, editor.cursor.pos)
   clear(buffer)
   schedule(editor)
 
@@ -144,6 +195,20 @@ on_buffer_modified = (buffer) ->
   editor = howl.app.editor
   schedule(editor) if editor and editor.buffer == buffer
 
+-- escape in an editor clears the highlights, as it does the searcher's
+on_key_press = (args) ->
+  return unless args.source == 'editor'
+  -- the translations start with the character, which escape has none of
+  escape = false
+  for t in *args.translations
+    escape = true if t == 'escape'
+  return unless escape
+  editor = args.parameters[1]
+  buffer = editor and editor.buffer
+  return if not buffer or buffer.data.lsp_highlights_held
+  cancel() if pending and pending.buffer == buffer
+  clear(buffer)
+
 config.watch 'lsp_occurrences_highlighted', ->
   cancel()
   app = rawget(howl, 'app')
@@ -153,6 +218,7 @@ config.watch 'lsp_occurrences_highlighted', ->
 
 signal.connect('cursor-changed', (args) -> on_cursor_changed(args.editor))
 signal.connect('buffer-modified', (args) -> on_buffer_modified(args.buffer))
+signal.connect('key-press', on_key_press)
 signal.connect 'editor-released', (args) ->
   cancel() if pending and pending.editor == args.editor
 
@@ -160,4 +226,7 @@ signal.connect 'editor-released', (args) ->
   :request
   :cancel
   :clear
+  :occurrences_for
+  :hold
+  :release
 }

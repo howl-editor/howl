@@ -42,6 +42,34 @@ command.register {
 }
 
 command.register {
+  name: 'buffer-search-occurrences',
+  description: 'Go through the occurrences of the symbol at cursor, as found by the language server'
+  input: (opts) ->
+    editor = app.editor
+    buffer = editor.buffer
+    occurrences = require('howl.lsp.document_highlight').occurrences_for(buffer, editor.cursor.pos)
+    -- the server's response might arrive after switching to another buffer
+    return if app.editor.buffer != buffer
+
+    -- without a language server's answer, search for the word
+    unless occurrences
+      current_word = editor.current_context.word.text or opts.text
+      return interact.forward_search_word(prompt: opts.prompt, text: current_word)
+
+    require('howl.lsp.occurrences_view').search {
+      :occurrences
+      prompt: opts.prompt
+      title: 'Occurrences'
+      forward_keys: howl.bindings.keystrokes_for('buffer-search-occurrences', 'editor')
+      backward_keys: howl.bindings.keystrokes_for('buffer-search-word-backward', 'editor')
+    }
+
+  handler: (commit) ->
+    -- commits a word search; going through occurrences commits by itself
+    app.editor.searcher:commit() if commit
+}
+
+command.register {
   name: 'buffer-repeat-search',
   description: 'Repeat the last search'
   handler: -> app.editor.searcher:repeat_last()

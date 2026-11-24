@@ -1,0 +1,116 @@
+-- Copyright 2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+-- Goes through the occurrences of a symbol found by the language server, as
+-- word search goes through the matches of a word: the cursor moves to the
+-- selected one, `enter` leaves it there and `escape` returns to where it was.
+
+document_highlight = require('howl.lsp.document_highlight')
+{:app, :breadcrumbs} = howl
+{:highlight, :HelpContext} = howl.ui
+
+-- the index of the occurrence at pos, or of the first after it
+index_at = (occurrences, pos) ->
+  for i, o in ipairs(occurrences)
+    return i if pos <= o[2]
+  1
+
+class OccurrencesView
+  new: (opts) =>
+    @opts = opts
+    @occurrences = opts.occurrences
+    @text = app.editor.buffer:sub(@occurrences[1][1], @occurrences[1][2] - 1)
+    @keymap = moon.copy(@keymap)
+    for keystroke in *(opts.forward_keys or {})
+      @keymap[keystroke] = -> @next()
+    for keystroke in *(opts.backward_keys or {})
+      @keymap[keystroke] = -> @previous()
+
+  init: (command_line) =>
+    @command_line = command_line
+    @command_line.prompt = @opts.prompt
+    @editor = app.editor
+    @buffer = @editor.buffer
+    @start_pos = @editor.cursor.pos
+    @start_line_at_top = @editor.line_at_top
+    document_highlight.hold(@buffer, @occurrences)
+    @_select(index_at(@occurrences, @start_pos))
+
+  next: =>
+    if @index == #@occurrences
+      log.info('Search hit BOTTOM, continuing at TOP')
+    @_select(@index % #@occurrences + 1)
+
+  previous: =>
+    if @index == 1
+      log.info('Search hit TOP, continuing at BOTTOM')
+    @_select((@index - 2) % #@occurrences + 1)
+
+  _select: (index) =>
+    @index = index
+    {start_pos, end_pos} = @occurrences[index]
+    highlight.remove_all('search', @buffer)
+    highlight.apply('search', @buffer, start_pos, end_pos - start_pos)
+    -- as the searcher does, so that all of it is shown
+    @editor.cursor.pos = end_pos
+    @editor.cursor.pos = start_pos
+    next_line = @buffer.lines:at_pos(start_pos).next
+    @editor:ensure_visible(next_line.start_pos) if next_line
+    @command_line.title = "#{@opts.title} (#{index} of #{#@occurrences})"
+
+  -- the symbol is what's searched for, so it can't be edited
+  on_text_changed: (text) =>
+    @command_line.text = @text if text != @text
+
+  get_help: =>
+    with HelpContext()
+      :add_keys {
+        { up: 'Go to the previous occurrence' }
+        { down: 'Go to the next occurrence' }
+        { enter: 'Stay at the selected occurrence' }
+        { escape: 'Go back to where the cursor was' }
+      }
+
+  on_close: =>
+    if @committed
+      if @start_pos != @editor.cursor.pos
+        breadcrumbs.drop {
+          buffer: @buffer
+          pos: @start_pos
+          line_at_top: @start_line_at_top
+        }
+
+      breadcrumbs.drop {
+        buffer: @buffer
+        pos: @editor.cursor.pos
+        line_at_top: @editor.line_at_top
+      }
+      -- left like the searcher's highlights, until the cursor moves off them
+      -- or escape is pressed
+      return document_highlight.release(@buffer, true)
+    else
+      highlight.remove_all('search', @buffer)
+      document_highlight.release(@buffer)
+      @editor.cursor.pos = @start_pos
+      @editor.line_at_top = @start_line_at_top
+
+  keymap: {
+    up: => @previous()
+    down: => @next()
+    enter: =>
+      @committed = true
+      @command_line:finish(true)
+    escape: => @command_line:finish()
+  }
+
+-- goes through occurrences, from `document_highlight.occurrences_for`, in the
+-- current editor, starting with the one at the cursor or the first after it.
+-- The symbol is shown as the command line's text. Returns true if one was
+-- settled on with `enter`, or nil if escaped. opts are `occurrences`,
+-- `prompt`, `title` and the keystrokes that also go to the next or previous
+-- one, `forward_keys` and `backward_keys`.
+search = (opts) ->
+  view = OccurrencesView(opts)
+  app.window.command_panel:run(view, text: view.text)
+
+{:search}

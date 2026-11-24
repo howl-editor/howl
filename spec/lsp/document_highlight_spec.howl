@@ -21,6 +21,15 @@ describe 'lsp.document_highlight', ->
     editor.cursor.pos = pos
     signal.emit('cursor-changed', :editor, cursor: editor.cursor)
 
+  -- signals a key press in the editor target, with the key given as by Gtk
+  press = (target, key_name, control = false) ->
+    character = key_name == 'escape' and '\27' or key_name
+    event = {
+      :key_name, :character, key_code: 1, :control, alt: false, meta: false, shift: false, super: false
+    }
+    translations = howl.bindings.translate_key(event)
+    signal.emit('key-press', source: 'editor', :translations, parameters: { target })
+
   answer = { { range: range(0, 0, 0, 6), kind: 3 }, { range: range(1, 6, 1, 12), kind: 2 } }
 
   before_each ->
@@ -124,6 +133,104 @@ describe 'lsp.document_highlight', ->
       buffer.data.lsp = state
       assert.same {}, shown()
 
+  describe 'occurrences_for(buffer, pos)', ->
+    local response, err
+
+    before_each ->
+      response, err = answer, nil
+      client.request = spy.new(-> response, err)
+
+    it 'requests the highlights for the uri and the utf-8 position', ->
+      document_highlight.occurrences_for(buffer, 16)
+      assert.spy(client.request).was_called_with client, 'textDocument/documentHighlight', {
+        textDocument: { uri: 'file:///tmp/x.py' },
+        position: { line: 1, character: 8 }
+      }
+
+    it 'sends pending changes first', ->
+      buffer.data.lsp.dirty = true
+      buffer.data.lsp.full = true
+      document_highlight.occurrences_for(buffer, 16)
+      assert.same { 'textDocument/didChange' }, sent
+      assert.spy(client.request).was_called(1)
+
+    it 'returns the occurrences in order, with the writes marked', ->
+      response = {
+        { range: range(2, 0, 2, 6) },
+        { range: range(0, 0, 0, 6), kind: 3 },
+        { range: range(1, 6, 1, 12), kind: 2 }
+      }
+      assert.same {
+        { 1, 4, write: true },
+        { 15, 18, write: false },
+        { 20, 23, write: false }
+      }, document_highlight.occurrences_for(buffer, 16)
+
+    it 'requests the highlights with the cursor within a word, or just after or before it', ->
+      buffer.text = '  åäö = x\n'
+      for pos in *{ 1, 2, 7 }
+        assert.is_nil document_highlight.occurrences_for(buffer, pos)
+      assert.spy(client.request).was_not_called()
+
+      for pos in *{ 3, 4, 6, 9, 10 }
+        document_highlight.occurrences_for(buffer, pos)
+      assert.spy(client.request).was_called(5)
+
+    it 'returns nil for errors, empty answers and empty ranges', ->
+      for r in *{ { nil, 'timed out' }, { nil }, { {} }, { { { range: range(0, 0, 0, 0) } } } }
+        response, err = r[1], r[2]
+        assert.is_nil document_highlight.occurrences_for(buffer, 16)
+
+    it 'does not request anything when the server has no documentHighlightProvider', ->
+      client.capabilities = {}
+      assert.is_nil document_highlight.occurrences_for(buffer, 16)
+      assert.spy(client.request).was_not_called()
+
+    it 'returns nil for buffers without a language server', ->
+      buffer.data.lsp = nil
+      assert.is_nil document_highlight.occurrences_for(buffer, 16)
+      assert.spy(client.request).was_not_called()
+
+    it 'returns nil when the buffer has been detached meanwhile', ->
+      client.request = ->
+        buffer.data.lsp = nil
+        answer
+      assert.is_nil document_highlight.occurrences_for(buffer, 16)
+
+  describe 'hold(buffer, occurrences)', ->
+    occurrences = { { 1, 4, write: true }, { 15, 18, write: false } }
+
+    before_each -> document_highlight.hold(buffer, occurrences)
+    after_each -> document_highlight.release(buffer)
+
+    it 'shows the occurrences, with writes in their own flair', ->
+      assert.same {
+        { 'occurrence_highlight_write', 1, 4 },
+        { 'occurrence_highlight', 15, 18 }
+      }, shown()
+
+    it 'keeps them wherever the cursor goes, and when escape is pressed', ->
+      move_to(15)
+      move_to(6)
+      press(editor, 'escape')
+      assert.equals 2, #shown()
+
+    it 'cancels a pending request', ->
+      document_highlight.request(buffer, 16)
+      document_highlight.hold(buffer, occurrences)
+      assert.spy(client.cancel).was_called_with client, 1
+
+    it 'is ended by release(buffer), clearing them', ->
+      document_highlight.release(buffer)
+      assert.same {}, shown()
+
+    it 'is ended by release(buffer, true), keeping them until the cursor leaves them', ->
+      document_highlight.release(buffer, true)
+      move_to(16)
+      assert.equals 2, #shown()
+      move_to(6)
+      assert.same {}, shown()
+
   describe 'shown highlights', ->
     before_each ->
       document_highlight.request(buffer, 16)
@@ -150,6 +257,18 @@ describe 'lsp.document_highlight', ->
       buffer.config.lsp_occurrences_highlighted = false
       assert.same {}, shown()
 
+    it 'are cleared when escape is pressed in an editor showing the buffer', ->
+      press(editor, 'escape')
+      assert.same {}, shown()
+
+    it 'are kept when other keys are pressed, or escape in other editors', ->
+      press(editor, 'escape', true)
+      press(editor, 'a')
+      other = app:new_buffer()
+      press({ buffer: other }, 'escape')
+      app:close_buffer(other, true)
+      assert.equals 2, #shown()
+
   describe 'a pending request', ->
     before_each -> document_highlight.request(buffer, 16)
 
@@ -159,6 +278,10 @@ describe 'lsp.document_highlight', ->
 
     it 'is cancelled when the buffer changes', ->
       buffer:insert('x', 24)
+      assert.spy(client.cancel).was_called_with client, 1
+
+    it 'is cancelled when escape is pressed', ->
+      press(editor, 'escape')
       assert.spy(client.cancel).was_called_with client, 1
 
   describe 'when the cursor rests', ->
@@ -201,5 +324,17 @@ describe 'lsp.document_highlight', ->
       buffer.config.lsp_occurrences_highlighted = false
       move_to(16)
       wait 0.3, ->
+        assert.spy(client.send_request).was_not_called()
+        done()
+
+    it 'requests nothing while occurrences are held', (done) ->
+      document_highlight.hold(buffer, { { 1, 4 } })
+      move_to(16)
+      app_editor = app.editor
+      app.editor = editor
+      buffer:insert('x', 24)
+      app.editor = app_editor
+      wait 0.3, ->
+        document_highlight.release(buffer)
         assert.spy(client.send_request).was_not_called()
         done()

@@ -1,0 +1,144 @@
+-- Copyright 2026 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+occurrences_view = require('howl.lsp.occurrences_view')
+document_highlight = require('howl.lsp.document_highlight')
+{:app, :breadcrumbs, :Buffer} = howl
+{:Editor, :highlight} = howl.ui
+
+key = (name, control = false) -> {
+  key_name: name, alt: false, :control, meta: false, shift: false, super: false
+}
+
+describe 'lsp.occurrences_view', ->
+  describe 'search(opts)', ->
+    local buffer, editor, app_editor, occurrences
+
+    -- the occurrence markers shown, as { flair, start_offset, end_offset }
+    shown = -> [{ m.flair, m.start_offset, m.end_offset } for m in *buffer.markers:find(name: 'lsp_occurrence')]
+    -- the search highlights, as { start_offset, end_offset }
+    selected = -> [{ m.start_offset, m.end_offset } for m in *buffer.markers:find(name: 'highlight', flair: 'search')]
+
+    before_each ->
+      buffer = Buffer(howl.mode.by_name('default'))
+      buffer.text = 'åäö = 1\nprint(åäö)\nåäö\n'
+      editor = Editor(buffer)
+      app_editor = app.editor
+      app.editor = editor
+      occurrences = { { 1, 4, write: true }, { 15, 18, write: false }, { 20, 23, write: false } }
+
+    after_each ->
+      app.editor = app_editor
+      if app.window
+        app.window:destroy()
+        app.window = nil
+      document_highlight.release(buffer)
+
+    search = (f) ->
+      local result
+      within_command_line((-> result = occurrences_view.search {
+        :occurrences
+        title: 'Occurrences'
+        forward_keys: { 'ctrl_period' }
+        backward_keys: { 'ctrl_comma' }
+      }), f)
+      result
+
+    it 'goes to the occurrence at the cursor', ->
+      editor.cursor.pos = 17
+      local title
+      search((command_line) -> title = command_line.title)
+      assert.equals 15, editor.cursor.pos
+      assert.equals 'Occurrences (2 of 3)', title
+
+    it 'goes to the first occurrence after the cursor when not at one', ->
+      editor.cursor.pos = 6
+      search(->)
+      assert.equals 15, editor.cursor.pos
+
+    it 'goes to the first occurrence when the cursor is after all of them', ->
+      editor.cursor.pos = 24
+      search(->)
+      assert.equals 1, editor.cursor.pos
+
+    it 'highlights the occurrences, and the selected one as the search match', ->
+      editor.cursor.pos = 16
+      search(->)
+      assert.same {
+        { 'occurrence_highlight_write', 1, 4 },
+        { 'occurrence_highlight', 15, 18 },
+        { 'occurrence_highlight', 20, 23 }
+      }, shown()
+      assert.same { { 15, 18 } }, selected()
+
+    it 'goes to the next and previous occurrences with down and up, wrapping around', ->
+      positions = {}
+      search (command_line) ->
+        for name in *{ 'down', 'down', 'down', 'up' }
+          command_line:handle_keypress(key(name))
+          table.insert(positions, editor.cursor.pos)
+      assert.same { 15, 20, 1, 20 }, positions
+      assert.same { { 20, 23 } }, selected()
+      assert.equals 3, #shown()
+
+    it 'goes to the next and previous occurrences with forward_keys and backward_keys', ->
+      positions = {}
+      search (command_line) ->
+        for name in *{ 'period', 'comma' }
+          command_line:handle_keypress(key(name, true))
+          table.insert(positions, editor.cursor.pos)
+      assert.same { 15, 1 }, positions
+
+    it 'shows the symbol as the text, which cannot be edited', ->
+      local text
+      search (command_line) ->
+        command_line:write('x')
+        command_line:handle_keypress(key('backspace'))
+        command_line:handle_keypress(key('backspace'))
+        text = command_line.text
+      assert.equals 'åäö', text
+
+    context 'on enter', ->
+      it 'returns true, staying at the selected occurrence', ->
+        result = search((command_line) ->
+          command_line:handle_keypress(key('down'))
+          command_line:handle_keypress(key('return'))
+        )
+        assert.is_true result
+        assert.equals 15, editor.cursor.pos
+
+      it 'drops breadcrumbs where the cursor was and where it is', ->
+        breadcrumbs.clear()
+        search (command_line) ->
+          command_line:handle_keypress(key('down'))
+          command_line:handle_keypress(key('down'))
+          command_line:handle_keypress(key('return'))
+        positions = [breadcrumbs.crumb_pos(c) for c in *breadcrumbs.trail]
+        breadcrumbs.clear()
+        assert.same { 1, 20 }, positions
+
+      it 'keeps the highlights until the cursor leaves them', ->
+        search (command_line) ->
+          command_line:handle_keypress(key('down'))
+          command_line:handle_keypress(key('return'))
+        assert.equals 3, #shown()
+        editor.cursor.pos = 16
+        assert.equals 3, #shown()
+        editor.cursor.pos = 6
+        assert.same {}, shown()
+
+    context 'on escape', ->
+      it 'returns nil, going back to where the cursor was', ->
+        editor.cursor.pos = 6
+        result = search((command_line) ->
+          command_line:handle_keypress(key('down'))
+          command_line:handle_keypress(key('escape'))
+        )
+        assert.is_nil result
+        assert.equals 6, editor.cursor.pos
+
+      it 'clears the highlights', ->
+        search (command_line) ->
+          command_line:handle_keypress(key('escape'))
+        assert.same {}, shown()
+        assert.same {}, selected()

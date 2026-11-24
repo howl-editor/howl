@@ -81,6 +81,14 @@ interact.register {
     })
 }
 
+-- the keys of `buffer-search-occurrences` go forward too, as it falls back to
+-- word search
+word_forward_keys = ->
+  keys = howl.bindings.keystrokes_for('buffer-search-word-forward', 'editor')
+  for key in *howl.bindings.keystrokes_for('buffer-search-occurrences', 'editor')
+    table.insert(keys, key)
+  keys
+
 interact.register {
   name: 'forward_search_word'
   description: ''
@@ -89,7 +97,7 @@ interact.register {
       prompt: opts.prompt
       text: opts.text
       title: opts.title or 'Forward Word Search'
-      forward_keys: howl.bindings.keystrokes_for('buffer-search-word-forward', 'editor')
+      forward_keys: word_forward_keys()
       backward_keys: howl.bindings.keystrokes_for('buffer-search-word-backward', 'editor')
     })
 }
@@ -102,7 +110,7 @@ return interact.register {
       prompt: opts.prompt
       text: opts.text
       title: opts.title or 'Backward Word Search',
-      forward_keys: howl.bindings.keystrokes_for('buffer-search-word-forward', 'editor')
+      forward_keys: word_forward_keys()
       backward_keys: howl.bindings.keystrokes_for('buffer-search-word-backward', 'editor')
     })
 }

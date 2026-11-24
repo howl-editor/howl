@@ -73,9 +73,9 @@ focused match.
 
 Looking only for whole word matches can be useful when there happen to be many
 sub-string matches that you want to ignore. The `buffer-search-word-forward` and
-`buffer-search-word-backward` commands (bound to `ctrl_period` and `ctrl_comma`)
-work similar to the buffer search commands above, but they only match whole
-words and they also automatically search for the current word at the cursor.
+`buffer-search-word-backward` commands (the latter bound to `ctrl_comma`) work
+similar to the buffer search commands above, but they only match whole words
+and they also automatically search for the current word at the cursor.
 
 ![Whole word search](/images/screenshots/monokai/whole-word-search.png)
 
@@ -83,6 +83,24 @@ Note that the match within 'text_len' is not highlighted in the screenshot
 above.
 
 The `up` and `down` keys jump between the matches for these commands as well.
+
+## Going through occurrences
+
+The `buffer-search-occurrences` command, bound to `ctrl_period` by default,
+goes through the occurrences of the symbol at the cursor, as found by the
+file's [language server](language_servers.html). Unlike a whole word search,
+this finds only the uses of that very symbol, leaving out other variables with
+the same name and words in comments or strings.
+
+It works like a whole word search: the occurrences are highlighted, with the
+places assigning to the symbol highlighted differently, and the cursor moves to
+the start of the occurrence it's on. The `up` and `down` keys, as well as `ctrl_period` and
+`ctrl_comma`, jump between them. Pressing `enter` leaves the cursor where it
+is, and `escape` takes it back to where it was and removes the highlighting.
+
+Without a language server, or when the server finds no occurrences, the command
+does a whole word search for the word at the cursor using
+`buffer-search-word-forward` instead.
 
 ## Buffer grep
 

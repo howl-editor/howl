@@ -36,3 +36,16 @@ describe 'search', ->
         command_line:write('tw')
       )
       assert.spy(searcher.forward_to).was_called_with match.is_ref(searcher), 'tw', 'word'
+
+    it 'goes to the next match with the keys of buffer-search-occurrences too', ->
+      searcher.forward_to = spy.new(-> true)
+      searcher.next = spy.new(-> true)
+      keymap = { editor: { ctrl_x: 'buffer-search-occurrences' } }
+      howl.bindings.push(keymap)
+      within_command_line((-> interact.forward_search_word {}), (command_line) ->
+        command_line:handle_keypress {
+          key_name: 'x', character: 'x', alt: false, control: true, meta: false, shift: false, super: false
+        }
+      )
+      howl.bindings.remove(keymap)
+      assert.spy(searcher.next).was_called(1)
